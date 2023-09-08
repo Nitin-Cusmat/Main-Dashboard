@@ -15,6 +15,41 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
   const plugins = [
     {
       id: "backgrounds",
+      afterBuildTicks: function (chart) {
+        let ticks = chart.scales.y.ticks;
+        let positiveTicks = ticks.filter(item => item.value > 0);
+        let negativeTicks = ticks.filter(item => item.value <= 0);
+        const stepSize = positiveTicks[1].value - positiveTicks[0].value;
+        const lastValue = ticks[ticks.length - 1].value;
+
+        chart.scales.y.ticks = ticks;
+        if (max < graph.hAxisLines.max) {
+          for (
+            let i = lastValue + stepSize;
+            i <= graph.hAxisLines.max;
+            i = i + stepSize
+          )
+            ticks.push({ value: i, label: i.toString() });
+        }
+        if (min < 0) {
+          const negativeStepSize =
+            negativeTicks[negativeTicks.length - 2].value -
+            negativeTicks[negativeTicks.length - 1].value;
+          let negativeTicksLength = negativeTicks.length;
+          for (let i = min, idx = 0; i < 0; i = i - negativeStepSize) {
+            ticks[idx] = {
+              value: negativeStepSize * negativeTicksLength,
+              label: negativeStepSize * negativeTicksLength.toString()
+            };
+            idx = idx + 1;
+            negativeTicksLength = negativeTicksLength - 1;
+          }
+          ticks.splice(negativeTicks.length, 0, { value: 0, label: 0 });
+        }
+
+        chart.scales.y.max = ticks[ticks.length - 1].value;
+        return;
+      },
       beforeDraw: (chart, args, options) => {
         const {
           ctx,
@@ -83,6 +118,7 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
         labels: {
           usePointStyle: true,
           pointStyle: "circle",
+
           generateLabels: () => {
             const labels = [];
 
@@ -146,7 +182,6 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
       },
       y: {
         min: min < 0 ? min : 0,
-        max: max > graph.hAxisLines.max ? max : Number(graph.hAxisLines.max),
         grid: {
           display: false
         },

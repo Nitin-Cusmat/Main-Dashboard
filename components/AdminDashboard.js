@@ -52,7 +52,7 @@ const AdminDashboard = () => {
   const organizationSlugMap = {};
   organizationAnalytics &&
     organizationAnalytics.forEach(org => {
-      organizationSlugMap[org.organization_name] = org.organization_slug;
+      organizationSlugMap[org.name] = org.slug;
     });
 
   const getTotalActiveModuleAndUsers = async () => {
@@ -151,21 +151,18 @@ const AdminDashboard = () => {
               headings={[
                 "Organization Name",
                 "Total Modules",
-                "Total Users",
+                "Total Active Users",
                 "Total Time Spent"
               ]}
               rows={organizationAnalytics}
               columns={[
-                "organization_name",
+                "name",
                 "total_modules",
                 "total_users",
                 "total_duration"
               ]}
-              hover={{
-                total_modules: "module_names"
-              }}
               anchor={{
-                organization_name: async organizationName => {
+                name: async organizationName => {
                   const organizationSlug =
                     organizationSlugMap[organizationName];
                   const orgDetails = await getOrganizationDetails(
@@ -193,19 +190,16 @@ const AdminDashboard = () => {
               headings={[
                 "Module Name",
                 "Organizations Count",
-                "Total Users",
+                "Total Active Users",
                 "Total Time Spent"
               ]}
               rows={moduleAnalytics}
               columns={[
-                "module_name",
+                "name",
                 "organization_count",
                 "user_count",
-                "total_time_spent"
+                "total_duration"
               ]}
-              hover={{
-                total_time_spent: "organization_wise_time_spent"
-              }}
             />
           </div>
         </Disclosure>

@@ -44,7 +44,7 @@ const AdminTable = ({ headings, rows, columns, hover, anchor, onClick }) => {
                     ) : (
                       row[column]
                     )}
-                    {Object.keys(hover).indexOf(column) !== -1 && (
+                    {/* {Object.keys(hover).indexOf(column) !== -1 && (
                       <span
                         className={`absolute hidden group-hover:flex top-0 max-md:w-[140px] md:w-[192px] px-2 py-1 bg-gray-600 rounded-lg text-center text-white text-sm before:content-[''] before:absolute before:border-8 " ${
                           columns.length - 1 !== columnIndex
@@ -72,7 +72,7 @@ const AdminTable = ({ headings, rows, columns, hover, anchor, onClick }) => {
                               ))}
                         </span>
                       </span>
-                    )}
+                    )} */}
                   </span>
                 </td>
               ))}
