@@ -42,8 +42,8 @@ const GraphReport = ({
 }) => {
   const colors = ["#82E0AA", "#622F22"];
   const [value, setValue] = useState([
-    graph.data[0].x,
-    graph.data[graph.data.length - 1].x
+    graph.data && graph.data[0]?.x,
+    graph.data && graph.data[graph.data.length - 1]?.x
   ]);
   let transformedDataset = [];
   const getGraph = () => {
