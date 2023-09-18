@@ -59,16 +59,9 @@ const ModuleWiseUserReport = ({ modules, activeModule, setActiveModule }) => {
         value = (
           <Button
             className={"px-5 py-2 rounded font-semibold text-left"}
-            btnVariant={`${
-              data.modules.length > 0 && data.modules[0].total_attempts > 0
-                ? "link"
-                : "plainText"
-            }`}
+            btnVariant={`${data.total_attempts > 0 ? "link" : "plainText"}`}
             onClick={() => {
-              if (
-                data.modules.length > 0 &&
-                data.modules[0].total_attempts > 0
-              ) {
+              if (data.total_attempts > 0) {
                 router.replace({
                   pathname: reverse(appRoutes.reports.individual.performance, {
                     userId: data.user_id
@@ -84,10 +77,7 @@ const ModuleWiseUserReport = ({ modules, activeModule, setActiveModule }) => {
         break;
 
       case "current_level":
-        const level =
-          data.modules.length > 0
-            ? data.modules[0].current_level.level || "Not Started"
-            : "";
+        const level = data.current_level || "Not Started";
         value = (
           <span className={level === "Not Started" ? "text-red" : ""}>
             {level}
@@ -96,14 +86,11 @@ const ModuleWiseUserReport = ({ modules, activeModule, setActiveModule }) => {
         break;
 
       case "total_attempts":
-        value = data.modules.length > 0 ? data.modules[0].total_attempts : 0;
+        value = data.total_attempts;
         break;
 
       case "level_date":
-        const level_date =
-          data.modules.length > 0
-            ? data.modules[0].current_level.level_date || "Not Started"
-            : "";
+        const level_date = data.level_date || "Not Started";
         value = (
           <span className={level_date === "Not Started" ? "text-red" : ""}>
             {level_date}
@@ -112,11 +99,11 @@ const ModuleWiseUserReport = ({ modules, activeModule, setActiveModule }) => {
         break;
 
       case "module_usage":
-        value = data ? timeConverter(data.total_time) : "";
+        value = timeConverter(data.module_usage);
 
         break;
       case "progress":
-        value = data.success || "";
+        value = data.progress;
         break;
       case "user_id":
         value = data.user_id || "";
@@ -149,24 +136,21 @@ const ModuleWiseUserReport = ({ modules, activeModule, setActiveModule }) => {
             // parse the data into the format needed for tabular representation
             let data = [];
             setCount(resJson.count);
-
             resJson.results.forEach(user => {
-              if (user.modules.length > 0) {
-                let r = {};
-                const keys = [
-                  "name",
-                  "user_id",
-                  "current_level",
-                  "total_attempts",
-                  "level_date",
-                  "module_usage",
-                  "progress"
-                ];
-                keys.forEach(key => {
-                  r[key] = getParsedData(key, user);
-                });
-                data.push(r);
-              }
+              let r = {};
+              const keys = [
+                "name",
+                "user_id",
+                "current_level",
+                "total_attempts",
+                "level_date",
+                "module_usage",
+                "progress"
+              ];
+              keys.forEach(key => {
+                r[key] = getParsedData(key, user);
+              });
+              data.push(r);
             });
             setUserData(data);
             setShowTableData(data);

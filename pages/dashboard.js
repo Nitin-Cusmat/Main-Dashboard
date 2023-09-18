@@ -61,7 +61,7 @@ const Dashboard = () => {
   const getUserInfo = async () => {
     const res = await trackPromise(
       request(
-        `${apiRoutes.organization.latestAttempts}?org_id=${organization.id}`,
+        `${apiRoutes.organization.latestAttempts}?organization_id=${organization.id}`,
         {
           isAuthenticated: true
         }
@@ -74,9 +74,9 @@ const Dashboard = () => {
       // parse the data into format needed for tabular representation
       let data = resultsJson.map(attempt => {
         return {
-          "User Id": attempt["user"]["user_id"],
-          Name: attempt["user"]["name"],
-          Module: attempt["user"]["module"],
+          "User Id": attempt["user_id"],
+          Name: attempt["first_name"] + " " + attempt["last_name"],
+          Module: attempt["module"],
           Level: attempt["level"],
           "Time Spent": timeConverter(attempt["duration"]),
           "Start Time": formatTimeDisplay(new Date(attempt["start_time"])),

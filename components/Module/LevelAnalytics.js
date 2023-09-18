@@ -72,6 +72,8 @@ const LevelAnalytics = ({ activeModuleName, organization }) => {
 
           setLevelWiseData(data);
           setLoading(false);
+        } else {
+          setLoading(false);
         }
       })
     );

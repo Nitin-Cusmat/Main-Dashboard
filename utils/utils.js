@@ -137,7 +137,7 @@ const formatTime = (symbol, totalSeconds) => {
   const convertedHours = Math.floor(remainingSeconds / (60 * 60));
   const remainingSecondsAfterHours = remainingSeconds % (60 * 60);
   const convertedMinutes = Math.floor(remainingSecondsAfterHours / 60);
-  const convertedSeconds = remainingSecondsAfterHours % 60;
+  const convertedSeconds = parseInt(remainingSecondsAfterHours % 60);
 
   const formattedHours = String(convertedHours).padStart(2, "0");
   const formattedMinutes = String(convertedMinutes).padStart(2, "0");

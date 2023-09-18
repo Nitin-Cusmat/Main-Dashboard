@@ -175,7 +175,9 @@ const IndividualReport = ({
   }, [userId, organization]);
 
   const getPairPaths = attemptData => {
-    let paths = Object.keys(attemptData.path.actual_path);
+    let paths = Object.keys(attemptData.path.actual_path).filter(
+      path => path != "path-1"
+    );
 
     let obstacles = attemptData.obstacles;
     const mergedPaths = [];
@@ -584,7 +586,14 @@ const IndividualReport = ({
                       let total_pies = attemptData.graphs.filter(g =>
                         ["pie", "doughnut"].includes(g.type)
                       );
-
+                      let deviationGraph = false;
+                      if (
+                        graph.type === "line" &&
+                        graph.hAxisLines !== null &&
+                        organization.name.toLowerCase() === "tata steel"
+                      ) {
+                        deviationGraph = true;
+                      }
                       return (
                         <div
                           key={`doughnut_${index}`}
@@ -596,7 +605,7 @@ const IndividualReport = ({
                                   : "md:w-1/2"
                                 : "lg:w-full"
                               : ""
-                          }`}
+                          }${deviationGraph && "xl:w-1/2 pl-2"}`}
                         >
                           <GraphReport
                             graph={graph}

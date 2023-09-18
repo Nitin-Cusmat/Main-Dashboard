@@ -251,7 +251,7 @@ const IndividualPerformance = ({ userIdfromProp }) => {
               menuItems={attempts}
             />
           </div>
-          <button onClick={downloadPdf}>
+          {/* <button onClick={downloadPdf}>
             {pdfloading ? (
               <ReactLoading
                 type={"spin"}
@@ -262,7 +262,7 @@ const IndividualPerformance = ({ userIdfromProp }) => {
             ) : (
               <HiOutlineDownload size={20} color="black" />
             )}
-          </button>
+          </button> */}
           <Modal
             show={showUsersModal}
             title={message}

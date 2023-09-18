@@ -363,7 +363,7 @@ const DefaultLayout = ({ pageTitle, children, activeItemId }) => {
                   activeItemId === navItem.id
                     ? "text-primary"
                     : "text-slate-500"
-                } font-semibold text-sm md:text-md p-1 py-2`}
+                } font-semibold text-sm md:text-md p-1 capitalize py-2`}
               >
                 <span
                   onClick={() => {
@@ -414,7 +414,7 @@ const DefaultLayout = ({ pageTitle, children, activeItemId }) => {
             title="Switch Organization"
             showCloseBtn
           >
-            <div className="p-4 flex flex-col gap-y-5 justify-items-center ">
+            <div className="p-4 flex flex-col gap-y-5 justify-items-center capitalize">
               <div className="dropdown mr-2 relative block ">
                 <Dropdown
                   btnCss="p-2 text-center border text-md bg-[#F4F3F8] rounded "
