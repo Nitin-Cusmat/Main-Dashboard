@@ -58,13 +58,13 @@ const CustomLegend = ({ showLegend, isForkLift, obstacles = null }) => {
         <CommonCode title="Actual path">
           <div className="w-[40px] h-[1px] border-b-2 border-[green]" />
         </CommonCode>
-        <CommonCode title="Actual path directions">
+        {/* <CommonCode title="Actual path directions">
           <div
             className="h-0 w-0 border-t-[9px] border-l-[14px] border-b-[9px]
   border-solid border-t-transparent border-b-transparent border-l-[orange] absolute"
           />
           <div className="w-[40px] h-[1px] border-b-2 border-black"></div>
-        </CommonCode>
+        </CommonCode> */}
         <CommonCode title="Collisions">
           <div class="w-[10px] h-[10px] rounded-full bg-black absolute" />
           <div className="w-[40px] h-[1px] border-b-2 border-black"></div>

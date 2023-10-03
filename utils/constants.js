@@ -186,8 +186,8 @@ const USER_TABLE_COLUMN_MAP = {
   name: "Name of the Trainee",
   user_id: "User ID",
   modules: "Modules",
-  total_time: "Total Time Spent",
-  success: "Progress%"
+  module_usage: "Total Time Spent",
+  progress: "Progress%"
 };
 const CHART_COLORS = {
   chartGreen: "#5AB281",

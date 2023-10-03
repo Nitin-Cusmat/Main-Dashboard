@@ -49,7 +49,8 @@ const apiRoutes = include("api/v1", {
     attemptWiseReport: "attempt-wise-report/",
     applicationUsageAnalytics: "application-usage-analytics/",
     totalActiveModuleAndUsers: "total-active-module-and-users/",
-    adminUserPerformance: "admin-organization-application-usage/"
+    adminUserPerformance: "admin-organization-application-usage/",
+    levelUserInfo:"level-user-info/"
   })
 });
 export default apiRoutes;

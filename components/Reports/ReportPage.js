@@ -43,19 +43,12 @@ const ReportPage = ({
     let value = "";
     switch (field) {
       case "name":
-        const filteredData = data.modules.filter(
-          module => module.total_attempts > 0
-        );
         value = (
           <Button
-            btnVariant={`${
-              data.modules.length > 0 && filteredData.length > 0
-                ? "link"
-                : "plainText"
-            }`}
+            btnVariant={`${data.total_attempts > 0 ? "link" : "plainText"}`}
             className="text-left"
             onClick={() => {
-              if (data.modules.length > 0 && filteredData.length > 0)
+              if (data.modules.length > 0)
                 router.push(
                   reverse(appRoutes.reports.individual.performance, {
                     userId: data.user_id
@@ -68,9 +61,9 @@ const ReportPage = ({
         );
         break;
       case "modules":
-        value = data.modules.map(m => m.module).join(", ");
+        value = data.modules;
         break;
-      case "total_time":
+      case "module_usage":
         value = timeConverter(data[field]);
         break;
 
@@ -100,18 +93,14 @@ const ReportPage = ({
         .then(async res => {
           if (res.status == HTTP_STATUSES.OK) {
             const resJson = await res.json();
-
-            // parse the data into format needed for tabular representation
             let data = [];
             setCount(resJson.count);
             resJson.results.forEach(user => {
-              if (user.modules.length > 0) {
-                let r = {};
-                Object.keys(user).forEach(field => {
-                  r[USER_TABLE_COLUMN_MAP[field]] = getParsedData(field, user);
-                });
-                data.push(r);
-              }
+              let r = {};
+              Object.keys(user).forEach(field => {
+                r[USER_TABLE_COLUMN_MAP[field]] = getParsedData(field, user);
+              });
+              data.push(r);
             });
             setShowTableData(data);
             setUserData(data);
@@ -198,7 +187,7 @@ const ReportPage = ({
             <div className="absolute p-2 shadow z-50 bg-white max-h-[300px] overflow-scroll">
               {modules.map(module => (
                 <div key={module.id} className="flex justify-between ">
-                  <span className="p-1 text-dark  text-sm md:text-md">
+                  <span className="p-1 text-dark text-sm md:text-md capitalize">
                     {module.name}
                   </span>
                   <input
@@ -210,10 +199,19 @@ const ReportPage = ({
                       if (e.target.checked) {
                         selected = [...selected, module.name];
                       } else {
-                        if (selected.length > 1)
+                        if (
+                          selected.length > 1 ||
+                          (selected.length === 1 &&
+                            selected.includes(module.name))
+                        ) {
                           selected = selected.filter(
                             item => item !== module.name
                           );
+                        }
+
+                        selected = selected.filter(
+                          item => item !== module.name
+                        );
                       }
                       setActiveModules(selected);
                     }}

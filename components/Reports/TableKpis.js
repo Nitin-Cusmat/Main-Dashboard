@@ -3,7 +3,10 @@ import React from "react";
 
 export const TableKpis = ({ tableKpis, tableKpis2, compare }) => {
   return (
-    <div className="py-4">
+    // <div className="py-4">
+      <div className="my-4 bg-white p-4 rounded-lg shadow-md animate-fade-in">
+      <div className="font-bold text-lg text-dark py-2">General KPI Assessment</div>
+      <div className="overflow-x-auto"></div>
       <ComparativeTable
         rows={tableKpis && tableKpis.length > 0 ? tableKpis : null}
         rows2={tableKpis2 && tableKpis2.length > 0 ? tableKpis2 : null}

@@ -22,12 +22,12 @@ const ComparativeTable = ({
     compare && rows2 && rows2.length >= rows.length
       ? rows2.slice(rows.length)
       : null;
-  const thCss = `bg-white text-dark font-medium text-sm md:text-md capitalize border ${alignmentCss}`;
+  const thCss = `bg-blue-100 text-dark font-medium text-sm md:text-md capitalize border ${alignmentCss}`;
 
   const getRecords = (row, rowIndex, rowLength) => (
     <tr
       key={`${row[table_key]}_${rowIndex}`}
-      className={`even:bg-[#fafafa] odd:bg-[#f6f4f8] ${
+      className={`even:bg-[#fafafa] odd:bg-[#f6f4f8] hover:bg-yellow ${
         rowIndex === rowLength - 1 && isSpecialModule && "font-bold"
       }`}
     >

@@ -8,22 +8,36 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false
 });
 
-const RangeBarChart = ({ rangeData, title, compare }) => {
+const extractNumericalValue = (valueWithUnit) => {
+  if (typeof valueWithUnit === 'number') return valueWithUnit;
+  if (typeof valueWithUnit === 'string' && !isNaN(valueWithUnit)) return parseFloat(valueWithUnit);
+  if (typeof valueWithUnit === 'string') {
+    const matchedValue = valueWithUnit.match(/\d+(\.\d+)?/);
+    return matchedValue ? parseFloat(matchedValue[0]) : 0;
+  }
+  
+  return 0;
+};
+
+const RangeBarChart = ({ rangeData, title, compare, showIdealTime }) => {
   const { screenWidth } = useRecoilValue(deviceState);
 
   const getData = rangeData => {
     return rangeData.map(item => {
-      return {
+      let dataObj = {
         x: item.name,
         y: [0, item.decimalValue],
-        goals: [
+      };
+      if (showIdealTime && item["Ideal time"]) {
+        dataObj.goals = [
           {
             name: "Ideal Time",
-            value: item.range[1],
+            value: extractNumericalValue(item["Ideal time"]),
             strokeColor: "#CD2F2A"
           }
-        ]
-      };
+        ];
+      }
+      return dataObj;
     });
   };
 
@@ -44,8 +58,7 @@ const RangeBarChart = ({ rangeData, title, compare }) => {
   const series = rangeData.map((d, index) => {
     return {
       name: compare ? "User " + (index + 1) : "Time (Sec)",
-      data:
-        typeof d === "object" && !Array.isArray(d) ? getData([d]) : getData(d)
+      data: typeof d === "object" && !Array.isArray(d) ? getData([d]) : getData(d)
     };
   });
 
@@ -55,7 +68,8 @@ const RangeBarChart = ({ rangeData, title, compare }) => {
       type: "rangeBar",
       toolbar: {
         show: false
-      }
+      },
+      background: "#FFFFFF", // Set the background color of the chart
     },
     dataLabels: {
       enabled: false,
@@ -68,8 +82,23 @@ const RangeBarChart = ({ rangeData, title, compare }) => {
     },
     plotOptions: {
       bar: {
+        // horizontal: true,
+        // barHeight: "80%"
         horizontal: true,
-        barHeight: "80%"
+        barHeight: 50, // Adjust the bar height as needed
+        distributed: true, // Enable to evenly distribute bars across the available width
+        rangeBarGroupRows: true, // Enable to group bars by row
+        dataLabels: {
+          position: "bottom"
+        },
+        colors: {
+          ranges: [{
+           
+            color: "#9acef5" // Color for the entire bar
+          }],
+          backgroundBarColors: ["#f0f0f0"], // Set background color for bars
+          backgroundBarOpacity: 0.5 // Adjust background color opacity
+        }
       }
     },
     colors: ["#45b6fe"],
@@ -94,42 +123,46 @@ const RangeBarChart = ({ rangeData, title, compare }) => {
     legend: {
       show: true,
       showForSingleSeries: true,
-      customLegendItems: ["Time (sec)", "Ideal Time"],
+      customLegendItems: showIdealTime ? ["Time (sec)", "Ideal Time"] : ["Time (sec)"],
       position: "top",
       horizontalAlign: "right",
       markers: {
-        fillColors: ["#45b6fe", "#CD2F2A"]
+        fillColors: showIdealTime ? ["#45b6fe", "#CD2F2A"] : ["#45b6fe"]
       }
     },
     tooltip: {
       custom: function ({ seriesIndex, dataPointIndex, w }) {
-        const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
-        const idealTime =
-          w.globals.initialSeries[seriesIndex].data[dataPointIndex]["goals"][0]
-            .value;
-        return `<div style="padding:5px; color:black;">${
-          data.x + ": " + data.y[1]
-        } sec${
-          !isNaN(idealTime) ? `, Ideal Time: ${idealTime} sec` : ``
-        }</div>`;
+          const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
+          let idealTimeText = "";
+          
+          if (showIdealTime && data.goals && data.goals.length > 0 && !isNaN(data.goals[0].value)) {
+              idealTimeText = `, Ideal Time: ${extractNumericalValue(data.goals[0].value)} sec`;
+          }
+          
+          return `<div class="apexcharts_tooltip" style="padding:5px; color:black;">${data.x + ": " + data.y[1]} sec${idealTimeText}</div>`;
       }
-    }
+  }
+  
   };
 
+
   return (
-    <div>
-      <div className="p-5 pb-0 text-dark text-lg">{title}</div>
+    <div style={{ marginTop: '40px' }}> {/* Add this style */}
+    <div className="p-5 pb-0 text-dark text-lg bg-blue-100" 
+         style={title === "KPI with respect to its values and its ideal range" ? { backgroundColor: 'rgb(219 234 254)' } : {}}>
+      {title}
+    </div>
       <ReactApexChart
         options={options}
         series={series}
         type="rangeBar"
         height={
           title === "KPI with respect to its values and its ideal range"
-            ? series.length * 100 + "px"
+            ? series.length * 90 + "px"
             : "400px"
         }
         width={
-          screenWidth < 500 ? "200px" : screenWidth < 800 ? "400px" : "700px"
+          screenWidth < 500 ? "200px" : screenWidth < 800 ? "400px" : "800px"
         }
       />
     </div>

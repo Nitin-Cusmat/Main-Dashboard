@@ -57,8 +57,12 @@ const ComparitiveAttemptReport = ({
   }
 
   const getPairPaths = (attemptData, attemptData2) => {
-    const paths1 = Object.keys(attemptData.path.actual_path);
-    const paths2 = Object.keys(attemptData2.path.actual_path);
+    const paths1 = Object.keys(attemptData.path.actual_path).filter(
+      path => path != "path-1"
+    );
+    const paths2 = Object.keys(attemptData2.path.actual_path).filter(
+      path => path != "path-1"
+    );
     const maxLength = Math.max(paths1.length, paths2.length);
     let obstacles = attemptData.obstacles;
     const mergedPaths = [];

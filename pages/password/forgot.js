@@ -50,7 +50,7 @@ const Forgot = () => {
     } else if (res.status === HTTP_STATUSES.SERVER_ERROR) {
       setError("Something went wrong");
     } else if (res.status === HTTP_STATUSES.BAD_REQUEST) {
-      setError("The user with this email does not exist.");
+      setError("This email is not associated with any user account.");
     } else if (res.status === HTTP_STATUSES.FORBIDDEN) {
       setError(
         "You are not authorized to perform this action. Please contact your organization admin."

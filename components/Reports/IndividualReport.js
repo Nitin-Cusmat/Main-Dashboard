@@ -175,7 +175,9 @@ const IndividualReport = ({
   }, [userId, organization]);
 
   const getPairPaths = attemptData => {
-    let paths = Object.keys(attemptData.path.actual_path);
+    let paths = Object.keys(attemptData.path.actual_path).filter(
+      path => path != "path-1"
+    );
 
     let obstacles = attemptData.obstacles;
     const mergedPaths = [];
@@ -304,7 +306,7 @@ const IndividualReport = ({
           height={20}
           width={20}
         />
-        <div className="pl-1"> Generating report</div>
+        <div className="pl-1 text-black"> Generating report</div>
       </div>
     );
   }
@@ -542,14 +544,14 @@ const IndividualReport = ({
                 {attemptData.tableKpis && (
                   <TableKpis tableKpis={attemptData.tableKpis} />
                 )}
-                {attemptData.generalkpis &&
+                {/* {attemptData.generalkpis &&
                   Object.keys(attemptData.generalkpis).length > 0 &&
                   Object.keys(attemptData.generalkpis).map((gkpis, index) => (
                     <TableKpis
                       key={`gkpis_${index}`}
                       tableKpis={attemptData.generalkpis[gkpis]}
                     />
-                  ))}
+                  ))} */}
                 {attemptData.kpis && attemptData.kpis.length > 0 && (
                   <KpiReport kpis1={attemptData.kpis} />
                 )}
@@ -584,7 +586,14 @@ const IndividualReport = ({
                       let total_pies = attemptData.graphs.filter(g =>
                         ["pie", "doughnut"].includes(g.type)
                       );
-
+                      let deviationGraph = false;
+                      if (
+                        graph.type === "line" &&
+                        graph.hAxisLines !== null &&
+                        organization.name.toLowerCase() === "tata steel"
+                      ) {
+                        deviationGraph = true;
+                      }
                       return (
                         <div
                           key={`doughnut_${index}`}
@@ -596,7 +605,7 @@ const IndividualReport = ({
                                   : "md:w-1/2"
                                 : "lg:w-full"
                               : ""
-                          }`}
+                          }${deviationGraph && "xl:w-1/2 pl-2"}`}
                         >
                           <GraphReport
                             graph={graph}
@@ -648,6 +657,14 @@ const IndividualReport = ({
                     actualPath={attemptData.path.actual_path}
                   />
                 )}
+                {attemptData.generalkpis &&
+                  Object.keys(attemptData.generalkpis).length > 0 &&
+                  Object.keys(attemptData.generalkpis).map((gkpis, index) => (
+                    <TableKpis
+                      key={`gkpis_${index}`}
+                      tableKpis={attemptData.generalkpis[gkpis]}
+                    />
+                  ))}
               </div>
             )}
             <div className="mt-0  pl-0 pt-4 md:pt-0 w-full lg:w-1/4 ">

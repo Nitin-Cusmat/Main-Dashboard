@@ -61,7 +61,7 @@ const Dashboard = () => {
   const getUserInfo = async () => {
     const res = await trackPromise(
       request(
-        `${apiRoutes.organization.latestAttempts}?org_id=${organization.id}`,
+        `${apiRoutes.organization.latestAttempts}?organization_id=${organization.id}`,
         {
           isAuthenticated: true
         }
@@ -74,9 +74,9 @@ const Dashboard = () => {
       // parse the data into format needed for tabular representation
       let data = resultsJson.map(attempt => {
         return {
-          "User Id": attempt["user"]["user_id"],
-          Name: attempt["user"]["name"],
-          Module: attempt["user"]["module"],
+          "User Id": attempt["user_id"],
+          Name: attempt["first_name"] + " " + attempt["last_name"],
+          Module: attempt["module"],
           Level: attempt["level"],
           "Time Spent": timeConverter(attempt["duration"]),
           "Start Time": formatTimeDisplay(new Date(attempt["start_time"])),
@@ -193,12 +193,12 @@ const Dashboard = () => {
             <BoxData
               classnames="md:pr-2"
               heading={"Completion rate"}
-              value={data.successful_completion_rate}
+              value={data.completion_rate}
               footerFlex={true}
               footer={
                 <PercentChangeLabel
-                  value={data.successful_completion_rate_comparision}
-                  isPositive={data.successful_completion_rate_comparision >= 0}
+                  value={data.completion_rate_comparison}
+                  isPositive={data.completion_rate_comparison >= 0}
                   msg="since last month"
                 />
               }
@@ -207,9 +207,7 @@ const Dashboard = () => {
               <div className="absolute right-0">
                 <Chart
                   type={CHART_TYPES.RADIAL}
-                  series={[
-                    Math.round(data.successful_completion_rate_graph * 100)
-                  ]}
+                  series={[data.completion_rate_chart]}
                   options={options}
                   width={150}
                   height={150}
@@ -219,12 +217,12 @@ const Dashboard = () => {
             <BoxData
               classnames="md:pl-2 xl:pr-2"
               heading={" Performance trends - Monthly"}
-              value={data.overall_monthly_performance}
+              value={data.current_month_performance_trends}
               size={boxsize}
               footer={
                 <PercentChangeLabel
-                  value={data.overall_monthly_comparision + "%"}
-                  isPositive={data.overall_monthly_comparision >= 0}
+                  value={data.performance_comparison + "%"}
+                  isPositive={data.performance_comparison >= 0}
                   msg="since last month"
                 />
               }
@@ -265,7 +263,7 @@ const Dashboard = () => {
               ]}
               key="User ID"
               rows={userData}
-              // size="max-h-[500px]"
+            // size="max-h-[500px]"
             />
           </Disclosure>
           <div className="h-[50px]" />
