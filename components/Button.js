@@ -12,7 +12,7 @@ const Button = ({ children, btnVariant, onClick, disabled, className }) => {
     secondary: "text-[#565B6B] bg-[#E3E1EF]",
     link: "text-primary hover:underline underline-offset-2",
     disbaledLink: "text-[#B9B9B9] underline-offset-2 cursor-default",
-    plainText: "text-grey cursor-default"
+    plainText: "text-[#B9B9B9] cursor-default"
   };
   return (
     <button

@@ -19,6 +19,7 @@ import { useRouter } from "next/router";
 import ReactLoading from "react-loading";
 import { trackPromise } from "react-promise-tracker";
 import GaugeBox from "./GaugeBox";
+import LoadingSpinner from "./LoadingSpinner";
 
 const DataBox = ({ title, value, footerText }) => {
   return (
@@ -91,7 +92,8 @@ const ModulesNav = ({
       request(`${apiRoutes.organization.calculatePerformances}`, {
         method: HTTP_METHODS.POST,
         body: {
-          organization_id: organization.id
+          organization_id: organization.id,
+          module_name: searchModule
         },
         isAuthenticated: true
       }),
@@ -104,7 +106,7 @@ const ModulesNav = ({
   };
   useEffect(() => {
     if (organization) getCalculatePerformances();
-  }, [organization]);
+  }, [organization, searchModule]);
 
   const options = {
     legend: { show: false },
@@ -162,10 +164,9 @@ const ModulesNav = ({
               <option
                 key={`${tab}_${i}`}
                 // value={activeModuleName}
-                className={`tab tab-bordered flex-1 text-black ${
-                  activeModuleName == tab.module.name &&
+                className={`tab tab-bordered flex-1 text-black ${activeModuleName == tab.module.name &&
                   "tab-active && text-primary font-bold !border-b-primary"
-                }`}
+                  }`}
                 onClick={() => {
                   setActiveModuleName(tab.module.name);
                 }}
@@ -176,40 +177,18 @@ const ModulesNav = ({
           })}
         </select>
       </div>
-      <div className="flex flex-col max-md:items-center mt-8">
-        <div className="flex flex-wrap gap-y-4 max-md:w-full max-md:flex-col max-md:items-center relative max-md:px-2">
-          {/* <LoadingSpinner area="user-analytics" /> */}
+       <div className="flex flex-col max-md:items-center mt-8">
+       {modules &&<div className="flex flex-wrap gap-y-4 max-md:w-full max-md:flex-col max-md:items-center relative max-md:px-2">
+          <LoadingSpinner area="user-analytics" />
           <BoxData
             heading={"Completion rate"}
             classnames={"md:pl-4"}
-            value={
-              modules
-                ? modules.module_wise_completion_rate[activeModuleName] ===
-                  undefined
-                  ? 0
-                  : modules.module_wise_completion_rate[activeModuleName]
-                : 0
-            }
+            value={modules.module_completion_rate}
             footerFlex={true}
             footer={
               <PercentChangeLabel
-                value={
-                  modules &&
-                  modules.module_wise_completion_rate_comparision &&
-                  (modules.module_wise_completion_rate_comparision[
-                    activeModuleName
-                  ] === undefined
-                    ? "0"
-                    : modules.module_wise_completion_rate_comparision[
-                        activeModuleName
-                      ])
-                }
-                isPositive={
-                  modules &&
-                  modules.module_wise_completion_rate_comparision[
-                    activeModuleName
-                  ] >= 0
-                }
+                value={modules.module_completion_rate_comparison}
+                isPositive={modules.module_completion_rate_comparison >= 0}
                 msg="since last month"
               />
             }
@@ -218,23 +197,7 @@ const ModulesNav = ({
             <div className="absolute right-0">
               <Chart
                 type={CHART_TYPES.RADIAL}
-                series={[
-                  modules
-                    ? modules.module_wise_completion_rate[activeModuleName] ===
-                      undefined
-                      ? 0
-                      : moduleUsers
-                      ? (
-                          (modules.module_wise_completion_rate[
-                            activeModuleName
-                          ] /
-                            moduleUsers) *
-                          100
-                        )
-                          .toFixed(2)
-                          .replace(/\.?0+$/, "")
-                      : 0
-                    : 0
+                series={[modules.module_completion_rate_chart
                 ]}
                 options={options}
                 width={150}
@@ -242,50 +205,26 @@ const ModulesNav = ({
               />
             </div>
           </BoxData>
-          {/* {modules && ( */}
           <BoxData
             heading={"Performance trends - Monthly"}
             classnames={"md:px-2 lg:pl-4 lg:pr-0"}
-            value={
-              modules
-                ? modules.module_wise_monthly_performance[activeModuleName] ===
-                  undefined
-                  ? 0
-                  : modules.module_wise_monthly_performance[activeModuleName]
-                : 0
-            }
+            value={modules.current_month_performance_trends}
             footer={
               <PercentChangeLabel
-                value={
-                  modules &&
-                  modules.module_wise_monthly_performance_comparison &&
-                  (modules.module_wise_monthly_performance_comparison[
-                    activeModuleName
-                  ] === undefined
-                    ? "0%"
-                    : modules.module_wise_monthly_performance_comparison[
-                        activeModuleName
-                      ] + "%")
-                }
-                isPositive={
-                  modules &&
-                  modules.module_wise_monthly_performance_comparison[
-                    activeModuleName
-                  ] >= 0
-                }
+                value={modules.performance_comparison + "%"}
+                isPositive={modules.performance_comparison}
                 msg="since last month"
               />
             }
             size=" w-full md:w-1/2 xl:w-1/4"
           />
-          {/* )} */}
           <BoxData
             heading={"Number of active users"}
             classnames="md:pl-4"
             value={moduleUsers}
             size=" w-full md:w-1/2 xl:w-1/4"
           />
-        </div>
+        </div>}
         <div className=" w-full mt-5 min-h-[40vh] h-full">
           <div className="text-lg text-slate-500 underline max-md:px-2 md:px-4">
             Level wise progress
@@ -304,26 +243,19 @@ const ModulesNav = ({
                 </div>
                 {modules ? (
                   <div
-                    className={`relative flex justify-center items-center ${
-                      screenWidth > 1280 ? "min-h-[350px]" : "min-h-auto"
-                    }`}
+                    className={`relative flex justify-center items-center ${screenWidth > 1280 ? "min-h-[350px]" : "min-h-auto"
+                      }`}
                   >
-                    {modules.module_wise_quarter_performance[
-                      activeModuleName
-                    ] ? (
+                    {modules.quarter_trends? (
                       <Chart
                         type={CHART_TYPES.RADIAL}
                         series={Object.values(
-                          modules.module_wise_quarter_performance[
-                            activeModuleName
-                          ] ?? {}
+                          modules.quarter_trends ?? {}
                         )}
                         width={screenWidth > 1000 ? 500 : 400}
                         // height={screenWidth > 1000 ? 500 : "auto"}
                         labels={Object.keys(
-                          modules.module_wise_quarter_performance[
-                            activeModuleName
-                          ] ?? {}
+                          modules.quarter_trends ?? {}
                         )}
                         options={{
                           legend: {

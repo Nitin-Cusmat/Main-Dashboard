@@ -27,18 +27,69 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
   const [stringKpis, setStringKpis] = useState([]);
   const [rangeKpis, setRangeKpis] = useState([]);
 
+  const hasIdealTime = kpis1.some(kpi => kpi.ideal_time !== undefined);
+  const hasSpeed = kpis1.some(kpi => kpi.speed !== undefined);
+
+
+  const extractNumericalValue = (valueWithUnit) => {
+    if (typeof valueWithUnit === 'number') return valueWithUnit;
+    if (typeof valueWithUnit === 'string' && !isNaN(valueWithUnit)) return parseFloat(valueWithUnit);
+    if (typeof valueWithUnit === 'string') {
+      const matchedValue = valueWithUnit.match(/\d+(\.\d+)?/);
+      return matchedValue ? parseFloat(matchedValue[0]) : 0;
+    }
+    
+    return 0;
+  };
+
+
   useEffect(() => {
     let bKpis = [];
     let dKpis = [];
     let sKpis = [];
     let rKpis = [];
     kpis1.forEach((kpi, index) => {
+      const idealTimeNumerical = extractNumericalValue(kpi.ideal_time);
+      const user1Value = extractNumericalValue(kpi.value);
+      const timeDifference = idealTimeNumerical - user1Value;
+
+      let timeDifferenceFormatted, timeDifferenceColor;
+
+      if (kpi.ideal_time !== undefined) {
+          const timeDifference = user1Value - idealTimeNumerical;
+
+          timeDifferenceColor = timeDifference > 0 ? 'red' : 'green';
+          const timeDifferenceFormattedSign = timeDifference > 0 ? "+" : "-"; 
+          timeDifferenceFormatted = 
+              timeDifferenceFormattedSign + getFormattedTime(Math.abs(timeDifference));
+      }
+
+
+
+      const user2Value = kpis2 && kpis2.length > index && kpis2[index].value ? extractNumericalValue(kpis2[index].value) : null;
+      const timeDifference2 = (idealTimeNumerical - user2Value);
+      const timeDifference2InMinutes = compare && user2Value !== null ? timeDifference2 / 60 : null;
+      const formattedTimeDifference2 = timeDifference2InMinutes && timeDifference2InMinutes >= 1 ? `${timeDifference2InMinutes.toFixed(2)} min` : (user2Value !== null ? `${timeDifference2.toFixed(2)} sec` : null);
       switch (kpi.type) {
         case "number":
           if (kpi.range) {
             const min = kpi.range.min ? kpi.range.min : 0;
             let max = kpi.range.max;
             max = Math.ceil(max);
+            // const timeDifferenceFormatted = getFormattedTime(timeDifference); // This will give the time difference in the desired format
+
+            // const idealTimeValue1 = extractNumericalValue(kpi.ideal_time);
+            // const user2Value = kpis2 && kpis2.length > index && kpis2[index].value ? extractNumericalValue(kpis2[index].value) : null;
+            // const timeDifference2 = (idealTimeValue1 - user2Value);
+            // const timeDifference2InMinutes = compare && user2Value !== null ? timeDifference2 / 60 : null;
+
+            // const formattedTimeDifference2 = timeDifference2InMinutes && timeDifference2InMinutes >= 1 ? `${timeDifference2InMinutes.toFixed(2)} min` : (user2Value !== null ? `${timeDifference2.toFixed(2)} sec` : null);
+
+            // const idealTimeNumerical = extractNumericalValue(kpi.ideal_time);
+            // const user1Value = extractNumericalValue(kpi.value);
+            // const timeDifference1 = idealTimeNumerical - user1Value;
+            // const timeDifferenceColor = timeDifference >= 0 ? 'green' : 'red';
+            
 
             rKpis.push(
               compare
@@ -54,7 +105,11 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
                     "Time taken by user 2":
                       getFormattedTime(kpis2[index].value) +
                       " " +
-                      (kpis2[index].unit ? " " + kpis2[index].unit : "")
+                      (kpis2[index].unit ? " " + kpis2[index].unit : ""),
+                      time_difference_user1: timeDifferenceFormatted, // Added this field
+                      time_difference_color_user1: timeDifferenceColor,
+                      time_difference_user2: formattedTimeDifference2 // Added this field
+      
                   }
                 : {
                     ...kpi,
@@ -64,10 +119,21 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
                     decimalValue: kpi.value,
                     range: [min, max],
                     "Ideal time": kpi?.ideal_time,
-                    "ideal range": kpi.range.min + "-" + kpi.range.max
+                    "ideal range": kpi.range.min + "-" + kpi.range.max,
+                    time_difference: timeDifferenceFormatted, // Added this field
+
+                    time_difference_color: timeDifferenceColor,
+                    
+
                   }
             );
           } else {
+            const numericalIdealTime = extractNumericalValue(kpi.ideal_time);
+            const timeDifference = numericalIdealTime - kpi.value;
+            const formattedTimeDifference = getFormattedTime(timeDifference);
+            const timeDifferenceColor = timeDifference >= 0 ? 'green' : 'red';
+
+
             dKpis.push(
               compare
                 ? {
@@ -76,12 +142,18 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
                     "value user2": `${getFormattedTime(
                       kpis2[index]?.value !== undefined ? kpis2[index].value : 0
                     )}`,
-                    ideal_time: kpi?.ideal_time
+                    ideal_time: kpi?.ideal_time,
+                    time_difference: timeDifference,
+                    time_difference_color: timeDifferenceColor,
+
                   }
                 : {
                     ...kpi,
                     ideal_time: kpi?.ideal_time,
-                    value_unit: `${getFormattedTime(kpi.value)}`
+                    "Time taken by user": `${getFormattedTime(kpi.value)}`,
+                    time_difference: formattedTimeDifference,
+                    time_difference_color: timeDifferenceColor,
+
                   }
             );
           }
@@ -159,116 +231,36 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
               <CustomTable
                 columns={
                   compare && kpis2
-                    ? [
-                        "name",
-                        "value user1",
-                        "value user2",
-                        kpis1.every(kpi => kpi.ideal_time !== undefined)
-                          ? "ideal_time"
-                          : null
-                      ]
-                    : [
-                        "name",
-                        "value_unit",
-                        kpis1.every(kpi => kpi.ideal_time !== undefined)
-                          ? "ideal_time"
-                          : null
-                      ]
+                    ? ["name", "value user1", "value user2", hasIdealTime ? "time_difference" : null, hasIdealTime ? "ideal_time" : null, hasSpeed ? "speed" : null].filter(Boolean)
+                    : ["name", "Time taken by user", hasIdealTime ? "time_difference" : null, hasIdealTime ? "ideal_time" : null, hasSpeed ? "speed" : null].filter(Boolean)
                 }
                 rows={decimalKpis}
-                columnsMap={{
-                  name: "Name",
-                  value_unit: "Time taken by user",
-                  "value user1": "Time taken by user 1",
-                  "value user2": "Time taken by user 2",
-                  ideal_time: "Ideal time"
-                }}
-              />
-              {/* <div className="border">
-                <div className=" p-5 text-dark text-sm md:text-md lg:text-lg">
-                  Time Taken by KPIS
-                </div>
-                <div className=" w-full h-full flex justify-center max-h-[500px]">
-                  <Doughnut
-                    options={{
-                      plugins: {
-                        legend: {
-                          display: true,
-                          position: "bottom",
-                          labels: {
-                            usePointStyle: true,
-                            pointStyle: "circle"
-                          }
-                        },
-                        datalabels: { display: true }
-                      }
-                    }}
-                    data={{
-                      labels: decimalKpis ? decimalKpis.map(k => k.name) : [],
-                      datasets: compare
-                        ? [
-                            {
-                              label: "User 1",
-                              data: decimalKpis.map(k =>
-                                parseFloat(k["value user1"])
-                              ),
-                              backgroundColor: Object.values(CHART_COLORS),
-                              hoverOffset: 4
-                            },
-                            {
-                              label: "User 2",
-                              data: decimalKpis.map(k =>
-                                parseFloat(k["value user2"])
-                              ),
-                              backgroundColor: Object.values(CHART_COLORS),
-                              hoverOffset: 4
-                            }
-                          ]
-                        : [
-                            {
-                              data: decimalKpis.map(k => parseFloat(k.value)),
+                colorField="time_difference_color" // Pass the color field to CustomTable
 
-                              backgroundColor: Object.values(CHART_COLORS),
-                              hoverOffset: 4
-                            }
-                          ]
-                    }}
-                  />
-                </div>
-              </div> */}
+              />
             </div>
           )}
           {rangeKpis.length > 0 && (
             <CustomTable
-              columns={
-                compare && kpis2
-                  ? [
-                      "name",
-                      "Time taken by user 1",
-                      "Time taken by user 2",
-                      rangeKpis.every(kpi => kpi.ideal_time !== undefined)
-                        ? "Ideal time"
-                        : null
-                    ]
-                  : [
-                      "name",
-                      "Time taken by user",
-                      rangeKpis.every(kpi => kpi.ideal_time !== undefined)
-                        ? "Ideal time"
-                        : null
-                    ]
-              }
-              rows={rangeKpis}
+            columns={
+              compare && kpis2
+                ? ["name", "Time taken by user 1", "Time taken by user 2", hasIdealTime ? "time_difference_user1" : null, hasIdealTime ? "time_difference_user2" : null, hasIdealTime ? "Ideal time" : null, hasSpeed ? "speed" : null].filter(Boolean)
+                : ["name", "Time taken by user", hasIdealTime ? "time_difference" : null, hasIdealTime ? "Ideal time" : null, hasSpeed ? "speed" : null].filter(Boolean)
+            }
+            rows={rangeKpis}
             />
           )}
         </div>
         {rangeKpis.length > 0 && (
           <div className="border">
-            <RangeBarChart
-              rangeData={rangeKpis}
-              compare={compare}
-              title="KPI with respect to its values and its ideal range"
-            />
+           <RangeBarChart
+            rangeData={rangeKpis}
+            compare={compare}
+            showIdealTime={hasIdealTime}
+            title="KPI with respect to its values and its ideal range"
+            extractNumericalValue={extractNumericalValue}
+
+          />
           </div>
         )}
       </div>

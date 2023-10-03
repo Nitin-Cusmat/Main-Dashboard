@@ -18,7 +18,7 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
       afterBuildTicks: function (chart) {
         let ticks = chart.scales.y.ticks;
         let positiveTicks = ticks.filter(item => item.value > 0);
-        let negativeTicks = ticks.filter(item => item.value <= 0);
+        let negativeTicks = ticks.filter(item => item.value < 0);
         const stepSize = positiveTicks[1].value - positiveTicks[0].value;
         const lastValue = ticks[ticks.length - 1].value;
 
@@ -28,8 +28,10 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
             let i = lastValue + stepSize;
             i <= graph.hAxisLines.max;
             i = i + stepSize
-          )
+          ) {
             ticks.push({ value: i, label: i.toString() });
+          }
+          chart.scales.y.max = ticks[ticks.length - 1].value;
         }
         if (min < 0) {
           const negativeStepSize =
@@ -44,10 +46,9 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
             idx = idx + 1;
             negativeTicksLength = negativeTicksLength - 1;
           }
-          ticks.splice(negativeTicks.length, 0, { value: 0, label: 0 });
+          chart.scales.y.min = ticks[0].value;
         }
 
-        chart.scales.y.max = ticks[ticks.length - 1].value;
         return;
       },
       beforeDraw: (chart, args, options) => {
@@ -148,8 +149,20 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
     },
     elements: {
       point: {
-        radius: 0
+        
+    radius: 6, // Set the marker radius to your desired size
+    backgroundColor: "#a7b0f2", // Marker fill color
+    borderWidth:1, // Marker border width
+    borderColor: "white", // Marker border color
+    hoverRadius: 8, // Marker radius on hover
+    hoverBackgroundColor: "red", // Marker fill color on hover
+    hoverBorderWidth:1, // Marker border width on hover
+    hoverBorderColor: "white", // Marker border color on hover
       }
+    },
+    animation: {
+      duration: 10000, // Animation duration in milliseconds
+      easing: "easeInOutQuad", // Easing function for the animation (you can change this)
     },
 
     scaleShowLabels: false,
@@ -158,7 +171,7 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
         title: {
           display: true,
           text:
-            graph["x-label"].charAt(0).toUpperCase() + graph["x-label"].slice(1)
+            graph["xlabel"].charAt(0).toUpperCase() + graph["xlabel"].slice(1)
         },
         type: "linear",
         grid: {
@@ -169,11 +182,6 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
         },
         precision: 0,
         ticks: {
-          callback: function (value, index, values) {
-            // gets the value for the tick
-            return parseFloat(this.getLabelForValue(value)).toFixed(0);
-          },
-          // autoSkip: true,
           maxTicksLimit: 10,
           color: "#565B6B",
           allowRepeatingValues: false,
@@ -181,7 +189,6 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
         }
       },
       y: {
-        min: min < 0 ? min : 0,
         grid: {
           display: false
         },
@@ -210,7 +217,7 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
   };
   return (
     <div>
-      <Line plugins={plugins} data={data} options={options} height={125} />
+      <Line plugins={plugins} data={data} options={options} height={160} />{" "}
     </div>
   );
 };

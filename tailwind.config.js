@@ -22,7 +22,9 @@ module.exports = {
         "chart-purple": "#5256B8",
         "chart-red": "#EB6C64",
         "chart-blue": "#63A4E9",
-        "chart-yellow": "#F5C266"
+        "chart-yellow": "#F5C266",
+        yellow: "#faf9d7",
+        grey: "#f0f0f0"
       },
       fontSize: {
         xs: "10px",

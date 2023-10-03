@@ -14,6 +14,25 @@ const LevelAnalytics = ({ activeModuleName, organization }) => {
   const [data, setData] = useState(null);
   const [searchString, setSearchString] = useState("");
 
+  const getLevelUserInfo = levelName => {
+    trackPromise(
+      request(
+        `${apiRoutes.organization.levelUserInfo}?organization_id=${organization.id}&module_name=${activeModuleName}&level_name=${levelName}`,
+        {
+          isAuthenticated: true
+        }
+      ).then(async res => {
+        if (res.status == HTTP_STATUSES.OK) {
+          const resJson = await res.json();
+          setData(resJson);
+          setLoading(false);
+        } else {
+          setLoading(false);
+        }
+      })
+    );
+  };
+
   const getParsedData = (field, data) => {
     let value = "";
 
@@ -23,7 +42,7 @@ const LevelAnalytics = ({ activeModuleName, organization }) => {
           <div>
             <a
               onClick={() => {
-                setData(data);
+                getLevelUserInfo(data.level_name);
                 setShowUsersModal(true);
               }}
               className="group relative inline-block text-blue-500 underline hover:text-red-500 duration-300 cursor-pointer"
@@ -72,6 +91,8 @@ const LevelAnalytics = ({ activeModuleName, organization }) => {
 
           setLevelWiseData(data);
           setLoading(false);
+        } else {
+          setLoading(false);
         }
       })
     );
@@ -114,7 +135,7 @@ const LevelAnalytics = ({ activeModuleName, organization }) => {
           <div className="py-4 text-black">
             <div className="flex flex-col gap-2 max-h-[300px] min-h-[100px]">
               <div className="px-3">
-                {data["user_info"] && data["user_info"].length > 0 && (
+                {data && (
                   <input
                     type="text"
                     className="border text-md px-2 py-2 rounded font-light"
@@ -124,25 +145,23 @@ const LevelAnalytics = ({ activeModuleName, organization }) => {
                   />
                 )}
               </div>
-              {data["user_info"] && data["user_info"].length > 0 && (
+              {data && (
                 <div className="flex justify-between text-dark px-3">
                   <span className="px-1 font-bold">Name </span>
                   <span className="px-1 font-bold">Time Spent</span>
                 </div>
               )}
               <div className="overflow-scroll">
-                {data["user_info"] &&
-                data["user_info"].length > 0 &&
-                searchString.length === 0 ? (
-                  data["user_info"].map(user => {
+                {data && searchString.length === 0 ? (
+                  Object.keys(data).map(user => {
                     return (
                       <div
-                        key={user.name}
+                        key={user}
                         className="text-sm md:text-md flex justify-between text-dark px-3"
                       >
-                        <span className="px-1">{user.name} </span>
+                        <span className="px-1">{user} </span>
                         <span className="px-1">
-                          {timeConverter(user.time_spent)}
+                          {timeConverter(data[user])}
                         </span>
                       </div>
                     );
@@ -153,28 +172,25 @@ const LevelAnalytics = ({ activeModuleName, organization }) => {
                   </div>
                 )}
 
-                {data["user_info"] &&
-                data["user_info"].length > 0 &&
-                data["user_info"].filter(user =>
-                  user.name
-                    .toLowerCase()
-                    .includes(searchString.trim().toLowerCase())
+                {data &&
+                Object.keys(data).filter(user =>
+                  user.toLowerCase().includes(searchString.trim().toLowerCase())
                 ).length > 0 &&
                 searchString.length !== 0 ? (
-                  data["user_info"].map(user => {
+                  Object.keys(data).map(user => {
                     if (
-                      user.name
+                      user
                         .toLowerCase()
                         .includes(searchString.trim().toLowerCase())
                     )
                       return (
                         <div
-                          key={user.name}
-                          className="flex justify-between text-dark text-sm md:text-md"
+                          key={user}
+                          className="flex justify-between text-dark text-sm md:text-md px-3"
                         >
-                          <span className="px-1">{user.name} </span>
+                          <span className="px-1">{user} </span>
                           <span className="px-1">
-                            {secondsToDuration(user.time_spent)}
+                            {secondsToDuration(data[user])}
                           </span>
                         </div>
                       );

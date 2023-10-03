@@ -42,7 +42,7 @@ const Dropdown = ({
   return (
     <div className={`max-w-[261px] ${dropdownCss} relative`} ref={isOpenRef}>
       <button
-        className={`w-full text-sm md:text-md dropbtn flex justify-between items-center ${btnCss} text-dark `}
+        className={`w-full text-sm md:text-md dropbtn flex justify-between capitalize items-center ${btnCss} text-dark `}
         onClick={handleButtonClick}
       >
         {isSelection ? selectedValue : btnContent}
@@ -58,7 +58,7 @@ const Dropdown = ({
               <button
                 key={`menu_item_${item.id}`}
                 onClick={() => handleItemClick(item.name)}
-                className={`border-b hover:bg-[#5256B82B]  cursor-pointer text-left w-full flex ${
+                className={`border-b hover:bg-[#5256B82B] capitalize cursor-pointer text-left w-full flex ${
                   mainDropdown ? "" : "p-2"
                 }`}
               >

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Chart from "components/Chart/Chart";
 import {
   Chart as ChartJS,
@@ -16,6 +16,9 @@ import EChart from "components/Chart/EChart";
 import DeviationGraph from "./DeviationGraph";
 import { CHART_COLORS, CHART_TYPES } from "utils/constants";
 import CycleDataVisual from "./CycleDataVisual";
+import Slider from "@mui/material/Slider";
+import { styled } from "@mui/material/styles";
+
 ChartJS.register(
   RadialLinearScale,
   PointElement,
@@ -38,6 +41,10 @@ const GraphReport = ({
   cycleData
 }) => {
   const colors = ["#82E0AA", "#622F22"];
+  const [value, setValue] = useState([
+    graph.data && graph.data[0]?.x,
+    graph.data && graph.data[graph.data.length - 1]?.x
+  ]);
   let transformedDataset = [];
   const getGraph = () => {
     if (
@@ -58,17 +65,25 @@ const GraphReport = ({
         ? [
             ...graph.data.map((d, index) => {
               return {
-                label: d?.name + " user 1",
+                label: Array.isArray(graph.prefix)
+                  ? graph.prefix[index] + " User 1"
+                  : graph.prefix,
                 data: d.data,
-                backgroundColor: Object.values(CHART_COLORS)[index],
+                backgroundColor: cycleData
+                  ? colors[index]
+                  : Object.values(CHART_COLORS)[index + 2],
                 stack: getStackData()[d.name]
               };
             }),
             ...graph2.data.map((d, index) => {
               return {
-                label: d.name + " user 2",
+                label: Array.isArray(graph2.prefix)
+                  ? graph2.prefix[index] + " User 2"
+                  : graph2.prefix,
                 data: d.data,
-                backgroundColor: Object.values(CHART_COLORS)[index + 2],
+                backgroundColor: cycleData
+                  ? colors[index]
+                  : Object.values(CHART_COLORS)[index + 2],
                 stack: getStackData()[d.name]
               };
             })
@@ -119,8 +134,8 @@ const GraphReport = ({
             }
             dataset={cycleData ? transformedDataset : dataset || []}
             stacked
-            xLabel={graph["x-label"] || ""}
-            yLabel={graph["y-label"] || ""}
+            xLabel={graph["xlabel"] || ""}
+            yLabel={graph["ylabel"] || ""}
             isWinder={isWinder}
             isShovel={isShovel}
             maxValue={isShovel && graph.maxValue}
@@ -206,10 +221,15 @@ const GraphReport = ({
       //   }
       // };
 
+      const handleChange = (event, newValue) => {
+        setValue(newValue);
+      };
+
       return (
         <div className="border ">
           <div className="h-full">
-            <div className="p-1 md:p-5 text-dark text-sm md:text-md lg:text-lg">
+            <div className="p-1 md:py-4 md:pl-2 text-dark capitalize text-sm md:text-sm underline font-semibold">
+              {" "}
               {graph.name}
             </div>
 
@@ -245,149 +265,262 @@ const GraphReport = ({
                   </div>
                 </div>
               </div>
-            )} */}
+           )} */}
           </div>
           {graph?.hAxisLines ? (
             <DeviationGraph compare={compare} graph={graph} graph2={graph2} />
           ) : (
-            <Chart
-              height="500px"
-              type={CHART_TYPES.LINE}
-              series={
-                compare
-                  ? [
-                      { name: "User 1", data: graph.data },
-                      {
-                        name: "User 2",
-                        data:
-                          graph2 && graph2.data && graph2.data.length > 0
-                            ? graph2.data
-                            : []
-                      },
-                      ...getAdditionalPlots(graph, true),
-                      ...getAdditionalPlots(graph2, compare, 2)
-                    ]
-                  : [
-                      { name: "User ", data: graph.data },
-                      ...getAdditionalPlots(graph)
-                    ]
-              }
-              options={{
-                // fill:
-                //   referenceGraph !== undefined
-                //     ? {
-                //         type: "gradient",
-                //         gradient: {
-                //           shadeIntensity: 1,
-                //           opacityFrom: 0.7,
-                //           opacityTo: 0.9,
-                //           colorStops: generateColors()
-                //         }
-                //       }
-                //     : {},
-                markers: {
-                  size: compare ? [0, 0, 2, 2] : [0, 2],
-                  colors: Object.values(CHART_COLORS),
-                  strokeColors: "#000",
-                  strokeWidth: 2,
-                  strokeOpacity: 0.9,
-                  strokeDashArray: 0,
-                  fillOpacity: 1,
-                  discrete: [],
-                  shape: "circle",
-                  radius: 2,
-                  offsetX: 0,
-                  offsetY: 0,
-
-                  showNullDataPoints: true
-                },
-                legend: {
-                  show: true
-                },
-                stroke: {
-                  show: true,
-                  height: "400px",
-                  width: compare ? [2, 2, 0, 0] : [2, 0],
-                  dashArray: 0
-                },
-                xaxis: {
-                  type: "numeric",
-                  title: {
-                    text:
-                      graph.name.toLowerCase() === "speed vs time"
-                        ? "Time(seconds)"
-                        : graph["x-label"]
-                  }
-                },
-                tooltip: {
-                  enabled: true,
-                  custom: function ({ dataPointIndex, w }) {
-                    let allTooltipData = [];
-                    const getTootipData = (incomingGraph, index = 1) => {
-                      let tooltipData =
-                        incomingGraph &&
-                        `${
-                          incomingGraph["y-label"][0].toUpperCase() +
-                          incomingGraph["y-label"].slice(1)
-                        }: ${incomingGraph.data[dataPointIndex].y}`;
-                      if (
-                        incomingGraph &&
-                        incomingGraph.data &&
-                        incomingGraph.additional_data &&
-                        incomingGraph.additional_data.length > 0
-                      ) {
-                        incomingGraph.additional_data.map(d => {
-                          if (
-                            d.representation == "hovered" ||
-                            d.representation == "plotted"
-                          )
-                            tooltipData =
-                              tooltipData +
-                              ` ${d.name}: ${d.value_list[dataPointIndex]}`;
-                        });
-                      }
-                      return tooltipData;
-                    };
-
-                    allTooltipData =
-                      compare && graph2
-                        ? [getTootipData(graph), getTootipData(graph2, 2)]
-                        : [getTootipData(graph)];
-                    const tooltipStyle = `background-color: black; color: white; padding: 6px;`;
-                    let finalTooltip = `<div style="${tooltipStyle}">${
-                      compare
-                        ? "User 1: " + allTooltipData[0]
-                        : allTooltipData[0]
-                    }</div>`;
-                    if (compare && graph2) {
-                      finalTooltip =
-                        finalTooltip +
-                        `<div style="${tooltipStyle}">${
-                          "User 2: " + allTooltipData[1]
-                        }</div>`;
-                    }
-
-                    return finalTooltip;
-                  }
-                },
-
-                yaxis: {
-                  type: "numeric",
-                  title: {
-                    text:
-                      graph.name.toLowerCase() == "speed vs time"
-                        ? "Speed(km/hr)"
-                        : graph["y-label"]
-                  },
-                  labels: {
-                    formatter: function (value) {
-                      if (value) return value.toFixed(2);
-                      else return;
-                    }
-                  }
+            <div>
+              <Chart
+                height="500px"
+                type={CHART_TYPES.LINE}
+                series={
+                  compare
+                    ? [
+                        { name: "User 1", data: graph.data },
+                        {
+                          name: "User 2",
+                          data:
+                            graph2 && graph2.data && graph2.data.length > 0
+                              ? graph2.data
+                              : []
+                        },
+                        ...getAdditionalPlots(graph, true),
+                        ...getAdditionalPlots(graph2, compare, 2)
+                      ]
+                    : [
+                        { name: "User ", data: graph.data },
+                        ...getAdditionalPlots(graph)
+                      ]
                 }
-              }}
-            />
+                options={{
+                  // fill:
+                  //   referenceGraph !== undefined
+                  //     ? {
+                  //         type: "gradient",
+                  //         gradient: {
+                  //           shadeIntensity: 1,
+                  //           opacityFrom: 0.7,
+                  //           opacityTo: 0.9,
+                  //           colorStops: generateColors()
+                  //         }
+                  //       }
+                  //     : {},
+                  chart: {
+                    background: "#f4f4f4",
+                    animations: {
+                      enabled: true,
+                      easing: "easeinout",
+                      speed: 1000,
+                      animateGradually: {
+                        enabled: true,
+                        delay: 300
+                      },
+                      dynamicAnimation: {
+                        enabled: true,
+                        speed: 500
+                      }
+                    },
+                    zoom: {
+                      enabled: true,
+                      type: "x",
+                      autoScaleYaxis: false,
+                      zoomedArea: {
+                        fill: {
+                          color: "#90CAF9",
+                          opacity: 0.4
+                        },
+                        stroke: {
+                          color: "#0D47A1",
+                          opacity: 0.4,
+                          width: 1
+                        }
+                      }
+                    },
+                    toolbar: {
+                      show: true,
+                      offsetY: -35, // Adjust the Y offset (vertical positioning)
+                      tools: {
+                        download: true,
+                        selection: true,
+                        zoom: true,
+                        zoomin: true,
+                        zoomout: true,
+                        pan: true,
+                        reset: true,
+                        customIcons: []
+                      },
+                      autoSelected: "zoom"
+                    }
+                  },
+                  markers: {
+                    size: compare ? [0, 0, 2, 2] : [0, 2],
+                    colors: Object.values(CHART_COLORS),
+                    strokeColors: "#000",
+                    strokeWidth: 2,
+                    strokeOpacity: 0.9,
+                    strokeDashArray: 0,
+                    fillOpacity: 1,
+                    discrete: [],
+                    shape: "circle",
+                    radius: 2,
+                    offsetX: 0,
+                    offsetY: 0,
+
+                    showNullDataPoints: true
+                  },
+                  legend: {
+                    show: true,
+                    fontSize: "16px",
+                    fontFamily: "Helvetica, Arial"
+                  },
+                  stroke: {
+                    show: true,
+                    curve: "smooth",
+                    lineCap: "round",
+                    width: compare ? [2, 2, 0, 0] : [2, 0],
+                    dashArray: 0
+                  },
+                  xaxis: {
+                    type: "numeric",
+                    title: {
+                      text:
+                        graph.name.toLowerCase() === "speed vs time"
+                          ? "Time(seconds)"
+                          : graph["xlabel"].charAt(0).toUpperCase() +
+                            graph["xlabel"].slice(1),
+                      style: {
+                        fontSize: "16px",
+                        fontFamily: "Helvetica, Arial"
+                      }
+                    },
+                    labels: {
+                      style: {
+                        fontSize: "14px",
+                        fontFamily: "Helvetica, Arial"
+                      }
+                    },
+                    min: value[0],
+                    max: value[1]
+                  },
+                  tooltip: {
+                    enabled: true,
+                    style: {
+                      fontSize: "14px",
+                      fontFamily: "Helvetica, Arial"
+                    },
+                    custom: function ({ dataPointIndex, w }) {
+                      let allTooltipData = [];
+                      const getTootipData = (incomingGraph, index = 1) => {
+                        let tooltipData =
+                          incomingGraph &&
+                          `${
+                            incomingGraph["ylabel"][0].toUpperCase() +
+                            incomingGraph["ylabel"].slice(1)
+                          }: ${incomingGraph.data[dataPointIndex].y}`;
+                        if (
+                          incomingGraph &&
+                          incomingGraph.data &&
+                          incomingGraph.additional_data &&
+                          incomingGraph.additional_data.length > 0
+                        ) {
+                          incomingGraph.additional_data.map(d => {
+                            if (
+                              d.representation == "hovered" ||
+                              d.representation == "plotted"
+                            )
+                              tooltipData =
+                                tooltipData +
+                                ` ${d.name}: ${d.value_list[dataPointIndex]}`;
+                          });
+                        }
+                        return tooltipData;
+                      };
+
+                      allTooltipData =
+                        compare && graph2
+                          ? [getTootipData(graph), getTootipData(graph2, 2)]
+                          : [getTootipData(graph)];
+                      const tooltipStyle = `background-color: black; color: white; padding: 6px;`;
+                      let finalTooltip = `<div style="${tooltipStyle}">${
+                        compare
+                          ? "User 1: " + allTooltipData[0]
+                          : allTooltipData[0]
+                      }</div>`;
+                      if (compare && graph2) {
+                        finalTooltip =
+                          finalTooltip +
+                          `<div style="${tooltipStyle}">${
+                            "User 2: " + allTooltipData[1]
+                          }</div>`;
+                      }
+
+                      return finalTooltip;
+                    }
+                  },
+
+                  yaxis: {
+                    type: "numeric",
+                    title: {
+                      text:
+                        graph.name.toLowerCase() === "speed vs time"
+                          ? "Speed(km/hr)"
+                          : graph["ylabel"].charAt(0).toUpperCase() +
+                            graph["ylabel"].slice(1),
+                      style: {
+                        fontSize: "16px",
+                        fontFamily: "Helvetica, Arial"
+                      }
+                    },
+                    labels: {
+                      formatter: function (value) {
+                        if (value) return value.toFixed(2);
+                        else return;
+                      },
+                      style: {
+                        fontSize: "14px",
+                        fontFamily: "Helvetica, Arial"
+                      }
+                    }
+                  },
+                  grid: {
+                    borderColor: "#e0e0e0",
+                    row: {
+                      colors: ["#f9f9f9", "transparent"]
+                    }
+                  }
+                }}
+              />
+              <Slider
+                className="scale-75 md:ml-12"
+                getAriaLabel={() => "Range slider"}
+                value={value}
+                onChange={handleChange}
+                valueLabelDisplay="on" // Changed from "auto" to "on" to always display the value labels
+                min={graph.data[0].x}
+                max={graph.data[graph.data.length - 1].x}
+                sx={{
+                  color: "#3f854f",
+                  height: 3,
+                  "& .MuiSlider-thumb": {
+                    height: 27,
+                    width: 10,
+                    backgroundColor: "#fff",
+                    border: "1px solid currentColor",
+                    borderRadius: 0, // Set borderRadius to 0 to make the thumb rectangular
+                    "&:hover": {
+                      boxShadow: "0 0 0 8px rgba(58, 133, 137, 0.16)"
+                    }
+                  },
+                  "& .MuiSlider-track": {
+                    height: 2
+                  },
+                  "& .MuiSlider-rail": {
+                    height: 3
+                  }
+                }}
+              />
+            </div>
           )}
         </div>
       );
@@ -421,7 +554,7 @@ const GraphReport = ({
                   show: true
                 },
                 title: {
-                  text: graph["x-label"]
+                  text: graph["xlabel"]
                 }
               },
               yaxis: {
@@ -440,7 +573,7 @@ const GraphReport = ({
     ) {
       return (
         <div key={index} className="border w-full h-full">
-          <div className="p-5 text-dark text-sm md:text-md lg:text-lg">
+          <div style={{ backgroundColor: 'rgb(219 234 254)' }} className="p-5 text-dark text-sm md:text-md lg:text-lg">
             {graph.name}
           </div>
           <div className="flex justify-center h-[430px] w-full py-3">
@@ -470,6 +603,7 @@ const GraphReport = ({
                     return result;
                   }
                 },
+                backgroundColor: "#FFFFFF", // Set background color for the chart
                 legend: {
                   show: false
                 },
@@ -544,7 +678,7 @@ const GraphReport = ({
                   : [
                       {
                         type: "pie",
-                        radius: ["70%", "90%"],
+                        radius: ["50%", "70%"],
                         color:
                           pieColor && graph.data.length === 1
                             ? pieColor
@@ -559,12 +693,14 @@ const GraphReport = ({
                                     name: graph.labels[index]
                                   };
                                 })
-                            : graph.data.map((item, index) => {
-                                return {
-                                  value: parseFloat(item),
-                                  name: graph.labels[index]
-                                };
-                              }),
+                            : graph.data
+                                .map((item, index) => {
+                                  return {
+                                    value: parseFloat(item),
+                                    name: graph.labels[index]
+                                  };
+                                })
+                                .filter(item => item.value > 0),
                         emphasis: {
                           itemStyle: {
                             shadowBlur: 10,

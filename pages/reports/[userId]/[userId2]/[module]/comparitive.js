@@ -103,7 +103,7 @@ export const Compartitive = ({ userIds, module }) => {
           height={20}
           width={20}
         />
-        <div className="pl-1">Generating Report</div>
+        <div className="pl-1 text-black">Generating Report</div>
       </div>
     );
   }

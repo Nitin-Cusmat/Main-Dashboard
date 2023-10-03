@@ -165,6 +165,12 @@ textarea {
 .overflow-auto {
   scrollbar-width: none;
 }
-table th, td{
+table th,
+td {
   min-width: 100px;
+}
+
+.apexcharts_tooltip {
+  white-space: pre-wrap !important;
+  max-width: 300px;
 }
