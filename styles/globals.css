@@ -170,7 +170,7 @@ td {
   min-width: 100px;
 }
 
-.apexcharts-tooltip {
+.apexcharts_tooltip {
   white-space: pre-wrap !important;
   max-width: 300px;
 }

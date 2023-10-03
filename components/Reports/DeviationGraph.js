@@ -149,8 +149,20 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
     },
     elements: {
       point: {
-        radius: 0
+        
+    radius: 6, // Set the marker radius to your desired size
+    backgroundColor: "#a7b0f2", // Marker fill color
+    borderWidth:1, // Marker border width
+    borderColor: "white", // Marker border color
+    hoverRadius: 8, // Marker radius on hover
+    hoverBackgroundColor: "red", // Marker fill color on hover
+    hoverBorderWidth:1, // Marker border width on hover
+    hoverBorderColor: "white", // Marker border color on hover
       }
+    },
+    animation: {
+      duration: 10000, // Animation duration in milliseconds
+      easing: "easeInOutQuad", // Easing function for the animation (you can change this)
     },
 
     scaleShowLabels: false,
@@ -159,7 +171,7 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
         title: {
           display: true,
           text:
-            graph["x-label"].charAt(0).toUpperCase() + graph["x-label"].slice(1)
+            graph["xlabel"].charAt(0).toUpperCase() + graph["xlabel"].slice(1)
         },
         type: "linear",
         grid: {

@@ -193,12 +193,12 @@ const Dashboard = () => {
             <BoxData
               classnames="md:pr-2"
               heading={"Completion rate"}
-              value={data.successful_completion_rate}
+              value={data.completion_rate}
               footerFlex={true}
               footer={
                 <PercentChangeLabel
-                  value={data.successful_completion_rate_comparision}
-                  isPositive={data.successful_completion_rate_comparision >= 0}
+                  value={data.completion_rate_comparison}
+                  isPositive={data.completion_rate_comparison >= 0}
                   msg="since last month"
                 />
               }
@@ -207,9 +207,7 @@ const Dashboard = () => {
               <div className="absolute right-0">
                 <Chart
                   type={CHART_TYPES.RADIAL}
-                  series={[
-                    Math.round(data.successful_completion_rate_graph * 100)
-                  ]}
+                  series={[data.completion_rate_chart]}
                   options={options}
                   width={150}
                   height={150}
@@ -219,12 +217,12 @@ const Dashboard = () => {
             <BoxData
               classnames="md:pl-2 xl:pr-2"
               heading={" Performance trends - Monthly"}
-              value={data.overall_monthly_performance}
+              value={data.current_month_performance_trends}
               size={boxsize}
               footer={
                 <PercentChangeLabel
-                  value={data.overall_monthly_comparision + "%"}
-                  isPositive={data.overall_monthly_comparision >= 0}
+                  value={data.performance_comparison + "%"}
+                  isPositive={data.performance_comparison >= 0}
                   msg="since last month"
                 />
               }
@@ -265,7 +263,7 @@ const Dashboard = () => {
               ]}
               key="User ID"
               rows={userData}
-              // size="max-h-[500px]"
+            // size="max-h-[500px]"
             />
           </Disclosure>
           <div className="h-[50px]" />

@@ -27,7 +27,9 @@ const CustomTable = ({
   rowsPerPageProp = 6,
   rowCount = 0,
   searchFilter = "",
-  columnsWidth = null
+  columnsWidth = null,
+  colorField = "time_difference_color",
+
 }) => {
   const router = useRouter();
   const [activePage, setActivePage] = useState(activePageProp);
@@ -51,6 +53,7 @@ const CustomTable = ({
     updatePaginationInfo(activePage, rowsPerPage);
     setCount(rowCount ? rowCount : 0);
   }, [activePage, rowsPerPage, rowCount]);
+  
 
   return (
     <div className="w-full">
@@ -87,7 +90,7 @@ const CustomTable = ({
                     style={{
                       width: columnsWidth ? columnsWidth[index] : ""
                     }}
-                    className={`bg-white text-dark font-medium text-sm md:text-md capitalize text-left`}
+                    className={`bg-blue-100 text-dark font-medium text-sm md:text-md capitalize text-left`}
                   >
                     {heading == "showEmpty" ? (
                       ""
@@ -113,10 +116,12 @@ const CustomTable = ({
                     return (
                       <tr
                         key={`${row[table_key]}_${index}`}
-                        className="even:bg-[#fafafa] odd:bg-[#f6f4f8]"
+                        className="even:bg-[#fafafa] odd:bg-[#f6f4f8] hover:bg-yellow"
                       >
                         {showSelect && (
                           <td
+
+                          
                             style={{
                               width: columnsWidth ? columnsWidth[index] : ""
                             }}
@@ -148,11 +153,10 @@ const CustomTable = ({
                         {columns.map((col, index) => {
                           return (
                             <td
-                              key={`${row[col]}_${index}`}
-                              className={`text-sm md:text-md  p-3 ${valueCss} ${
-                                row[col] === "-" ? "text-white" : "text-dark"
-                              }`}
-                            >
+                            key={`${row[col]}_${index}`}
+                            style={col === "time_difference" && row[colorField] ? {color: row[colorField]} : {}}
+                            className={`text-sm md:text-md  p-3 ${valueCss} ${row[col] === "-" ? "text-white" : "text-dark"}`}
+                          >
                               {col === "users_completed" && (
                                 <div className="flex items-center">
                                   <BsDot size={40} color={"#006400"} />
@@ -287,7 +291,9 @@ CustomTable.propTypes = {
   showViewReportBtn: PropTypes.bool,
   size: PropTypes.string,
   valueCss: PropTypes.string,
-  key: PropTypes.string
+  key: PropTypes.string,
+  colorField: PropTypes.string
+
 };
 
 CustomTable.defaultProps = {
@@ -298,7 +304,9 @@ CustomTable.defaultProps = {
   showViewReportBtn: false,
   size: "",
   valueCss: "text-left",
-  key: ""
+  key: "",
+  colorField: "time_difference_color"
+
 };
 
 export default CustomTable;

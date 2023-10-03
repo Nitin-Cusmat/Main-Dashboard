@@ -134,8 +134,8 @@ const GraphReport = ({
             }
             dataset={cycleData ? transformedDataset : dataset || []}
             stacked
-            xLabel={graph["x-label"] || ""}
-            yLabel={graph["y-label"] || ""}
+            xLabel={graph["xlabel"] || ""}
+            yLabel={graph["ylabel"] || ""}
             isWinder={isWinder}
             isShovel={isShovel}
             maxValue={isShovel && graph.maxValue}
@@ -387,8 +387,8 @@ const GraphReport = ({
                       text:
                         graph.name.toLowerCase() === "speed vs time"
                           ? "Time(seconds)"
-                          : graph["x-label"].charAt(0).toUpperCase() +
-                            graph["x-label"].slice(1),
+                          : graph["xlabel"].charAt(0).toUpperCase() +
+                            graph["xlabel"].slice(1),
                       style: {
                         fontSize: "16px",
                         fontFamily: "Helvetica, Arial"
@@ -415,8 +415,8 @@ const GraphReport = ({
                         let tooltipData =
                           incomingGraph &&
                           `${
-                            incomingGraph["y-label"][0].toUpperCase() +
-                            incomingGraph["y-label"].slice(1)
+                            incomingGraph["ylabel"][0].toUpperCase() +
+                            incomingGraph["ylabel"].slice(1)
                           }: ${incomingGraph.data[dataPointIndex].y}`;
                         if (
                           incomingGraph &&
@@ -465,8 +465,8 @@ const GraphReport = ({
                       text:
                         graph.name.toLowerCase() === "speed vs time"
                           ? "Speed(km/hr)"
-                          : graph["y-label"].charAt(0).toUpperCase() +
-                            graph["y-label"].slice(1),
+                          : graph["ylabel"].charAt(0).toUpperCase() +
+                            graph["ylabel"].slice(1),
                       style: {
                         fontSize: "16px",
                         fontFamily: "Helvetica, Arial"
@@ -554,7 +554,7 @@ const GraphReport = ({
                   show: true
                 },
                 title: {
-                  text: graph["x-label"]
+                  text: graph["xlabel"]
                 }
               },
               yaxis: {
@@ -573,7 +573,7 @@ const GraphReport = ({
     ) {
       return (
         <div key={index} className="border w-full h-full">
-          <div className="p-5 text-dark text-sm md:text-md lg:text-lg">
+          <div style={{ backgroundColor: 'rgb(219 234 254)' }} className="p-5 text-dark text-sm md:text-md lg:text-lg">
             {graph.name}
           </div>
           <div className="flex justify-center h-[430px] w-full py-3">
@@ -603,6 +603,7 @@ const GraphReport = ({
                     return result;
                   }
                 },
+                backgroundColor: "#FFFFFF", // Set background color for the chart
                 legend: {
                   show: false
                 },
