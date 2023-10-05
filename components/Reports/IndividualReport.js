@@ -605,7 +605,7 @@ const IndividualReport = ({
                                   : "md:w-1/2"
                                 : "lg:w-full"
                               : ""
-                          }${deviationGraph && "xl:w-1/2 pl-2"}`}
+                          }${deviationGraph ? "xl:w-1/2 pl-2" : ""}`}
                         >
                           <GraphReport
                             graph={graph}
