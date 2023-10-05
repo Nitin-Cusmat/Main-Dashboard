@@ -339,7 +339,7 @@ const GraphReport = ({
                     },
                     toolbar: {
                       show: true,
-                      offsetY: -35, // Adjust the Y offset (vertical positioning)
+                      offsetX: -300, // Adjust the Y offset (vertical positioning)
                       tools: {
                         download: true,
                         selection: true,
@@ -573,7 +573,10 @@ const GraphReport = ({
     ) {
       return (
         <div key={index} className="border w-full h-full">
-          <div style={{ backgroundColor: 'rgb(219 234 254)' }} className="p-5 text-dark text-sm md:text-md lg:text-lg">
+          <div
+            style={{ backgroundColor: "rgb(219 234 254)" }}
+            className="p-5 text-dark text-sm md:text-md lg:text-lg"
+          >
             {graph.name}
           </div>
           <div className="flex justify-center h-[430px] w-full py-3">
