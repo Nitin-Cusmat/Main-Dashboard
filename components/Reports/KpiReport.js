@@ -50,19 +50,20 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
     let rKpis = [];
     kpis1.forEach((kpi, index) => {
       const idealTimeNumerical = extractNumericalValue(kpi.ideal_time);
-      const user1Value = extractNumericalValue(kpi.value);
-      const timeDifference = idealTimeNumerical - user1Value;
+  const user1Value = extractNumericalValue(kpi.value);
+  let timeDifferenceFormatted, timeDifferenceColor;
 
-      let timeDifferenceFormatted, timeDifferenceColor;
+  if (kpi.ideal_time !== undefined) {
+    const timeDifference = user1Value - idealTimeNumerical;
 
-      if (kpi.ideal_time !== undefined) {
-          const timeDifference = user1Value - idealTimeNumerical;
-
-          timeDifferenceColor = timeDifference > 0 ? 'red' : 'green';
-          const timeDifferenceFormattedSign = timeDifference > 0 ? "+" : "-"; 
-          timeDifferenceFormatted = 
-              timeDifferenceFormattedSign + getFormattedTime(Math.abs(timeDifference));
-      }
+    if (timeDifference > 0) {
+      timeDifferenceColor = 'red';
+      timeDifferenceFormatted = "+" + getFormattedTime(timeDifference);
+    } else {
+      timeDifferenceColor = 'green';
+      timeDifferenceFormatted = getFormattedTime(timeDifference);
+    }
+  }
 
 
 
@@ -106,7 +107,7 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
                       getFormattedTime(kpis2[index].value) +
                       " " +
                       (kpis2[index].unit ? " " + kpis2[index].unit : ""),
-                      time_difference_user1: timeDifferenceFormatted, // Added this field
+                      time_difference_user1: timeDifferenceFormatted,
                       time_difference_color_user1: timeDifferenceColor,
                       time_difference_user2: formattedTimeDifference2 // Added this field
       
@@ -143,15 +144,14 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
                       kpis2[index]?.value !== undefined ? kpis2[index].value : 0
                     )}`,
                     ideal_time: kpi?.ideal_time,
-                    time_difference: timeDifference,
+                    time_difference: timeDifferenceFormatted,
                     time_difference_color: timeDifferenceColor,
-
                   }
                 : {
                     ...kpi,
                     ideal_time: kpi?.ideal_time,
                     "Time taken by user": `${getFormattedTime(kpi.value)}`,
-                    time_difference: formattedTimeDifference,
+                    time_difference: timeDifferenceFormatted,
                     time_difference_color: timeDifferenceColor,
 
                   }
