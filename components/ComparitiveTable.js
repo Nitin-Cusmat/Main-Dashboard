@@ -70,8 +70,9 @@ const ComparativeTable = ({
                       <MdCancel size="20" color="red" />
                     )
                   ) : (
-                    row[col].toString()
-                  )
+                    typeof row[col] === 'object' && row[col].value ? 
+                    <div style={row[col].style}>{row[col].value}</div> : 
+                    row[col].toString()                  )
                 ) : (
                   ""
                 )}
@@ -95,8 +96,9 @@ const ComparativeTable = ({
                           <MdCancel size="20" color="red" />
                         )
                       ) : (
-                        rows2[rowIndex][col].toString()
-                      ))}
+                        typeof rows2[rowIndex][col] === 'object' && rows2[rowIndex][col].value ?
+                        <div style={rows2[rowIndex][col].style}>{rows2[rowIndex][col].value}</div> :
+                        rows2[rowIndex][col].toString()                      ))}
                   </td>
                 )}
             </>
