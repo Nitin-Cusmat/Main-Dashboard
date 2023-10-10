@@ -55,7 +55,6 @@ const ComparitiveAttemptReport = ({
   while (areasOfImprovement2.length < maxLength) {
     areasOfImprovement2.push({ [`Areas of Improvement for User 2`]: "-" });
   }
-
   const getPairPaths = (attemptData, attemptData2) => {
     const paths1 = Object.keys(attemptData.path.actual_path).filter(
       path => path != "path-1"
@@ -64,7 +63,13 @@ const ComparitiveAttemptReport = ({
       path => path != "path-1"
     );
     const maxLength = Math.max(paths1.length, paths2.length);
-    let obstacles = attemptData.obstacles;
+    let obstaclesArray = Array.isArray(attemptData.obstacles)
+      ? attemptData.obstacles
+      : [attemptData.obstacles];
+    obstaclesArray =
+      obstaclesArray &&
+      obstaclesArray.filter(obstacle => obstacle && obstacle.paths);
+
     const mergedPaths = [];
     const isReachTruck =
       router.query.module &&
@@ -73,8 +78,8 @@ const ComparitiveAttemptReport = ({
       router.query.module &&
       router.query.module.toLocaleLowerCase() === "forklift";
 
-    let axisLines = attemptData.hAxisLines ? attemptData.hAxisLines : null;
-    let vAxisLines = attemptData.vAxisLines ? attemptData.vAxisLines : null;
+    let axisLines = attemptData.hAxisLines || null;
+    let vAxisLines = attemptData.vAxisLines || null;
     let extraPlots = [];
 
     const addToExtraPlots = (d, isPickup = true) => {
@@ -85,6 +90,7 @@ const ComparitiveAttemptReport = ({
         pickup: isPickup
       });
     };
+
     [attemptData.boxPickupData, attemptData2.boxPickupData].forEach(
       boxPickupData => {
         if (boxPickupData) {
@@ -94,6 +100,7 @@ const ComparitiveAttemptReport = ({
         }
       }
     );
+
     [attemptData.boxKeptData, attemptData2.boxKeptData].forEach(boxDropData => {
       if (boxDropData) {
         boxDropData.forEach(d => {
@@ -102,7 +109,12 @@ const ComparitiveAttemptReport = ({
       }
     });
 
-    let sendObstacles = false;
+    const getPathObstacles = pathNames => {
+      const relevantObstacles = obstaclesArray.filter(obstacle =>
+        obstacle.paths.some(path => pathNames.includes(path))
+      );
+      return relevantObstacles.flatMap(obstacle => obstacle.coordinates);
+    };
 
     if (isReachTruck) {
       const extraPlotPoits = extraPlots.filter(p =>
@@ -145,25 +157,13 @@ const ComparitiveAttemptReport = ({
     let pathCount = 1;
     sendObstacles = false;
     for (let i = isReachTruck ? 1 : 0; i < maxLength; i += 2) {
-      pathCount += 1;
-      actual1 = attemptData.path.actual_path[paths1[i]];
-      actual2 =
-        i == paths1.length - 1
-          ? []
-          : attemptData.path.actual_path[paths1[i + 1]];
-      ideal1 = attemptData.path.ideal_path[paths1[i]];
-      ideal2 =
-        i == paths1.length - 1 ||
-        attemptData.path.ideal_path[paths1[i + 1]] === undefined
-          ? []
-          : attemptData.path.ideal_path[paths1[i + 1]];
-
-      let pathNames =
+      let pathNames1 =
         i == paths1.length - 1 ? [paths1[i]] : [paths1[i], paths1[i + 1]];
-      let extraPlotPoits = extraPlots.filter(p => pathNames.includes(p.path));
-      if (obstacles) {
-        sendObstacles = obstacles.paths.some(path => paths1.includes(path));
-      }
+      let pathNames2 =
+        i == paths2.length - 1 ? [paths2[i]] : [paths2[i], paths2[i + 1]];
+
+      let currentObstacles1 = getPathObstacles(pathNames1);
+      let currentObstacles2 = getPathObstacles(pathNames2);
       mergedPaths.push(
         <IdealActualPath
           ideal={
@@ -197,7 +197,7 @@ const ComparitiveAttemptReport = ({
           isReachTruck={isReachTruck}
           axisLines={axisLines}
           vAxisLines={vAxisLines}
-          obstacles={sendObstacles ? obstacles.coordinates : null}
+          obstacles={currentObstacles1.length ? currentObstacles1 : null}
           extraPlots={extraPlotPoits}
           isForkLift={isForkLift}
         />
@@ -250,7 +250,7 @@ const ComparitiveAttemptReport = ({
           axisLines={axisLines}
           vAxisLines={vAxisLines}
           extraPlots={extraPlotPoits}
-          obstacles={sendObstacles ? obstacles.coordinates : null}
+          obstacles={currentObstacles1.length ? currentObstacles2 : null}
           isForkLift={isForkLift}
         />
       );

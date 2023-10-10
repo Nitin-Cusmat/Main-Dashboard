@@ -179,14 +179,16 @@ const IndividualReport = ({
       path => path != "path-1"
     );
 
-    let obstacles = attemptData.obstacles;
+    let obstaclesArray = Array.isArray(attemptData.obstacles)
+      ? attemptData.obstacles
+      : [attemptData.obstacles];
+
     const mergedPaths = [];
 
     let axisLines = attemptData.hAxisLines ? attemptData.hAxisLines : null;
-
     let vAxisLines = attemptData.vAxisLines ? attemptData.vAxisLines : null;
-
     let extraPlots = [];
+
     if (attemptData.boxPickupData) {
       attemptData.boxPickupData.forEach((d, index) => {
         extraPlots.push({
@@ -198,6 +200,7 @@ const IndividualReport = ({
         });
       });
     }
+
     if (attemptData.boxKeptData) {
       attemptData.boxKeptData.forEach((d, index) => {
         extraPlots.push({
@@ -209,7 +212,20 @@ const IndividualReport = ({
         });
       });
     }
-    let sendObstacles = false;
+    const getObstaclesForPath = pathNames => {
+      if (!obstaclesArray || obstaclesArray.length === 0) {
+        return [];
+      }
+
+      return obstaclesArray
+        .filter(
+          obstacle =>
+            obstacle &&
+            obstacle.paths &&
+            obstacle.paths.some(path => pathNames.includes(path))
+        )
+        .flatMap(obstacle => obstacle.coordinates);
+    };
 
     if (isReachTruck) {
       const actual = attemptData.path.actual_path[paths[0]];
@@ -217,9 +233,7 @@ const IndividualReport = ({
       const extraPlotPoits = extraPlots.filter(p =>
         [paths[0]].includes(p.path)
       );
-      if (obstacles) {
-        sendObstacles = obstacles.paths.some(path => [paths[0]].includes(path));
-      }
+      const obstacleCoords = getObstaclesForPath([paths[0]]);
 
       mergedPaths.push(
         <IdealActualPath
@@ -235,16 +249,15 @@ const IndividualReport = ({
           }
           axisLines={axisLines}
           vAxisLines={vAxisLines}
-          obstacles={sendObstacles ? obstacles.coordinates : null}
+          obstacles={obstacleCoords.length > 0 ? obstacleCoords : null}
           extraPlots={extraPlotPoits}
           isReachTruck={isReachTruck}
           isForkLift={isForkLift}
         />
       );
     }
-    let pathCount = 1;
-    sendObstacles = false;
 
+    let pathCount = 1;
     for (let i = isReachTruck ? 1 : 0; i < paths.length; i += 2) {
       pathCount += 1;
       const actual1 = attemptData.path.actual_path[paths[i]];
@@ -260,28 +273,12 @@ const IndividualReport = ({
       const pathNames =
         i == paths.length - 1 ? [paths[i]] : [paths[i], paths[i + 1]];
       const extraPlotPoits = extraPlots.filter(p => pathNames.includes(p.path));
-      if (obstacles) {
-        sendObstacles = obstacles.paths.some(path => pathNames.includes(path));
-      }
+      const obstacleCoords = getObstaclesForPath(pathNames);
 
       mergedPaths.push(
         <IdealActualPath
-          extraPlots={extraPlotPoits}
-          isReachTruck={isReachTruck}
-          isForkLift={isForkLift}
-          axisLines={axisLines}
-          vAxisLines={vAxisLines}
-          obstacles={sendObstacles ? obstacles.coordinates : null}
-          key={`path_index${i}`}
           ideal={ideal2 ? [...ideal1, ...ideal2] : [...ideal1]}
           actual={[...actual1, ...actual2]}
-          titleSuffix={
-            extraPlotPoits && extraPlotPoits.length > 0
-              ? pathCount % 2 !== 0
-                ? "for Pickup"
-                : "for Droping"
-              : ""
-          }
           title={
             isReachTruck
               ? extraPlotPoits && extraPlotPoits.length > 0
@@ -291,9 +288,17 @@ const IndividualReport = ({
               ? paths[i]
               : paths[i] + ", " + paths[i + 1]
           }
+          titleSuffix={pathCount % 2 !== 0 ? "for Pickup" : "for Dropping"}
+          axisLines={axisLines}
+          vAxisLines={vAxisLines}
+          obstacles={obstacleCoords.length > 0 ? obstacleCoords : null}
+          extraPlots={extraPlotPoits}
+          isReachTruck={isReachTruck}
+          isForkLift={isForkLift}
         />
       );
     }
+
     return mergedPaths;
   };
 
