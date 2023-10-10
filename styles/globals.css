@@ -174,3 +174,37 @@ td {
   white-space: pre-wrap !important;
   max-width: 300px;
 }
+
+/* Base state of the row */
+.table-row-hover {
+  transition: transform 0.4s; /* Smooth transition */
+}
+
+/* Hover state of the row */
+.table-row-hover:hover {
+  transform: scale(1.05); /* Zoom in a bit */
+  height: auto; /* Adjust height as per content */
+}
+
+/* Add padding and optional overflow to the cells */
+.table-row-hover:hover td {
+  padding: 28px; /* Adjust as needed */
+  overflow: hidden; /* Optional: clip the overflowing content */
+}
+
+.fade-effect td {
+  transition: opacity 0.3s;
+  opacity: 0.7;  /* Adjust as needed */
+}
+.fade-effect:hover td {
+  opacity: 1;
+}
+
+.slide-effect td {
+  overflow: hidden; /* Hide overflow content */
+  transition: transform 0.3s;
+  transform: translateX(-5px); /* Adjust the initial position as needed */
+}
+.slide-effect:hover td {
+  transform: translateX(0px);
+}

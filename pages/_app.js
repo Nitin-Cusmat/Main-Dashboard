@@ -1,4 +1,6 @@
 import "../styles/globals.css";
+import "styles/mistakes.css";
+
 import { RecoilRoot } from "recoil";
 import InitState from "components/InitState";
 import { LoginProvider } from "hooks/useLogin";

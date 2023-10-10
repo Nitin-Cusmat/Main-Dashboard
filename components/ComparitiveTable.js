@@ -202,12 +202,12 @@ const ComparativeTable = ({
               </>
             ))}
           {/* records */}
+         
           {rows &&
             rows.length > 0 &&
             rows.map((row, rowIndex) => getRecords(row, rowIndex, rows.length))}
           {remainingRows &&
             remainingRows.map((row, rowIndex) => getRecords(row, rowIndex))}
-
           {!rows ||
             (rows.length < 1 && (
               <tr>

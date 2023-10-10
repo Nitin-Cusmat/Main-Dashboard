@@ -202,31 +202,35 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
       <div className="">
         <div className="flex flex-col md:flex-row gap-4">
           {booleanKpis && booleanKpis.length > 0 && (
+
             <CustomTable
               columns={
                 compare && kpis2
                   ? ["name", "value user1", "value user2"]
                   : ["name", "value"]
               }
-              rows={booleanKpis}
+              rows={booleanKpis.map(row => ({ ...row, className: "table-row-hover" }))}
               columnsma
             />
+
           )}
           {stringKpis && stringKpis.length > 0 && (
+
             <CustomTable
               columns={
                 compare && kpis2
                   ? ["name", "value user1", "value user2"]
                   : ["name", "value"]
               }
-              rows={stringKpis}
-            />
+              rows={stringKpis.map(row => ({ ...row, className: "table-row-hover" }))}
+              />
           )}
         </div>
 
         <div className="w-full flex flex-col gap-4">
           {/* Decimal valued kpis */}
           {decimalKpis.length > 0 && (
+
             <div>
               <CustomTable
                 columns={
@@ -234,20 +238,22 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
                     ? ["name", "value user1", "value user2", hasIdealTime ? "time_difference" : null, hasIdealTime ? "ideal_time" : null, hasSpeed ? "speed" : null].filter(Boolean)
                     : ["name", "Time taken by user", hasIdealTime ? "time_difference" : null, hasIdealTime ? "ideal_time" : null, hasSpeed ? "speed" : null].filter(Boolean)
                 }
-                rows={decimalKpis}
+                rows={decimalKpis.map(row => ({ ...row, className: "table-row-hover" }))}
                 colorField="time_difference_color" // Pass the color field to CustomTable
 
               />
-            </div>
+              </div>
           )}
           {rangeKpis.length > 0 && (
+
+
             <CustomTable
             columns={
               compare && kpis2
                 ? ["name", "Time taken by user 1", "Time taken by user 2", hasIdealTime ? "time_difference_user1" : null, hasIdealTime ? "time_difference_user2" : null, hasIdealTime ? "Ideal time" : null, hasSpeed ? "speed" : null].filter(Boolean)
                 : ["name", "Time taken by user", hasIdealTime ? "time_difference" : null, hasIdealTime ? "Ideal time" : null, hasSpeed ? "speed" : null].filter(Boolean)
             }
-            rows={rangeKpis}
+            rows={rangeKpis.map(row => ({ ...row, className: "table-row-hover" }))}
             />
           )}
         </div>
