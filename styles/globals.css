@@ -46,6 +46,22 @@
   --card-border-rgb: 131, 134, 135;
 }
 
+@keyframes colorChange {
+  0% {
+    color: #000000;  /* Start Color */
+  }
+  50% {
+    color: #ffffff;  /* Mid Color */
+  }
+  100% {
+    color: #000000;  /* End Color */
+  }
+}
+
+.text-2xl {
+  animation: colorChange 3s infinite;  /* Animation will last for 3 seconds and will repeat indefinitely */
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
@@ -201,10 +217,38 @@ td {
 }
 
 .slide-effect td {
-  overflow: hidden; /* Hide overflow content */
   transition: transform 0.3s;
   transform: translateX(-5px); /* Adjust the initial position as needed */
 }
 .slide-effect:hover td {
   transform: translateX(0px);
+}
+
+.mistakes-section {
+  padding: 20px;
+  border: 3px dotted #C11B1B; /* Dotted red border */
+
+  background-color: #464443; /* The red color from the image */
+  border-radius: 10px; /* Rounded corners */
+  color: white; /* Text color */
+  max-width: 300px; /* Adjust to your needs */
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1); /* A subtle shadow */
+}
+
+.mistakes-title {
+  font-size: 15px; 
+  margin-bottom: 15px;
+  font-weight: bold; 
+  color: #CD1919; /* Red color for the heading */
+}
+
+.mistakes-list {
+  list-style-type: disc; /* Bullet points */
+  padding-left: 20px; /* Indentation for the list */
+  font-size: 14px; /* Reduced font size for the list */
+
+}
+
+.mistakes-list li {
+  margin-bottom: 10px; /* Space between each bullet point */
 }

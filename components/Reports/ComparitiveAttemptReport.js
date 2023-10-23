@@ -65,12 +65,8 @@ const ComparitiveAttemptReport = ({
     const maxLength = Math.max(paths1.length, paths2.length);
     let obstaclesArray = Array.isArray(attemptData.obstacles)
       ? attemptData.obstacles
-      : [attemptData.obstacles];
-    obstaclesArray =
-      obstaclesArray &&
-      obstaclesArray.filter(obstacle => obstacle && obstacle.paths);
-
-    const mergedPaths = [];
+      : [attemptData.obstacles];  
+     const mergedPaths = [];
     const isReachTruck =
       router.query.module &&
       router.query.module.toLocaleLowerCase() === "reach truck";
@@ -78,8 +74,8 @@ const ComparitiveAttemptReport = ({
       router.query.module &&
       router.query.module.toLocaleLowerCase() === "forklift";
 
-    let axisLines = attemptData.hAxisLines || null;
-    let vAxisLines = attemptData.vAxisLines || null;
+    let axisLines = attemptData.hAxisLines ? attemptData.hAxisLines : null;
+    let vAxisLines = attemptData.vAxisLines ? attemptData.vAxisLines : null;
     let extraPlots = [];
 
     const addToExtraPlots = (d, isPickup = true) => {
@@ -90,7 +86,6 @@ const ComparitiveAttemptReport = ({
         pickup: isPickup
       });
     };
-
     [attemptData.boxPickupData, attemptData2.boxPickupData].forEach(
       boxPickupData => {
         if (boxPickupData) {
@@ -100,7 +95,6 @@ const ComparitiveAttemptReport = ({
         }
       }
     );
-
     [attemptData.boxKeptData, attemptData2.boxKeptData].forEach(boxDropData => {
       if (boxDropData) {
         boxDropData.forEach(d => {
@@ -109,11 +103,21 @@ const ComparitiveAttemptReport = ({
       }
     });
 
-    const getPathObstacles = pathNames => {
-      const relevantObstacles = obstaclesArray.filter(obstacle =>
-        obstacle.paths.some(path => pathNames.includes(path))
-      );
-      return relevantObstacles.flatMap(obstacle => obstacle.coordinates);
+    const getObstaclesForPath = (pathNames) => {
+      // Assuming obstaclesArray is accessible in this scope
+      
+      if (!obstaclesArray || obstaclesArray.length === 0) {
+        return [];
+      }
+    
+      return obstaclesArray
+        .filter(
+          obstacle =>
+            obstacle &&
+            obstacle.paths &&
+            obstacle.paths.some(path => pathNames.includes(path))
+        )
+        .flatMap(obstacle => obstacle.coordinates);
     };
 
     if (isReachTruck) {
@@ -128,11 +132,8 @@ const ComparitiveAttemptReport = ({
             ? attemptData.path.actual_path[paths1[0]]
             : attemptData2.path.actual_path[paths2[0]];
         const ideal = attemptData.path.ideal_path[paths1[0]];
-        if (obstacles) {
-          sendObstacles = obstacles.paths.some(path =>
-            [paths1[0]].includes(path)
-          );
-        }
+        const uniquePaths1 = [...new Set(paths1)];
+        const obstacleCoords = getObstaclesForPath(uniquePaths1[0]);
 
         mergedPaths.push(
           <IdealActualPath
@@ -145,8 +146,7 @@ const ComparitiveAttemptReport = ({
             isForkLift={isForkLift}
             axisLines={axisLines}
             vAxisLines={vAxisLines}
-            obstacles={sendObstacles ? obstacles.coordinates : null}
-          />
+            obstacles={obstacleCoords.length > 0 ? obstacleCoords : null}        />
         );
       }
     }
@@ -155,15 +155,28 @@ const ComparitiveAttemptReport = ({
     let ideal1 = null;
     let ideal2 = null;
     let pathCount = 1;
-    sendObstacles = false;
     for (let i = isReachTruck ? 1 : 0; i < maxLength; i += 2) {
-      let pathNames1 =
-        i == paths1.length - 1 ? [paths1[i]] : [paths1[i], paths1[i + 1]];
-      let pathNames2 =
-        i == paths2.length - 1 ? [paths2[i]] : [paths2[i], paths2[i + 1]];
+      pathCount += 1;
+      actual1 = attemptData.path.actual_path[paths1[i]];
+      actual2 =
+        i == paths1.length - 1
+          ? []
+          : attemptData.path.actual_path[paths1[i + 1]];
+      ideal1 = attemptData.path.ideal_path[paths1[i]];
+      ideal2 =
+        i == paths1.length - 1 ||
+        attemptData.path.ideal_path[paths1[i + 1]] === undefined
+          ? []
+          : attemptData.path.ideal_path[paths1[i + 1]];
 
-      let currentObstacles1 = getPathObstacles(pathNames1);
-      let currentObstacles2 = getPathObstacles(pathNames2);
+      let pathNames =
+        i == paths1.length - 1 ? [paths1[i]] : [paths1[i], paths1[i + 1]];
+      let extraPlotPoits = extraPlots.filter(p => pathNames.includes(p.path))
+      const uniquePaths = [paths1[i]];
+      if (i + 1 < paths1.length) {
+        uniquePaths.push(paths1[i + 1]);
+      }
+      const obstacleCoords2 = getObstaclesForPath(uniquePaths);
       mergedPaths.push(
         <IdealActualPath
           ideal={
@@ -197,7 +210,7 @@ const ComparitiveAttemptReport = ({
           isReachTruck={isReachTruck}
           axisLines={axisLines}
           vAxisLines={vAxisLines}
-          obstacles={currentObstacles1.length ? currentObstacles1 : null}
+          obstacles={obstacleCoords2.length > 0 ? obstacleCoords2 : null}      
           extraPlots={extraPlotPoits}
           isForkLift={isForkLift}
         />
@@ -250,13 +263,30 @@ const ComparitiveAttemptReport = ({
           axisLines={axisLines}
           vAxisLines={vAxisLines}
           extraPlots={extraPlotPoits}
-          obstacles={currentObstacles1.length ? currentObstacles2 : null}
+          obstacles={obstacleCoords2.length > 0 ? obstacleCoords2 : null}     
           isForkLift={isForkLift}
         />
       );
     }
     return mergedPaths;
   };
+  
+  const getObstaclesForPath = (pathNames, obstaclesArray) => {
+    if (!obstaclesArray || obstaclesArray.length === 0) {
+      return [];
+    }
+  
+    return obstaclesArray
+      .filter(
+        obstacle =>
+          obstacle &&
+          obstacle.paths &&
+          obstacle.paths.some(path => pathNames.includes(path))
+      )
+      .flatMap(obstacle => obstacle.coordinates);
+  };
+
+
   const getAverageSpeed = graph => {
     return graph.data.map((dataObj, index) => {
       return (
@@ -374,13 +404,7 @@ const ComparitiveAttemptReport = ({
                 compare
               />
             )}
-            {attemptData.cycleData && attemptData.cycleData.length > 0 && (
-              <CycleDataVisual
-                cycleData={attemptData.cycleData}
-                cycleData2={attemptData2.cycleData}
-                compare
-              />
-            )}
+         
             {attemptData.graphs && attemptData.graphs.length > 0 && (
               <div className="">
                 {attemptData.graphs.map((graph, index) => {
@@ -389,6 +413,7 @@ const ComparitiveAttemptReport = ({
                     <div key={index} className="w-full">
                       <div className="w-full">
                         <GraphReport
+                       
                           graph={graph}
                           graph2={
                             attemptData2.graphs.filter(
@@ -422,6 +447,13 @@ const ComparitiveAttemptReport = ({
                 })}
               </div>
             )}
+               {attemptData.cycleData && attemptData.cycleData.length > 0 && (
+              <CycleDataVisual
+                cycleData={attemptData.cycleData}
+                cycleData2={attemptData2.cycleData}
+                compare
+              />
+            )}
             <GearCollisionGraph
               graphs={attemptData.graphs}
               graphs2={attemptData2.graphs}
@@ -439,6 +471,19 @@ const ComparitiveAttemptReport = ({
                   : null
               }
             />
+             {attemptData.generalkpis &&
+                  Object.keys(attemptData.generalkpis).length > 0 &&
+                  Object.keys(attemptData.generalkpis).map((gkpis, index) => (
+                    <TableKpis
+                      key={`gkpis_${index}`}
+                      tableKpis={attemptData.generalkpis[gkpis]}
+                      tableKpis2={attemptData2.generalkpis[gkpis]}
+                      compare
+
+                    />
+                  ))}
+
+        
             <div className="flex w-full">
               {areasOfImprovement1.length > 0 && (
                 <div className="pl-0 flex-1 pr-5">

@@ -41,6 +41,15 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
     
     return 0;
   };
+  const replaceRightWithIcon = (answer) => {
+    if (typeof answer !== "string") {
+        // Handle the unexpected case where the answer is not a string.
+        // This could be a console log, a default value, or some other handling.
+        // console.warn("Unexpected non-string value:", answer);
+        return answer;  // Return the original value, or you can set a default value.
+    }
+    return answer.replace(/right/gi, '✅').replace(/wrong/gi, '❌'); 
+};
 
 
   useEffect(() => {
@@ -52,6 +61,8 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
       const idealTimeNumerical = extractNumericalValue(kpi.ideal_time);
   const user1Value = extractNumericalValue(kpi.value);
   let timeDifferenceFormatted, timeDifferenceColor;
+  let timeDifference2Formatted = "";  // Initialize with default value
+  let timeDifference2Color = "";    
 
   if (kpi.ideal_time !== undefined) {
     const timeDifference = user1Value - idealTimeNumerical;
@@ -67,10 +78,20 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
 
 
 
-      const user2Value = kpis2 && kpis2.length > index && kpis2[index].value ? extractNumericalValue(kpis2[index].value) : null;
-      const timeDifference2 = (idealTimeNumerical - user2Value);
-      const timeDifference2InMinutes = compare && user2Value !== null ? timeDifference2 / 60 : null;
-      const formattedTimeDifference2 = timeDifference2InMinutes && timeDifference2InMinutes >= 1 ? `${timeDifference2InMinutes.toFixed(2)} min` : (user2Value !== null ? `${timeDifference2.toFixed(2)} sec` : null);
+      
+  if (compare && kpis2 && kpis2.length > index && kpis2[index].value && kpis2[index].ideal_time !== undefined) {
+    const user2Value = extractNumericalValue(kpis2[index].value);
+        const timeDifference2 = user2Value - idealTimeNumerical;
+    
+        if (timeDifference2 > 0) {
+            timeDifference2Color = 'red';
+            timeDifference2Formatted = "+" + getFormattedTime(timeDifference2);
+        } else {
+            timeDifference2Color = 'green';
+            timeDifference2Formatted = getFormattedTime(timeDifference2);
+        }
+    }
+      
       switch (kpi.type) {
         case "number":
           if (kpi.range) {
@@ -109,11 +130,13 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
                       (kpis2[index].unit ? " " + kpis2[index].unit : ""),
                       time_difference_user1: timeDifferenceFormatted,
                       time_difference_color_user1: timeDifferenceColor,
-                      time_difference_user2: formattedTimeDifference2 // Added this field
+                      time_difference_user2: timeDifference2Formatted,
+                      time_difference_color_user2: timeDifference2Color
       
                   }
                 : {
                     ...kpi,
+
                     "Time taken by user":
                       getFormattedTime(kpi.value) +
                       (kpi.unit ? " " + kpi.unit : ""),
@@ -138,17 +161,30 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
             dKpis.push(
               compare
                 ? {
+                 
                     ...kpi,
-                    "value user1": `${getFormattedTime(kpi.value)}`,
+                    "Assessment Question with correct checklist": kpi.question,  // Assuming the data is in kpi.question
+                    "Answer user1": replaceRightWithIcon(kpi.answer),  // Assuming the answer data is in kpi.answer for user1
+                    "Answer user2": replaceRightWithIcon(kpis2[index].answer),
+                    "checklist selected by user1": replaceRightWithIcon(kpi.checklist),  // Use replaceWithEmojis for checklist
+                    "checklist selected by user2": replaceRightWithIcon(kpis2[index].checklist),  // And here for user2's checklist
+                    "Time taken by user 1": `${getFormattedTime(kpi.value)}`,
+                    "Time taken by user 2": `${getFormattedTime(kpis2[index].value)}`,
+
                     "value user2": `${getFormattedTime(
                       kpis2[index]?.value !== undefined ? kpis2[index].value : 0
                     )}`,
                     ideal_time: kpi?.ideal_time,
-                    time_difference: timeDifferenceFormatted,
-                    time_difference_color: timeDifferenceColor,
+                    time_difference_user1: timeDifferenceFormatted,
+                      time_difference_color_user1: timeDifferenceColor,
+                      time_difference_user2: timeDifference2Formatted,
+                      time_difference_color_user2: timeDifference2Color
                   }
                 : {
                     ...kpi,
+                    "Assessment Question with correct checklist": kpi.question,  // Assuming the data is in kpi.question
+                    "Answer": replaceRightWithIcon(kpi.answer),  // Assuming the answer data is in kpi.answer
+                    "checklist selected by user": replaceRightWithIcon(kpi.checklist), // Assuming the checklist data is in kpi.checklist
                     ideal_time: kpi?.ideal_time,
                     "Time taken by user": `${getFormattedTime(kpi.value)}`,
                     time_difference: timeDifferenceFormatted,
@@ -163,6 +199,7 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
             compare
               ? {
                   ...kpi,
+
                   value: kpi.value ? "True" : "False",
                   "value user1": kpi.value ? "True" : "False",
                   "value user2": kpis2[index].value ? "True" : "False"
@@ -210,6 +247,7 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
                   : ["name", "value"]
               }
               rows={booleanKpis.map(row => ({ ...row, className: "table-row-hover" }))}
+
               columnsma
             />
 
@@ -223,6 +261,8 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
                   : ["name", "value"]
               }
               rows={stringKpis.map(row => ({ ...row, className: "table-row-hover" }))}
+              colorField="time_difference_color"  // Specify the color field here
+
               />
           )}
         </div>
@@ -233,11 +273,33 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
 
             <div>
               <CustomTable
-                columns={
-                  compare && kpis2
-                    ? ["name", "value user1", "value user2", hasIdealTime ? "time_difference" : null, hasIdealTime ? "ideal_time" : null, hasSpeed ? "speed" : null].filter(Boolean)
-                    : ["name", "Time taken by user", hasIdealTime ? "time_difference" : null, hasIdealTime ? "ideal_time" : null, hasSpeed ? "speed" : null].filter(Boolean)
-                }
+               columns={
+                compare && kpis2
+                  ? [
+                      kpis1.some(kpi => kpi.question) ? "Assessment Question with correct checklist" : null,
+                      kpis1.some(kpi => kpi.answer) ? "Answer user1" : null,
+                      kpis2.some(kpi => kpi.answer) ? "Answer user2" : null,
+                      kpis1.some(kpi => kpi.checklist) ? "checklist selected by user1" : null,
+                      kpis2.some(kpi => kpi.checklist) ? "checklist selected by user2" : null,
+                      kpis1.some(kpi => kpi.name) ? "name" : null,
+                      kpis1.some(kpi => kpi.value) ? "Time taken by user 1" : null,
+                      kpis2.some(kpi => kpi.value) ? "Time taken by user 2" : null,
+                      hasIdealTime ? "time_difference_user1" : null,
+                      hasIdealTime ? "time_difference_user2" : null,
+                      hasIdealTime ? "Ideal time" : null,
+                      hasSpeed ? "speed" : null
+                    ].filter(Boolean)
+                  : [
+                      kpis1.some(kpi => kpi.question) ? "Assessment Question with correct checklist" : null,
+                      kpis1.some(kpi => kpi.answer) ? "Answer" : null,
+                      kpis1.some(kpi => kpi.checklist) ? "checklist selected by user" : null,
+                      kpis1.some(kpi => kpi.name) ? "name" : null,
+                      kpis1.some(kpi => kpi.value) ? "Time taken by user" : null,
+                      hasIdealTime ? "time_difference" : null,
+                      hasIdealTime ? "Ideal time" : null,
+                      hasSpeed ? "speed" : null
+                    ].filter(Boolean)
+              }
                 rows={decimalKpis.map(row => ({ ...row, className: "table-row-hover" }))}
                 colorField="time_difference_color" // Pass the color field to CustomTable
 
@@ -254,6 +316,8 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
                 : ["name", "Time taken by user", hasIdealTime ? "time_difference" : null, hasIdealTime ? "Ideal time" : null, hasSpeed ? "speed" : null].filter(Boolean)
             }
             rows={rangeKpis.map(row => ({ ...row, className: "table-row-hover" }))}
+            colorField="time_difference_color"  // Specify the color field here
+
             />
           )}
         </div>

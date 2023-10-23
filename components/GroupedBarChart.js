@@ -140,7 +140,7 @@ const GroupedBarChart = ({
 
   const data = {
     labels: labels,
-    datasets: dataset
+    datasets: dataset,
   };
   return (
     <div className="max-md:w-full p-5">

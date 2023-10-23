@@ -2,6 +2,8 @@ import React from "react";
 import PropTypes from "prop-types";
 import { BsFillCheckCircleFill } from "react-icons/bs";
 import { MdCancel } from "react-icons/md";
+import { FaCheck, FaTimes } from "react-icons/fa"; // New imports for correct and wrong icons
+
 const ComparativeTable = ({
   columns,
   rows,
@@ -10,6 +12,8 @@ const ComparativeTable = ({
   valueCss,
   table_key,
   staticColumns,
+  additionalRowData,
+
   compare,
   addIndex,
   columnsMap,
@@ -23,6 +27,9 @@ const ComparativeTable = ({
       ? rows2.slice(rows.length)
       : null;
   const thCss = `bg-blue-100 text-dark font-medium text-sm md:text-md capitalize border ${alignmentCss}`;
+const columnHasData = (colName) => {
+  return rows.some(row => row[colName] !== undefined && row[colName] !== null);
+}
 
   const getRecords = (row, rowIndex, rowLength) => (
     <tr
@@ -62,18 +69,25 @@ const ComparativeTable = ({
                     : 1
                 }
               >
-                {row[col] != null ? (
-                  typeof row[col] === "boolean" ? (
-                    row[col] ? (
-                      <BsFillCheckCircleFill size="20" color="green" />
-                    ) : (
-                      <MdCancel size="20" color="red" />
-                    )
-                  ) : (
-                    typeof row[col] === 'object' && row[col].value ? 
-                    <div style={row[col].style}>{row[col].value}</div> : 
-                    row[col].toString()                  )
-                ) : (
+               {row[col] != null ? (
+                              (col === "steps_taken_by_user_to_stop_the_EDP_pump" || col === "steps_taken_by_user_to_start_the_EDP_pump") ? (
+                                (row[col] === row["ideal_process_steps_to_stop_EDP_pump"] || row[col] === row["ideal_process_steps_to_start_EDP_pump"]) ? (
+                                    <div style={{ color: 'green' }}>{row[col]}</div>
+                                    ) : (
+                                        <div style={{ color: 'red' }}>{row[col]}</div>
+                                    )
+                                ) : typeof row[col] === "boolean" ? (
+                                    row[col] ? (
+                                        <BsFillCheckCircleFill size="20" color="green" />
+                                    ) : (
+                                        <MdCancel size="20" color="red" />
+                                    )
+                                ) : (
+                                    typeof row[col] === 'object' && row[col].value ? 
+                                    <div style={row[col].style}>{row[col].value}</div> : 
+                                    row[col].toString()
+                                )
+                            ) : (
                   ""
                 )}
               </td>
@@ -89,6 +103,7 @@ const ComparativeTable = ({
                     {rows2 &&
                       rows2[rowIndex] != null &&
                       rows2[rowIndex][col] != null &&
+                      
                       (typeof row[col] === "boolean" ? (
                         row[col] ? (
                           <BsFillCheckCircleFill size="20" color="green" />
@@ -208,6 +223,18 @@ const ComparativeTable = ({
             rows.map((row, rowIndex) => getRecords(row, rowIndex, rows.length))}
           {remainingRows &&
             remainingRows.map((row, rowIndex) => getRecords(row, rowIndex))}
+
+          {/* Insert new code here */}
+          {additionalRowData && (
+            <tr>
+              {columns.map((col, colIndex) => (
+                <td key={`additional_${col}_${colIndex}`} className={`text-sm md:text-md p-3 ${alignmentCss} text-dark border`}>
+                  {additionalRowData[col]}
+                </td>
+              ))}
+            </tr>
+          )}
+          {/* End of new code */}
           {!rows ||
             (rows.length < 1 && (
               <tr>
