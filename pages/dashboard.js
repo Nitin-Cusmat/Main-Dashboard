@@ -50,7 +50,70 @@ ChartJS.register(
   ArcElement
 );
 
+
+
 const Dashboard = () => {
+  // const [isHovered, setIsHovered] = useState(false);
+  const [hoveredTooltip, setHoveredTooltip] = useState(null);
+
+  const infoButtonStyle = {
+    background: "linear-gradient(45deg, #FFC107, #FF9800)",
+    border: "2px solid white",
+    cursor: "pointer",
+    fontSize: "14px",
+    borderRadius: "50%",
+    width: "25px",
+    height: "25px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0px 0px 8px rgba(0,0,0,0.3)",
+    marginLeft: "auto",
+    marginRight: "5px",
+    transition: "all 0.3s ease",  // This will make the scale effect smooth
+  };
+  
+  const infoButtonHoverStyle = {
+    transform: "scale(1.2)"  // This will scale the button to 120% of its original size on hover
+  };
+  const completionRateTooltipAdjustment = hoveredTooltip === 'completionRate' ? { bottom: "calc(100% + 12px)" } : {};
+  const tooltipStyle = {
+    bottom: "100%",
+    ...completionRateTooltipAdjustment,
+    padding: "8px",
+    backgroundColor: "#F2D2BD",
+    color: "#333333",
+    borderRadius: "6px",
+    fontSize: "12px",  // Reduced font size
+    whiteSpace: "normal",  // Allow wrapping
+    overflowWrap: "break-word",  // Break words as needed
+    wordWrap: "break-word",  // Alternative property for word wrapping
+    position: "absolute",
+    bottom: "100%",
+    left: "50%",
+    transform: "translateX(-50%)",
+    marginBottom: "8px",
+    boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+    width: '200px'  // Set a max-width for the tooltip to ensure it doesn't grow too large
+  };
+  
+
+ 
+
+  const handleMouseOver = (event, tooltipId) => {
+    const buttonRect = event.target.getBoundingClientRect();
+    if (buttonRect.top < 200) {
+      setShowAbove(false);
+    } else {
+      setShowAbove(true);
+    }
+    setHoveredTooltip(tooltipId);
+  };
+
+
+
+
+
   // TO-DO: show % value in pie chart
   const { organization, cusmatAdmin } = useUserProfile();
   const [modules, setModules] = useState(0);
@@ -192,7 +255,29 @@ const Dashboard = () => {
           <div className="flex flex-wrap max-sm:mx-2 mx-4 mt-8 gap-y-4">
             <BoxData
               classnames="md:pr-2"
-              heading={"Completion rate"}
+              heading={
+                <div className="flex items-center">
+                  Completion rate
+                    <div className="relative ml-2">
+                      <button 
+                        style={
+                          hoveredTooltip === 'completionRate' 
+                            ? {...infoButtonStyle, ...infoButtonHoverStyle} 
+                            : infoButtonStyle
+                        }
+                        onMouseOver={() => setHoveredTooltip('completionRate')}
+                        onMouseOut={() => setHoveredTooltip(null)}
+                      >
+                        i
+                      </button>
+                    {hoveredTooltip === 'completionRate' && (
+                      <div style={tooltipStyle}>
+                        This indicates out of the total number of active users, how many have completed all the levels combining of all modules.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              }
               value={data.completion_rate}
               footerFlex={true}
               footer={
@@ -209,14 +294,36 @@ const Dashboard = () => {
                   type={CHART_TYPES.RADIAL}
                   series={[data.completion_rate_chart]}
                   options={options}
-                  width={150}
+                  width={120}
                   height={150}
                 />
               </div>
             </BoxData>
             <BoxData
               classnames="md:pl-2 xl:pr-2"
-              heading={" Performance trends - Monthly"}
+              heading={
+                <div className="flex items-center">
+                  Performance trends - Monthly
+                  <div className="relative ml-2">
+                    <button 
+                      style={
+                        hoveredTooltip === 'performanceTrend' 
+                          ? {...infoButtonStyle, ...infoButtonHoverStyle} 
+                          : infoButtonStyle
+                      }
+                      onMouseOver={() => setHoveredTooltip('performanceTrend')}
+                      onMouseOut={() => setHoveredTooltip(null)}
+                    >
+                      i
+                    </button>
+                    {hoveredTooltip === 'performanceTrend' && (
+                      <div style={tooltipStyle}>
+                        This indicates how many user's have completed all the levels in current month.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              }
               value={data.current_month_performance_trends}
               size={boxsize}
               footer={
@@ -235,7 +342,29 @@ const Dashboard = () => {
             />
             <BoxData
               classnames="md:pl-2"
-              heading={"Number of active users"}
+              heading={
+                <div className="flex items-center">
+                  Number of active users
+                  <div className="relative ml-2">
+                    <button 
+                      style={
+                        hoveredTooltip === 'activeUsers' 
+                          ? {...infoButtonStyle, ...infoButtonHoverStyle} 
+                          : infoButtonStyle
+                      }
+                      onMouseOver={() => setHoveredTooltip('activeUsers')}
+                      onMouseOut={() => setHoveredTooltip(null)}
+                    >
+                      i
+                    </button>
+                    {hoveredTooltip === 'activeUsers' && (
+                      <div style={tooltipStyle}>
+                        This represents the total number of active users who have been assigned on modules.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              }
               value={users}
               size={boxsize}
             />

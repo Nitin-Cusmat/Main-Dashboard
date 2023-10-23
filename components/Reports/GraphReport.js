@@ -40,7 +40,8 @@ const GraphReport = ({
   pieColor,
   cycleData
 }) => {
-  const colors = ["#82E0AA", "#622F22"];
+  const colors = ["#82E0AA", "#622F22","black","yellow"];
+
   const [value, setValue] = useState([
     graph.data && graph.data[0]?.x,
     graph.data && graph.data[graph.data.length - 1]?.x
@@ -71,7 +72,7 @@ const GraphReport = ({
                 data: d.data,
                 backgroundColor: cycleData
                   ? colors[index]
-                  : Object.values(CHART_COLORS)[index + 2],
+                  : Object.values(CHART_COLORS)[index],
                 stack: getStackData()[d.name]
               };
             }),
@@ -82,7 +83,7 @@ const GraphReport = ({
                   : graph2.prefix,
                 data: d.data,
                 backgroundColor: cycleData
-                  ? colors[index]
+                  ? colors[index+2]
                   : Object.values(CHART_COLORS)[index + 2],
                 stack: getStackData()[d.name]
               };
@@ -227,10 +228,10 @@ const GraphReport = ({
 
       return (
         <div className="border ">
-          <div className="h-full">
+          <div className="">
             <div className="p-1 md:py-4 md:pl-2 text-dark capitalize text-sm md:text-sm underline font-semibold">
               {" "}
-              {graph.name}
+              {graph.name} {compare&& graph.name.toLowerCase() != "speed vs time" && "user 1"}
             </div>
 
             {/* {referenceGraph !== undefined && (
@@ -268,7 +269,7 @@ const GraphReport = ({
            )} */}
           </div>
           {graph?.hAxisLines ? (
-            <DeviationGraph compare={compare} graph={graph} graph2={graph2} />
+            <DeviationGraph graph={graph}/>
           ) : (
             <div>
               <Chart
@@ -337,21 +338,7 @@ const GraphReport = ({
                         }
                       }
                     },
-                    toolbar: {
-                      show: true,
-                      offsetX: -300, // Adjust the Y offset (vertical positioning)
-                      tools: {
-                        download: true,
-                        selection: true,
-                        zoom: true,
-                        zoomin: true,
-                        zoomout: true,
-                        pan: true,
-                        reset: true,
-                        customIcons: []
-                      },
-                      autoSelected: "zoom"
-                    }
+                   
                   },
                   markers: {
                     size: compare ? [0, 0, 2, 2] : [0, 2],
@@ -522,6 +509,17 @@ const GraphReport = ({
               />
             </div>
           )}
+          {compare&&graph2.name.toLowerCase() != "speed vs time"&&
+           <div className="p-1 md:py-4 md:pl-2 text-dark capitalize text-sm md:text-sm underline font-semibold">
+
+              {" "}
+              {graph2.name} {"user 2"}
+            </div>
+          }
+            {compare&&graph2?.hAxisLines && (
+            <DeviationGraph graph={graph2}/>
+          ) }
+         
         </div>
       );
     } else if (
@@ -726,7 +724,7 @@ const GraphReport = ({
   return (
     <>
       <div className="pb-4 w-full ">{getGraph()}</div>
-      {cycleData && <CycleDataVisual cycleData={cycleData} />}
+      {/* {cycleData && <CycleDataVisual cycleData={cycleData} />} */}
     </>
   );
 };

@@ -1,0 +1,73 @@
+@keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .hurray-message {
+    animation: fadeInUp 1s ease-out both;
+    font-size: 1.5em;
+    color: #4CAF50;  /* Green color, but you can choose any */
+    text-align: center;
+    margin-top: 20px;
+  }
+  .mistakes-section {
+    border: 2px solid #ff0000; /* red border */
+    padding: 20px;
+    margin-top: 20px;
+    background-color: #3b3838; /* light red background */
+  }
+  
+  .mistakes-section h2 {
+    color: #ff0000; /* red text */
+    font-size: 1.1em;
+  }
+  
+  .mistakes-section ul {
+    list-style-type: disc;
+    padding-left: 30px;
+  } 
+
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-10px);
+    }
+    60% {
+      transform: translateY(-5px);
+    }
+  }
+  .animate-bounce {
+    animation: bounce 1s infinite;
+  }
+  @keyframes darkToLight {
+    0% {
+      background-image: linear-gradient(to right, #333, #555);
+      color: white;
+    }
+   
+    100% {
+      background-image: linear-gradient(to right, #aaa, #ccc);
+      color: #111;
+    }
+  }
+  .animate-darkToLight {
+    animation: darkToLight 2s infinite alternate; /* 3s duration and oscillate between start and end */
+  }
+  .highlighted {
+    background-color: #f7f8fa; /* Light gray background */
+    padding: 0.2rem 0.4rem; 
+    border-radius: 0.2rem;
+    font-weight: bold;
+    color: #333; /* Dark gray text color */
+  }
+  
+  
+      

@@ -116,8 +116,8 @@ const CustomTable = ({
                     return (
                       <tr
                         key={`${row[table_key]}_${index}`}
-                        className="even:bg-[#fafafa] odd:bg-[#f6f4f8] hover:bg-yellow"
-                      >
+                        className={`slide-effect even:bg-[#fafafa] odd:bg-[#f6f4f8] hover:bg-yellow`}
+                        >
                         {showSelect && (
                           <td
 

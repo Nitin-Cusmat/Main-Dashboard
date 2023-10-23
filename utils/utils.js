@@ -4,6 +4,10 @@ import apiRoutes from "./api-routes";
 import { HTTP_STATUSES } from "./constants";
 
 const getFormattedTime = time => {
+  let floatTime = parseFloat(time);
+  if (floatTime < 1) {
+    return `${floatTime.toFixed(2)}s`;
+  }
   time = parseInt(time);
   if (time < 60) {
     return `${time}s`;
