@@ -304,7 +304,7 @@ const Dashboard = () => {
                     </button>
                     {hoveredTooltip === 'performanceTrend' && (
                       <div style={tooltipStyle}>
-                        This indicates % of user's who have completed all the levels in current month.
+                        This indicates % of users who have completed all the levels in current month.
                       </div>
                     )}
                   </div>
