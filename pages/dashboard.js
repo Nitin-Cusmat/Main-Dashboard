@@ -96,20 +96,6 @@ const Dashboard = () => {
     boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
     width: '200px'  // Set a max-width for the tooltip to ensure it doesn't grow too large
   };
-  
-
- 
-
-  const handleMouseOver = (event, tooltipId) => {
-    const buttonRect = event.target.getBoundingClientRect();
-    if (buttonRect.top < 200) {
-      setShowAbove(false);
-    } else {
-      setShowAbove(true);
-    }
-    setHoveredTooltip(tooltipId);
-  };
-
 
 
 
@@ -272,7 +258,7 @@ const Dashboard = () => {
                       </button>
                     {hoveredTooltip === 'completionRate' && (
                       <div style={tooltipStyle}>
-                        This indicates out of the total number of active users, how many have completed all the levels combining of all modules.
+                        This indicates out of the total number of active users, how many have completed all the levels.
                       </div>
                     )}
                   </div>
@@ -318,7 +304,7 @@ const Dashboard = () => {
                     </button>
                     {hoveredTooltip === 'performanceTrend' && (
                       <div style={tooltipStyle}>
-                        This indicates how many user's have completed all the levels in current month.
+                        This indicates % of user's who have completed all the levels in current month.
                       </div>
                     )}
                   </div>
