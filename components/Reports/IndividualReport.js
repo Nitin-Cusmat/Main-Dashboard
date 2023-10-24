@@ -40,11 +40,11 @@ import { TableKpis } from "./TableKpis";
 import ReactLoading from "react-loading";
 import CycleDataVisual from "./CycleDataVisual";
 
-function getRandomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min) + min);
-}
+// function getRandomInt(min, max) {
+//   min = Math.ceil(min);
+//   max = Math.floor(max);
+//   return Math.floor(Math.random() * (max - min) + min);
+// }
 
 const IndividualReport = ({
   module,
@@ -97,12 +97,12 @@ const IndividualReport = ({
   };
 
   
-  function getRecommendationForMistake(module, mistake) {
+  const getRecommendationForMistake = (module, mistake) => {
     if (moduleMistakeToLevelRecommendation[module] && moduleMistakeToLevelRecommendation[module][mistake]) {
       return moduleMistakeToLevelRecommendation[module][mistake];
     }
     return null;
-  }
+};
 
 
 
