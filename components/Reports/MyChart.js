@@ -394,7 +394,7 @@ const MyChart = ({
       rotation: 45,
       pointBackgroundColor: "brown",
       pointBorderColor: "brown",
-      radius: 2
+      radius: 4
     };
   }
 

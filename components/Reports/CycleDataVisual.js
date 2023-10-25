@@ -14,12 +14,21 @@ const CycleDataVisual = ({ cycleData, cycleData2, compare }) => {
     dumperRockCount: "Dumper Rock Count"
   };
 
-  const parsedCycleData = data => {
+   // Identify the present columns in the provided dataset
+   const getPresentColumns = data => {
+    return Object.keys(cycleDataFields).filter(field => {
+      return data.some(item => item[field] !== undefined);
+    });
+  };
+
+  const presentColumnsCycleData = getPresentColumns(cycleData);
+  const presentColumnsCycleData2 = compare && cycleData2 ? getPresentColumns(cycleData2) : [];
+
+  const columnsToDisplay = ["Truck Cycle Count", ...new Set([...presentColumnsCycleData, ...presentColumnsCycleData2].map(field => cycleDataFields[field]))];
+  const parsedCycleData = (data, presentColumns) => {
     return data.map((item, index) => {
       let cycleObj = {};
-        Object.keys(cycleDataFields)
-            .slice(0, 6)
-            .forEach(field => {
+      presentColumns.forEach(field => {
                 if (field === 'cycleTime' || field === 'loadingTime' || field === 'dumpingTime') {
                     if (item[field] >= 60) {
                         cycleObj[cycleDataFields[field]] = `${(item[field] / 60).toFixed(2)} min`;
@@ -47,17 +56,16 @@ const CycleDataVisual = ({ cycleData, cycleData2, compare }) => {
     });
 };
 
+
+
   return (
     <div className="pb-5 mt-6">
-      <ComparativeTable
-        columns={[
-          "Truck Cycle Count",
-          ...Object.values(cycleDataFields).slice(0, 6)
-        ]}
-        rows={parsedCycleData(cycleData)}
-        rows2={compare && cycleData2 ? parsedCycleData(cycleData2) : null}
+       <ComparativeTable
+        columns={columnsToDisplay}
+        rows={parsedCycleData(cycleData, presentColumnsCycleData)}
+        rows2={compare && cycleData2 ? parsedCycleData(cycleData2, presentColumnsCycleData2) : null}
         compare={compare}
-        staticColumns={["Truck Cycle"]}
+        staticColumns={["Truck Cycle Count"]}
       />
     </div>
   );

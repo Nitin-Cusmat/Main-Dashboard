@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Line } from "react-chartjs-2";
 
-const DeviationGraph = ({ graph, graph2, compare }) => {
+const DeviationGraph = ({ graph }) => {
   let max = graph.data[0].y;
   let min = Infinity;
   graph.data.forEach(point => {
@@ -19,7 +19,7 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
         let ticks = chart.scales.y.ticks;
         let positiveTicks = ticks.filter(item => item.value > 0);
         let negativeTicks = ticks.filter(item => item.value < 0);
-        const stepSize = positiveTicks[1].value - positiveTicks[0].value;
+        const stepSize = positiveTicks.length > 1 ? positiveTicks[1].value - positiveTicks[0].value : 0;        
         const lastValue = ticks[ticks.length - 1].value;
 
         chart.scales.y.ticks = ticks;
@@ -217,9 +217,10 @@ const DeviationGraph = ({ graph, graph2, compare }) => {
   };
   return (
     <div>
-      <Line plugins={plugins} data={data} options={options} height={160} />{" "}
+      <Line plugins={plugins} data={data} options={options} height={100} />{" "}
     </div>
   );
 };
 
 export default DeviationGraph;
+

@@ -55,7 +55,6 @@ const ComparitiveAttemptReport = ({
   while (areasOfImprovement2.length < maxLength) {
     areasOfImprovement2.push({ [`Areas of Improvement for User 2`]: "-" });
   }
-
   const getPairPaths = (attemptData, attemptData2) => {
     const paths1 = Object.keys(attemptData.path.actual_path).filter(
       path => path != "path-1"
@@ -64,8 +63,10 @@ const ComparitiveAttemptReport = ({
       path => path != "path-1"
     );
     const maxLength = Math.max(paths1.length, paths2.length);
-    let obstacles = attemptData.obstacles;
-    const mergedPaths = [];
+    let obstaclesArray = Array.isArray(attemptData.obstacles)
+      ? attemptData.obstacles
+      : [attemptData.obstacles];  
+     const mergedPaths = [];
     const isReachTruck =
       router.query.module &&
       router.query.module.toLocaleLowerCase() === "reach truck";
@@ -102,7 +103,22 @@ const ComparitiveAttemptReport = ({
       }
     });
 
-    let sendObstacles = false;
+    const getObstaclesForPath = (pathNames) => {
+      // Assuming obstaclesArray is accessible in this scope
+      
+      if (!obstaclesArray || obstaclesArray.length === 0) {
+        return [];
+      }
+    
+      return obstaclesArray
+        .filter(
+          obstacle =>
+            obstacle &&
+            obstacle.paths &&
+            obstacle.paths.some(path => pathNames.includes(path))
+        )
+        .flatMap(obstacle => obstacle.coordinates);
+    };
 
     if (isReachTruck) {
       const extraPlotPoits = extraPlots.filter(p =>
@@ -116,11 +132,8 @@ const ComparitiveAttemptReport = ({
             ? attemptData.path.actual_path[paths1[0]]
             : attemptData2.path.actual_path[paths2[0]];
         const ideal = attemptData.path.ideal_path[paths1[0]];
-        if (obstacles) {
-          sendObstacles = obstacles.paths.some(path =>
-            [paths1[0]].includes(path)
-          );
-        }
+        const uniquePaths1 = [...new Set(paths1)];
+        const obstacleCoords = getObstaclesForPath(uniquePaths1[0]);
 
         mergedPaths.push(
           <IdealActualPath
@@ -133,8 +146,7 @@ const ComparitiveAttemptReport = ({
             isForkLift={isForkLift}
             axisLines={axisLines}
             vAxisLines={vAxisLines}
-            obstacles={sendObstacles ? obstacles.coordinates : null}
-          />
+            obstacles={obstacleCoords.length > 0 ? obstacleCoords : null}        />
         );
       }
     }
@@ -143,7 +155,6 @@ const ComparitiveAttemptReport = ({
     let ideal1 = null;
     let ideal2 = null;
     let pathCount = 1;
-    sendObstacles = false;
     for (let i = isReachTruck ? 1 : 0; i < maxLength; i += 2) {
       pathCount += 1;
       actual1 = attemptData.path.actual_path[paths1[i]];
@@ -160,10 +171,12 @@ const ComparitiveAttemptReport = ({
 
       let pathNames =
         i == paths1.length - 1 ? [paths1[i]] : [paths1[i], paths1[i + 1]];
-      let extraPlotPoits = extraPlots.filter(p => pathNames.includes(p.path));
-      if (obstacles) {
-        sendObstacles = obstacles.paths.some(path => paths1.includes(path));
+      let extraPlotPoits = extraPlots.filter(p => pathNames.includes(p.path))
+      const uniquePaths = [paths1[i]];
+      if (i + 1 < paths1.length) {
+        uniquePaths.push(paths1[i + 1]);
       }
+      const obstacleCoords2 = getObstaclesForPath(uniquePaths);
       mergedPaths.push(
         <IdealActualPath
           ideal={
@@ -197,7 +210,7 @@ const ComparitiveAttemptReport = ({
           isReachTruck={isReachTruck}
           axisLines={axisLines}
           vAxisLines={vAxisLines}
-          obstacles={sendObstacles ? obstacles.coordinates : null}
+          obstacles={obstacleCoords2.length > 0 ? obstacleCoords2 : null}      
           extraPlots={extraPlotPoits}
           isForkLift={isForkLift}
         />
@@ -250,13 +263,30 @@ const ComparitiveAttemptReport = ({
           axisLines={axisLines}
           vAxisLines={vAxisLines}
           extraPlots={extraPlotPoits}
-          obstacles={sendObstacles ? obstacles.coordinates : null}
+          obstacles={obstacleCoords2.length > 0 ? obstacleCoords2 : null}     
           isForkLift={isForkLift}
         />
       );
     }
     return mergedPaths;
   };
+  
+  const getObstaclesForPath = (pathNames, obstaclesArray) => {
+    if (!obstaclesArray || obstaclesArray.length === 0) {
+      return [];
+    }
+  
+    return obstaclesArray
+      .filter(
+        obstacle =>
+          obstacle &&
+          obstacle.paths &&
+          obstacle.paths.some(path => pathNames.includes(path))
+      )
+      .flatMap(obstacle => obstacle.coordinates);
+  };
+
+
   const getAverageSpeed = graph => {
     return graph.data.map((dataObj, index) => {
       return (
@@ -374,13 +404,7 @@ const ComparitiveAttemptReport = ({
                 compare
               />
             )}
-            {attemptData.cycleData && attemptData.cycleData.length > 0 && (
-              <CycleDataVisual
-                cycleData={attemptData.cycleData}
-                cycleData2={attemptData2.cycleData}
-                compare
-              />
-            )}
+         
             {attemptData.graphs && attemptData.graphs.length > 0 && (
               <div className="">
                 {attemptData.graphs.map((graph, index) => {
@@ -389,6 +413,7 @@ const ComparitiveAttemptReport = ({
                     <div key={index} className="w-full">
                       <div className="w-full">
                         <GraphReport
+                       
                           graph={graph}
                           graph2={
                             attemptData2.graphs.filter(
@@ -422,6 +447,13 @@ const ComparitiveAttemptReport = ({
                 })}
               </div>
             )}
+               {attemptData.cycleData && attemptData.cycleData.length > 0 && (
+              <CycleDataVisual
+                cycleData={attemptData.cycleData}
+                cycleData2={attemptData2.cycleData}
+                compare
+              />
+            )}
             <GearCollisionGraph
               graphs={attemptData.graphs}
               graphs2={attemptData2.graphs}
@@ -439,6 +471,19 @@ const ComparitiveAttemptReport = ({
                   : null
               }
             />
+             {attemptData.generalkpis &&
+                  Object.keys(attemptData.generalkpis).length > 0 &&
+                  Object.keys(attemptData.generalkpis).map((gkpis, index) => (
+                    <TableKpis
+                      key={`gkpis_${index}`}
+                      tableKpis={attemptData.generalkpis[gkpis]}
+                      tableKpis2={attemptData2.generalkpis[gkpis]}
+                      compare
+
+                    />
+                  ))}
+
+        
             <div className="flex w-full">
               {areasOfImprovement1.length > 0 && (
                 <div className="pl-0 flex-1 pr-5">

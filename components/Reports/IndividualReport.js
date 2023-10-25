@@ -1,5 +1,6 @@
 import { Disclosure } from "components/Disclosure";
 import React, { useEffect, useState } from "react";
+
 import BoxData from "components/BoxData";
 import CustomTable from "components/CustomTable";
 import Chart from "components/Chart/Chart";
@@ -37,6 +38,13 @@ import ScoreRow from "components/ScoreRow";
 import { useRouter } from "next/router";
 import { TableKpis } from "./TableKpis";
 import ReactLoading from "react-loading";
+import CycleDataVisual from "./CycleDataVisual";
+
+// function getRandomInt(min, max) {
+//   min = Math.ceil(min);
+//   max = Math.floor(max);
+//   return Math.floor(Math.random() * (max - min) + min);
+// }
 
 const IndividualReport = ({
   module,
@@ -71,6 +79,45 @@ const IndividualReport = ({
   const pieColors = ["#580000", "#FF8C00", "#006400", "#00CED1"];
   let pieIndex = -1;
 
+  const moduleMistakeToLevelRecommendation = {
+    "pendent control": {
+      "Did not horn before moving in reverse": "Level 1",
+      "Did not horn before moving forward": "Level 2",
+      "Drove over the speed limit": "Level 3",
+      "Did not maintain forkheight above 15 cm":"Level 4",
+      "Stacking error":"Level 5",
+      "Engagement error":"Level 6"
+    },
+    "Reach Truck": {
+      "Did not horn before starting the engine": "Level 2",
+      "Did not horn before moving forward": "Level 3",
+      "Drove over the speed limit": "Level 4"
+    },
+    // ... and so on
+  };
+
+  
+  const getRecommendationForMistake = (module, mistake) => {
+    if (moduleMistakeToLevelRecommendation[module] && moduleMistakeToLevelRecommendation[module][mistake]) {
+      return moduleMistakeToLevelRecommendation[module][mistake];
+    }
+    return null;
+};
+
+
+
+
+  // const getRandomRecommendation = () => {
+  //   // Assuming levels is an array of all available levels or modules
+  //   const levels = ["Level 1", "Level 2", "Level 3", "Level 4", "Level 5"]; // example levels
+  //   const currentLevelIndex = levels.indexOf(level); // Get index of current level
+  //   if (currentLevelIndex > -1) {
+  //     levels.splice(currentLevelIndex, 1); // Remove current level from the list
+  //   }
+  //   const randomLevel = levels[getRandomInt(0, levels.length)]; // Get a random level
+  //   return randomLevel;
+  // }
+
   const aresOfImprovement =
     attemptData && attemptData.mistakes
       ? attemptData.mistakes.map(mistake => {
@@ -80,6 +127,23 @@ const IndividualReport = ({
           };
         })
       : [];
+
+      let recommendation = null;
+      let firstMistake = null;
+
+
+
+      if (aresOfImprovement && aresOfImprovement.length > 0) {
+        const firstMistake = aresOfImprovement[0]["Areas of Improvement"];
+        recommendation = getRecommendationForMistake(module, firstMistake);
+    }
+      const levels = ["Remote control level 3", "Zip1 test data", "Level 8", "Level 4", "Level 5"];
+      const currentLevelIndex = levels.indexOf(level);
+      const recommendedLevel =
+        currentLevelIndex >= 0 && currentLevelIndex < levels.length - 1
+          ? levels[currentLevelIndex + 1]
+          : null;  // If 
+          // console.log(recommendedLevel)
 
   // const boxsize = "flex-1 min-w-[290px] max-w-[500px]";
   const boxsize = " w-full md:w-1/2 xl:w-1/3";
@@ -179,14 +243,16 @@ const IndividualReport = ({
       path => path != "path-1"
     );
 
-    let obstacles = attemptData.obstacles;
+    let obstaclesArray = Array.isArray(attemptData.obstacles)
+      ? attemptData.obstacles
+      : [attemptData.obstacles];
+
     const mergedPaths = [];
 
     let axisLines = attemptData.hAxisLines ? attemptData.hAxisLines : null;
-
     let vAxisLines = attemptData.vAxisLines ? attemptData.vAxisLines : null;
-
     let extraPlots = [];
+
     if (attemptData.boxPickupData) {
       attemptData.boxPickupData.forEach((d, index) => {
         extraPlots.push({
@@ -198,6 +264,7 @@ const IndividualReport = ({
         });
       });
     }
+
     if (attemptData.boxKeptData) {
       attemptData.boxKeptData.forEach((d, index) => {
         extraPlots.push({
@@ -209,7 +276,20 @@ const IndividualReport = ({
         });
       });
     }
-    let sendObstacles = false;
+    const getObstaclesForPath = pathNames => {
+      if (!obstaclesArray || obstaclesArray.length === 0) {
+        return [];
+      }
+
+      return obstaclesArray
+        .filter(
+          obstacle =>
+            obstacle &&
+            obstacle.paths &&
+            obstacle.paths.some(path => pathNames.includes(path))
+        )
+        .flatMap(obstacle => obstacle.coordinates);
+    };
 
     if (isReachTruck) {
       const actual = attemptData.path.actual_path[paths[0]];
@@ -217,9 +297,7 @@ const IndividualReport = ({
       const extraPlotPoits = extraPlots.filter(p =>
         [paths[0]].includes(p.path)
       );
-      if (obstacles) {
-        sendObstacles = obstacles.paths.some(path => [paths[0]].includes(path));
-      }
+      const obstacleCoords = getObstaclesForPath([paths[0]]);
 
       mergedPaths.push(
         <IdealActualPath
@@ -235,16 +313,15 @@ const IndividualReport = ({
           }
           axisLines={axisLines}
           vAxisLines={vAxisLines}
-          obstacles={sendObstacles ? obstacles.coordinates : null}
+          obstacles={obstacleCoords.length > 0 ? obstacleCoords : null}
           extraPlots={extraPlotPoits}
           isReachTruck={isReachTruck}
           isForkLift={isForkLift}
         />
       );
     }
-    let pathCount = 1;
-    sendObstacles = false;
 
+    let pathCount = 1;
     for (let i = isReachTruck ? 1 : 0; i < paths.length; i += 2) {
       pathCount += 1;
       const actual1 = attemptData.path.actual_path[paths[i]];
@@ -260,28 +337,12 @@ const IndividualReport = ({
       const pathNames =
         i == paths.length - 1 ? [paths[i]] : [paths[i], paths[i + 1]];
       const extraPlotPoits = extraPlots.filter(p => pathNames.includes(p.path));
-      if (obstacles) {
-        sendObstacles = obstacles.paths.some(path => pathNames.includes(path));
-      }
+      const obstacleCoords = getObstaclesForPath(pathNames);
 
       mergedPaths.push(
         <IdealActualPath
-          extraPlots={extraPlotPoits}
-          isReachTruck={isReachTruck}
-          isForkLift={isForkLift}
-          axisLines={axisLines}
-          vAxisLines={vAxisLines}
-          obstacles={sendObstacles ? obstacles.coordinates : null}
-          key={`path_index${i}`}
           ideal={ideal2 ? [...ideal1, ...ideal2] : [...ideal1]}
           actual={[...actual1, ...actual2]}
-          titleSuffix={
-            extraPlotPoits && extraPlotPoits.length > 0
-              ? pathCount % 2 !== 0
-                ? "for Pickup"
-                : "for Droping"
-              : ""
-          }
           title={
             isReachTruck
               ? extraPlotPoits && extraPlotPoits.length > 0
@@ -291,9 +352,17 @@ const IndividualReport = ({
               ? paths[i]
               : paths[i] + ", " + paths[i + 1]
           }
+          titleSuffix={pathCount % 2 !== 0 ? "for Pickup" : "for Dropping"}
+          axisLines={axisLines}
+          vAxisLines={vAxisLines}
+          obstacles={obstacleCoords.length > 0 ? obstacleCoords : null}
+          extraPlots={extraPlotPoits}
+          isReachTruck={isReachTruck}
+          isForkLift={isForkLift}
         />
       );
     }
+
     return mergedPaths;
   };
 
@@ -371,7 +440,7 @@ const IndividualReport = ({
             />
           </div>
 
-          {userPerformanceData && (
+          {/* {userPerformanceData && (
             <div className="pb-5 mt-5 lg:w-10/12  border">
               <div className="px-5 py-5 text-lg text-dark">
                 Time Comparison - Across use case
@@ -473,7 +542,7 @@ const IndividualReport = ({
                 />
               )}
             </div>
-          )}
+          )} */}
         </Disclosure>
       )}
       <Disclosure
@@ -579,8 +648,8 @@ const IndividualReport = ({
                   <div className={"flex flex-wrap mt-3"}>
                     {attemptData.graphs.map((graph, index) => {
                       if (
-                        ["pie", "doughnut"].includes(graph.type) &&
-                        !["Time Taken by KPIS"].includes(graph.name)
+                        ["pie", "doughnut"].includes(graph?.type) &&
+                        !["Time Taken by KPIS"].includes(graph?.name)
                       )
                         pieIndex = pieIndex + 1;
                       let total_pies = attemptData.graphs.filter(g =>
@@ -588,7 +657,7 @@ const IndividualReport = ({
                       );
                       let deviationGraph = false;
                       if (
-                        graph.type === "line" &&
+                        graph?.type === "line" &&
                         graph.hAxisLines !== null &&
                         organization.name.toLowerCase() === "tata steel"
                       ) {
@@ -605,7 +674,7 @@ const IndividualReport = ({
                                   : "md:w-1/2"
                                 : "lg:w-full"
                               : ""
-                          }${deviationGraph ? "xl:w-1/2 pl-2" : ""}`}
+                          }${deviationGraph && "xl:w-1/2 pl-2"}`}
                         >
                           <GraphReport
                             graph={graph}
@@ -621,7 +690,7 @@ const IndividualReport = ({
                               graph.name
                                 .toLowerCase()
                                 .includes("loading and spillage") &&
-                              attemptData.cycleData
+                              attemptData.material
                             }
                           />
                           {module == "EOT-Crane" &&
@@ -651,6 +720,11 @@ const IndividualReport = ({
                     })}
                   </div>
                 )}
+                {attemptData.cycleData && attemptData.cycleData.length > 0 && (
+              <CycleDataVisual
+                cycleData={attemptData.cycleData}
+              />
+            )}
                 {attemptData.path && attemptData.path.actual_path && (
                   <GearCollisionGraph
                     graphs={attemptData.graphs}
@@ -679,14 +753,114 @@ const IndividualReport = ({
                 )}
               </div>
 
-              {aresOfImprovement.length > 0 && (
-                <div className="pl-0 lg:pl-2 ">
-                  <CustomTable
-                    columns={["Areas of Improvement"]}
-                    rows={aresOfImprovement}
-                  />
-                </div>
-              )}
+              {organization && organization.name.toLowerCase() === "edwards"} {
+
+
+              // aresOfImprovement.length === 0 && (
+              //   <div className="hurray-message pl-0 lg:pl-2">
+              //   <CustomTable
+              //       columns={["Areas of Improvement (Mistakes)"]}
+              //       rows={[{ "Areas of Improvement (Mistakes)": "🎉 No mistakes. Great job! 👏" }]}                  />
+              //     {/* {organization && organization.name && organization.name.toLowerCase() === "tata steel" ? (
+              //     // <p className="recommendation-text">
+              //     //   As a member of TataSteel, we recommend trying out {getRandomRecommendation()} for a new challenge!
+              //     // </p>
+              //   ) : null} */}
+
+              // </div>
+              //              )}
+
+
+          //     aresOfImprovement.length === 0 && recommendedLevel && (
+          //       <div className="recommendation-box mt-4 p-5 rounded-lg shadow-2xl bg-gradient-to-r from-blue-400 via-blue-500 to-purple-600 border-4 border-dashed border-yellow-300 relative overflow-hidden">
+          //       <div className="absolute top-0 right-0 -mt-3 -mr-3 bg-yellow-300 text-yellow-700 rounded-full p-2 shadow-lg transform translate-x-1/2 -translate-y-1/2">
+          //         <span className="text-xl font-bold">+15%</span>
+          //       </div>
+          //       <div className="flex items-start text-white">
+          //         {/* <svg
+          //           xmlns="http://www.w3.org/2000/svg"
+          //           className="h-12 w-12 mr-4 animate-pulse"
+          //           fill="none"
+          //           viewBox="0 0 24 24"
+          //           stroke="currentColor"
+          //         >
+          //           <path
+          //             strokeLinecap="round"
+          //             strokeLinejoin="round"
+          //             strokeWidth="4"
+          //             d="M13 10V3L4 14h7v7l9-11h-7z"
+          //           ></path>
+          //         </svg> */}
+          //         <div className="flex flex-col justify-between">
+          //           <div>
+          //           <h3 className="text-2xl font-bold mb-1 animate-darkToLight bg-clip-text text-transparent">
+          //           🌟 Recommendation
+          //           </h3>
+          //           <p className="recommendation-text" style={{ fontSize: '14.5px' }}>
+          //             Awesome job with no mistakes! 🎉 Based on analytics, we strongly recommend trying out <span className="underline highlighted">{recommendedLevel}</span> level for a new challenge!
+          //           </p>
+
+          //           </div>
+          //           <div className="flex items-center mt-2">
+          //             <span className="bg-green-300 px-2 py-1 rounded-lg text-green-800 font-semibold">Efficiency Boost</span>
+          //             <p className="ml-2 text-sm">
+          //               Users observed a <span className="font-bold">+15% efficiency</span> boost by following this recommendation.
+          //             </p>
+          //           </div>
+          //         </div>
+          //       </div>
+          //     </div>
+              
+          // )
+        }
+           {aresOfImprovement.length > 0 && (
+  <div className="mistakes-section">
+    <h2 className="mistakes-title">Reason for Decrease in Efficiency (Mistakes)</h2>
+    <ul className="mistakes-list">
+      {aresOfImprovement.map((mistake, index) => (
+        <li key={index}>{mistake["Areas of Improvement"]}</li>
+      ))}
+    </ul>
+  </div>
+)}
+           {/* Enhanced Recommendation Box
+           {aresOfImprovement.length > 0 && (
+  <div className="recommendation-box mt-4 p-5 rounded-lg shadow-2xl bg-gradient-to-r from-blue-400 via-blue-500 to-purple-500">
+    <div className="flex items-center text-white">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-8 w-8 mr-3"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M13 10V3L4 14h7v7l9-11h-7z"
+        ></path>
+      </svg>
+      <div>
+        <h3 className="text-2xl font-bold mb-1"> 🌟Recommendation</h3>
+        <ul className="recommendation-text">
+          {aresOfImprovement.map(mistakeObj => {
+            const mistake = mistakeObj["Areas of Improvement"];
+            const recommendedLevel = moduleMistakeToLevelRecommendation[module]?.[mistake];
+            return (
+              <li key={mistake}>
+                To overcome the mistake "{mistake}", we recommend trying out {recommendedLevel}.
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
+  </div>
+)} */}
+
+               
+                
             </div>
           </div>
         </div>
@@ -698,3 +872,4 @@ const IndividualReport = ({
 };
 
 export default IndividualReport;
+

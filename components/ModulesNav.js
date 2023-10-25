@@ -46,6 +46,29 @@ const DataBox = ({ title, value, footerText }) => {
     </div>
   );
 };
+
+const infoButtonStyle = {
+  background: "linear-gradient(45deg, #FFC107, #FF9800)",
+  border: "2px solid white",
+  cursor: "pointer",
+  fontSize: "12px",      // Reduce the font size
+  borderRadius: "50%",
+  width: "25px",         // Reduce the width
+  height: "25px",        // Reduce the height
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxShadow: "0px 0px 8px rgba(0,0,0,0.3)",
+  marginLeft: "auto",
+  marginRight: "5px",
+  transition: "all 0.3s ease", 
+};
+
+
+const infoButtonHoverStyle = {
+  transform: "scale(1.1)"
+};
+
 const ModulesNav = ({
   tabs,
   moduleUsers,
@@ -60,6 +83,42 @@ const ModulesNav = ({
   const [activeModuleName, setActiveModuleName] = useState("");
   const router = useRouter();
   const { searchModule } = router.query;
+
+  const [hoveredTooltip, setHoveredTooltip] = useState(null);
+  const completionRateTooltipAdjustment = hoveredTooltip === 'completionRate' ? { bottom: "calc(100% + 12px)" } : {};
+
+const tooltipStyle = {
+  bottom: "100%",
+  ...completionRateTooltipAdjustment,
+  padding: "8px",
+  backgroundColor: "#F2D2BD", // Background color from Dashboard
+  color: "#333333", // Text color from Dashboard
+  borderRadius: "6px",
+  fontSize: "12px",
+  whiteSpace: "normal",
+  overflowWrap: "break-word",
+  wordWrap: "break-word",
+  position: "absolute",
+  bottom: "100%",
+  left: "50%",
+  transform: "translateX(-50%)",
+  marginBottom: "8px",
+  boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)", // Box-shadow from Dashboard
+  width: '200px'
+};
+
+  const getTooltipStyle = (tooltipId) => {
+    
+    if (hoveredTooltip === tooltipId) {
+      return {
+        ...tooltipStyle,
+        display: 'block'
+      };
+    }
+    return tooltipStyle;
+  };
+  
+
 
   useEffect(() => {
     if (![undefined, "", null].includes(activeModuleName)) {
@@ -181,7 +240,28 @@ const ModulesNav = ({
        {modules &&<div className="flex flex-wrap gap-y-4 max-md:w-full max-md:flex-col max-md:items-center relative max-md:px-2">
           <LoadingSpinner area="user-analytics" />
           <BoxData
-            heading={"Completion rate"}
+       heading={
+        <div className="flex items-center">
+          Completion rate
+          <div className="relative ml-2">
+            <button
+              style={hoveredTooltip === 'completionInfo' 
+                ? {...infoButtonStyle, ...infoButtonHoverStyle}
+                : infoButtonStyle
+              }
+              onMouseEnter={() => setHoveredTooltip('completionInfo')}
+              onMouseLeave={() => setHoveredTooltip(null)}
+            >
+              i
+            </button>
+            {hoveredTooltip === 'completionInfo' && (
+              <div style={getTooltipStyle('completionInfo')}>
+                How many active users completed all the level (module name - {activeModuleName}).
+              </div>
+            )}
+          </div>
+        </div>
+      }
             classnames={"md:pl-4"}
             value={modules.module_completion_rate}
             footerFlex={true}
@@ -200,13 +280,34 @@ const ModulesNav = ({
                 series={[modules.module_completion_rate_chart
                 ]}
                 options={options}
-                width={150}
+                width={120}
                 height={150}
               />
             </div>
           </BoxData>
           <BoxData
-            heading={"Performance trends - Monthly"}
+          heading={
+            <div className="flex items-center">
+              Performance trends - Monthly
+              <div className="relative ml-2">
+                <button
+                  style={hoveredTooltip === 'performanceInfo' 
+                    ? {...infoButtonStyle, ...infoButtonHoverStyle}
+                    : infoButtonStyle
+                  }
+                  onMouseEnter={() => setHoveredTooltip('performanceInfo')}
+                  onMouseLeave={() => setHoveredTooltip(null)}
+                >
+                  i
+                </button>
+                {hoveredTooltip === 'performanceInfo' && (
+                 <div style={getTooltipStyle('performanceInfo')}>
+                  This indicates % of active users completed the levels in current month (module name - {activeModuleName}).
+                </div>
+                )}
+              </div>
+            </div>
+          }   
             classnames={"md:px-2 lg:pl-4 lg:pr-0"}
             value={modules.current_month_performance_trends}
             footer={
@@ -219,7 +320,28 @@ const ModulesNav = ({
             size=" w-full md:w-1/2 xl:w-1/4"
           />
           <BoxData
-            heading={"Number of active users"}
+         heading={
+          <div className="flex items-center">
+            Number of active users
+            <div className="relative ml-2">
+              <button
+                style={hoveredTooltip === 'usersInfo' 
+                  ? {...infoButtonStyle, ...infoButtonHoverStyle}
+                  : infoButtonStyle
+                }
+                onMouseEnter={() => setHoveredTooltip('usersInfo')}
+                onMouseLeave={() => setHoveredTooltip(null)}
+              >
+                i
+              </button>
+              {hoveredTooltip === 'usersInfo' && (
+               <div style={getTooltipStyle('usersInfo')}>
+                total number of active users assigned on (module name - {activeModuleName}).
+              </div>
+              )}
+            </div>
+          </div>
+        }
             classnames="md:pl-4"
             value={moduleUsers}
             size=" w-full md:w-1/2 xl:w-1/4"
