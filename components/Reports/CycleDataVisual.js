@@ -10,8 +10,6 @@ const CycleDataVisual = ({ cycleData, cycleData2, compare }) => {
       "Total Collision of bucket with dumper while dumping",
     bucketanglewhileloading: "bucket angle while loading (Ideal +/-45 angle)",
     bucketanglewhiledumping: "bucket angle while dumping (Ideal +/-45 angle)",
-    spilled: "Spilled",
-    dumperRockCount: "Dumper Rock Count"
   };
 
    // Identify the present columns in the provided dataset
