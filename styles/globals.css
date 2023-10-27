@@ -45,6 +45,30 @@
   --card-rgb: 180, 185, 188;
   --card-border-rgb: 131, 134, 135;
 }
+/* Add this to your CSS or SCSS file */
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animatedGradient {
+  background: linear-gradient(45deg, #4CAF50, #2196F3, #6d6dd9, #c689e8);
+  background-size: 200% 200%;
+  animation: gradientAnimation 10s ease infinite;
+  height: 30px;  /* Adjust this value to your desired gap size */
+  line-height: 16px;
+  font-size: 18px;  /* Adjust this value to change the font size */
+
+  
+}
+
 
 @keyframes colorChange {
   0% {

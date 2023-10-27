@@ -39,6 +39,8 @@ import { useRouter } from "next/router";
 import { TableKpis } from "./TableKpis";
 import ReactLoading from "react-loading";
 import CycleDataVisual from "./CycleDataVisual";
+import { Newtable } from "./newtable";
+import { Pathtable } from "./pathtable";
 
 // function getRandomInt(min, max) {
 //   min = Math.ceil(min);
@@ -97,12 +99,7 @@ const IndividualReport = ({
   };
 
   
-  const getRecommendationForMistake = (module, mistake) => {
-    if (moduleMistakeToLevelRecommendation[module] && moduleMistakeToLevelRecommendation[module][mistake]) {
-      return moduleMistakeToLevelRecommendation[module][mistake];
-    }
-    return null;
-};
+  
 
 
 
@@ -133,17 +130,17 @@ const IndividualReport = ({
 
 
 
-      if (aresOfImprovement && aresOfImprovement.length > 0) {
-        const firstMistake = aresOfImprovement[0]["Areas of Improvement"];
-        recommendation = getRecommendationForMistake(module, firstMistake);
-    }
-      const levels = ["Remote control level 3", "Zip1 test data", "Level 8", "Level 4", "Level 5"];
-      const currentLevelIndex = levels.indexOf(level);
-      const recommendedLevel =
-        currentLevelIndex >= 0 && currentLevelIndex < levels.length - 1
-          ? levels[currentLevelIndex + 1]
-          : null;  // If 
-          // console.log(recommendedLevel)
+    //   if (aresOfImprovement && aresOfImprovement.length > 0) {
+    //     const firstMistake = aresOfImprovement[0]["Areas of Improvement"];
+    //     recommendation = getRecommendationForMistake(module, firstMistake);
+    // }
+    //   const levels = ["Remote control level 3", "Zip1 test data", "Level 8", "Level 4", "Level 5"];
+    //   const currentLevelIndex = levels.indexOf(level);
+    //   const recommendedLevel =
+    //     currentLevelIndex >= 0 && currentLevelIndex < levels.length - 1
+    //       ? levels[currentLevelIndex + 1]
+    //       : null;  // If 
+    //       // console.log(recommendedLevel)
 
   // const boxsize = "flex-1 min-w-[290px] max-w-[500px]";
   const boxsize = " w-full md:w-1/2 xl:w-1/3";
@@ -247,6 +244,10 @@ const IndividualReport = ({
       ? attemptData.obstacles
       : [attemptData.obstacles];
 
+    let obstacles1Array = Array.isArray(attemptData.obstacles1)
+      ? attemptData.obstacles1
+      : [attemptData.obstacles1];
+
     const mergedPaths = [];
 
     let axisLines = attemptData.hAxisLines ? attemptData.hAxisLines : null;
@@ -290,6 +291,20 @@ const IndividualReport = ({
         )
         .flatMap(obstacle => obstacle.coordinates);
     };
+    const getObstacles1ForPath = pathNames => {
+      if (!obstacles1Array || obstacles1Array.length === 0) {
+        return [];
+      }
+
+      return obstacles1Array
+        .filter(
+          obstacle1 =>
+            obstacle1 &&
+            obstacle1.paths &&
+            obstacle1.paths.some(path => pathNames.includes(path))
+        )
+        .flatMap(obstacle1 => obstacle1.coordinates);
+    };
 
     if (isReachTruck) {
       const actual = attemptData.path.actual_path[paths[0]];
@@ -298,6 +313,8 @@ const IndividualReport = ({
         [paths[0]].includes(p.path)
       );
       const obstacleCoords = getObstaclesForPath([paths[0]]);
+      const obstacle1Coords = getObstacles1ForPath([paths[0]]);
+
 
       mergedPaths.push(
         <IdealActualPath
@@ -314,6 +331,8 @@ const IndividualReport = ({
           axisLines={axisLines}
           vAxisLines={vAxisLines}
           obstacles={obstacleCoords.length > 0 ? obstacleCoords : null}
+          obstacles1={obstacle1Coords.length > 0 ? obstacle1Coords : null}
+
           extraPlots={extraPlotPoits}
           isReachTruck={isReachTruck}
           isForkLift={isForkLift}
@@ -338,6 +357,10 @@ const IndividualReport = ({
         i == paths.length - 1 ? [paths[i]] : [paths[i], paths[i + 1]];
       const extraPlotPoits = extraPlots.filter(p => pathNames.includes(p.path));
       const obstacleCoords = getObstaclesForPath(pathNames);
+      const obstacle1Coords = getObstacles1ForPath(pathNames);
+
+      console.log(obstacle1Coords)
+
 
       mergedPaths.push(
         <IdealActualPath
@@ -356,6 +379,8 @@ const IndividualReport = ({
           axisLines={axisLines}
           vAxisLines={vAxisLines}
           obstacles={obstacleCoords.length > 0 ? obstacleCoords : null}
+          obstacles1={obstacle1Coords.length > 0 ? obstacle1Coords : null}
+
           extraPlots={extraPlotPoits}
           isReachTruck={isReachTruck}
           isForkLift={isForkLift}
@@ -612,6 +637,13 @@ const IndividualReport = ({
                 )}
                 {attemptData.tableKpis && (
                   <TableKpis tableKpis={attemptData.tableKpis} />
+                )}
+
+                {attemptData.kpitable && (
+                  <Newtable kpitable={attemptData.kpitable} />
+                )}
+                   {attemptData.pathtable && (
+                  <Pathtable pathtable={attemptData.pathtable} />
                 )}
                 {/* {attemptData.generalkpis &&
                   Object.keys(attemptData.generalkpis).length > 0 &&

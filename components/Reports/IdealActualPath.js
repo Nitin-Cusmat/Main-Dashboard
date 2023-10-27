@@ -14,6 +14,7 @@ const IdealActualPath = ({
   isReachTruck,
   isForkLift,
   obstacles,
+  obstacles1,
   vAxisLines
 }) => {
   const memoisedChart = useMemo(
@@ -28,6 +29,7 @@ const IdealActualPath = ({
         isReachTruck={isReachTruck}
         isForkLift={isForkLift}
         obstacles={obstacles}
+        obstacles1={obstacles1}
         vAxisLines={vAxisLines}
         title={title}
       />
@@ -61,6 +63,7 @@ const IdealActualPath = ({
             <CustomLegend
               showLegend={showLegend}
               obstacles={obstacles}
+              obstacles1={obstacles1}
               isForkLift={isForkLift}
             />
           </div>
