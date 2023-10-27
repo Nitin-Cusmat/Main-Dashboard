@@ -359,9 +359,6 @@ const IndividualReport = ({
       const obstacleCoords = getObstaclesForPath(pathNames);
       const obstacle1Coords = getObstacles1ForPath(pathNames);
 
-      console.log(obstacle1Coords)
-
-
       mergedPaths.push(
         <IdealActualPath
           ideal={ideal2 ? [...ideal1, ...ideal2] : [...ideal1]}
