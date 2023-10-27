@@ -119,6 +119,9 @@ const getGraphOptions = (
             if (tooltipItem.dataset.label === "Obstacles") {
               return "Obstacle";
             }
+            if (tooltipItem.dataset.label === "Obstacles1") {
+              return "Obstacle1";
+            }
             let point = null;
             if (tooltipItem.dataset.label == "Actual Path 1") {
               point = actualPath1[tooltipItem.dataIndex];
@@ -221,6 +224,7 @@ const MyChart = ({
   isReachTruck,
   isForkLift,
   obstacles,
+  obstacles1,
   vAxisLines,
   title
 }) => {
@@ -397,6 +401,22 @@ const MyChart = ({
       radius: 4
     };
   }
+  let obstacle1Plots = null;
+  if (obstacles1) {
+    obstacle1Plots = {
+      label: "Obstacles1",
+      tension: 0.5, // for smoother line/curve
+      borderWidth: 2,
+      showLine: false,
+      data: obstacles1,
+      pointStyle: "rect",
+      rotation: 45,
+      pointBackgroundColor: "red",
+      pointBorderColor: "red",
+      radius: 4
+    };
+  }
+
 
   const getAxisLinePlotPoints = (axislinesdata, horizontal = true) => {
     let plotLines = [];
@@ -563,7 +583,13 @@ const MyChart = ({
         ? [idealPathData, actualPathDataWithEvents, ...linesToPlot]
         : [idealPathData, actualPathDataWithEvents]
   };
+  if (obstaclePlots) {
+    data.datasets.push(obstaclePlots);
+}
 
+if (obstacle1Plots) {
+    data.datasets.push(obstacle1Plots);
+}
   return (
     <div className="rounded  text-slate-500">
       <div className="min-h-[300px] relative pt-8">

@@ -27,16 +27,32 @@ const ComparativeTable = ({
       ? rows2.slice(rows.length)
       : null;
   const thCss = `bg-blue-100 text-dark font-medium text-sm md:text-md capitalize border ${alignmentCss}`;
-const columnHasData = (colName) => {
-  return rows.some(row => row[colName] !== undefined && row[colName] !== null);
-}
+
+  const rowContainsSpecificTask = (row, task) => {
+    return Object.values(row).some(value => String(value).includes(task));
+  };
+  const renderTaskHeading = (taskName) => (
+    
+    <tr>
+      <td colSpan={columns.length + (addIndex ? 1 : 0)} className="text-center p-2">
+        <div className={`font-bold text-xl text-white animatedGradient border border-blue-300 rounded-lg shadow-md py-2 px-4 hover:shadow-lg transition-shadow duration-300`}>
+          Key Performance indicators for : {taskName}
+        </div>
+      </td>
+    </tr>
+  );
+  
+
+const rowContainsSpecificString = (row) => {
+  return Object.values(row).some(value => String(value) === "Sdfdsf");
+};
 
   const getRecords = (row, rowIndex, rowLength) => (
     <tr
-      key={`${row[table_key]}_${rowIndex}`}
-      className={`even:bg-[#fafafa] odd:bg-[#f6f4f8] hover:bg-yellow ${
-        rowIndex === rowLength - 1 && isSpecialModule && "font-bold"
-      }`}
+        key={`${row[table_key]}_${rowIndex}`}
+        className={`even:bg-[#fafafa] odd:bg-[#f6f4f8] hover:bg-yellow ${
+          rowIndex === rowLength - 1 && isSpecialModule && "font-bold"
+        } ${rowContainsSpecificString(row) ? "mb-104" : ""}`} // Add this part
     >
       {columns &&
         columns.map((col, colIndex) => {
@@ -217,10 +233,25 @@ const columnHasData = (colName) => {
               </>
             ))}
           {/* records */}
-         
           {rows &&
-            rows.length > 0 &&
-            rows.map((row, rowIndex) => getRecords(row, rowIndex, rows.length))}
+        rows.length > 0 &&
+        rows.map((row, rowIndex) => (
+          <>
+            {rowContainsSpecificTask(row, "Task 1") && 
+            !rows.slice(0, rowIndex).some(prevRow => rowContainsSpecificTask(prevRow, "Task 1")) && 
+            renderTaskHeading("Task 1")}
+            
+            {rowContainsSpecificTask(row, "Task 2") && 
+            !rows.slice(0, rowIndex).some(prevRow => rowContainsSpecificTask(prevRow, "Task 2")) && 
+            renderTaskHeading("Task 2")}
+            
+            {rowContainsSpecificTask(row, "Task 3") && 
+            !rows.slice(0, rowIndex).some(prevRow => rowContainsSpecificTask(prevRow, "Task 3")) && 
+            renderTaskHeading("Task 3")}
+            
+            {getRecords(row, rowIndex, rows.length)}
+          </>
+        ))}
           {remainingRows &&
             remainingRows.map((row, rowIndex) => getRecords(row, rowIndex))}
 

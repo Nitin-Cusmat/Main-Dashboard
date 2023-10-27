@@ -15,6 +15,12 @@ const IdealActualTimeBar = ({
   });
   let labelsList = Object.keys(idealTimeObj).map(key => key.toLowerCase());
   let idealTimeList = Object.values(idealTimeObj);
+  const hasNoIdealTime = !idealTimeList.length || idealTimeList.every(time => time === 0);
+
+  if (hasNoIdealTime) {
+    return null;
+  }
+
   let actualTimeList = labelsList.map(path => {
     try {
       return (
