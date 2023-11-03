@@ -155,19 +155,16 @@ const Individual = () => {
             {
               title: "Success Rate",
               extraInfo: (
-                <>
-                  <div className="flex flex-col items-start">
-                    <Chart
-                      type={CHART_TYPES.RADIAL}
-                      options={options}
-                      series={[resJson.success_rate]}
-                      width={100}
-                      height={120}
-                    ></Chart>
-
-                    <span className="text-sm">{`Attempts passed: ${resJson.completed_levels}`}</span>
-                  </div>
-                </>
+                <div className="flex flex-col items-start">
+                  <Chart
+                    type={CHART_TYPES.RADIAL}
+                    options={options}
+                    series={[resJson.success_rate]}
+                    width={100}
+                    height={120}
+                  ></Chart>
+                  <span className="text-sm">{`Attempts passed: ${resJson.completed_levels}`}</span>
+                </div>
               )
             },
             selectedPeriod === "Attempt Wise" && {
@@ -487,7 +484,7 @@ const Individual = () => {
                           {element.title}
                         </div>
                       )}
-                      {element.value && (
+                      {element.value !== undefined && (
                         <div className="text-primary font-md font-semibold pt-4">
                           {element.value}
                         </div>
@@ -500,6 +497,42 @@ const Individual = () => {
                 })}
             </div>
             <hr />
+
+            {/* <div className="w-full lg:w-1/2">
+              <Chart
+                type={CHART_TYPES.LINE}
+                height={350}
+                series={[
+                  {
+                    name: "Desktops",
+                    data: [10, 41, 35, 51, 49, 62, 69, 91, 148]
+                  },
+                  {
+                    name: "Desktops",
+                    data: [60, 60, 60, 60, 60, 60, 60, 60, 60]
+                  }
+                ]}
+                options={{
+                  stroke: {
+                    width: [4, 3, 5]
+                  },
+                  xaxis: {
+                    categories: [
+                      "Jan",
+                      "Feb",
+                      "Mar",
+                      "Apr",
+                      "May",
+                      "Jun",
+                      "Jul",
+                      "Aug",
+                      "Sep"
+                    ]
+                  }
+                }}
+              />
+            </div> */}
+
             {/* Mistakes */}
             <div className="mt-8 underline">Mistakes-</div>
             <CustomTable
