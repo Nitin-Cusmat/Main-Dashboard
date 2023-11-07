@@ -369,7 +369,28 @@ const MyChart = ({
     },
     tension: 0.5, // for smoother line/curve
     borderWidth: 2,
-    showLine: true
+    showLine: true,
+    pointBackgroundColor: context =>
+      diff({
+        context: context,
+        trueValue: "#000",
+        falseValue: "white",
+        showArrow: true,
+        arrowValue: "orange"
+      }),
+    pointStyle: context =>
+      diff({
+        context: context,
+        falseValue: false
+      }),
+    radius: context =>
+      diff({
+        context: context,
+        trueValue: 3,
+        falseValue: 3,
+        showArrow: true,
+        arrowValue: 10
+      })
   };
   const actualPathDataWithEvents2 = actual2 &&
     compare && {
@@ -416,7 +437,6 @@ const MyChart = ({
       radius: 4
     };
   }
-
 
   const getAxisLinePlotPoints = (axislinesdata, horizontal = true) => {
     let plotLines = [];
@@ -585,11 +605,11 @@ const MyChart = ({
   };
   if (obstaclePlots) {
     data.datasets.push(obstaclePlots);
-}
+  }
 
-if (obstacle1Plots) {
+  if (obstacle1Plots) {
     data.datasets.push(obstacle1Plots);
-}
+  }
   return (
     <div className="rounded  text-slate-500">
       <div className="min-h-[300px] relative pt-8">
