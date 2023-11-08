@@ -106,7 +106,8 @@ const SIDENAV_ITEMS = [
 
 const COOKIE_KEYS = {
   ACCESS: "access",
-  REFRESH: "refresh"
+  REFRESH: "refresh",
+  ORG_SLUG: "org"
 };
 
 const HTTP_METHODS = {
