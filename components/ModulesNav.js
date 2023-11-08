@@ -256,7 +256,7 @@ const tooltipStyle = {
             </button>
             {hoveredTooltip === 'completionInfo' && (
               <div style={getTooltipStyle('completionInfo')}>
-                How many active users completed all the level (module name - {activeModuleName}).
+                How many active users completed all assessment level (module name - {activeModuleName}).
               </div>
             )}
           </div>
@@ -302,7 +302,7 @@ const tooltipStyle = {
                 </button>
                 {hoveredTooltip === 'performanceInfo' && (
                  <div style={getTooltipStyle('performanceInfo')}>
-                  This indicates % of active users completed the levels in current month (module name - {activeModuleName}).
+                  This indicates % of active users completed all assessment levels in current month (module name - {activeModuleName}).
                 </div>
                 )}
               </div>
