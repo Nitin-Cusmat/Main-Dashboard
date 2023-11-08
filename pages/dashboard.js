@@ -258,7 +258,7 @@ const Dashboard = () => {
                       </button>
                     {hoveredTooltip === 'completionRate' && (
                       <div style={tooltipStyle}>
-                        This indicates out of the total number of active users, how many have completed all the levels.
+                        This indicates out of the total number of active users, how many have completed all assessment levels across modules.
                       </div>
                     )}
                   </div>
@@ -304,7 +304,7 @@ const Dashboard = () => {
                     </button>
                     {hoveredTooltip === 'performanceTrend' && (
                       <div style={tooltipStyle}>
-                        This indicates % of users who have completed all the levels in current month.
+                        This indicates % of users who have completed all assessment levels in current month.
                       </div>
                     )}
                   </div>
