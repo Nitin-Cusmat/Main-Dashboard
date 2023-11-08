@@ -1,6 +1,5 @@
 import { HTTP_STATUSES, cookieKeys, loginStates } from "utils/constants";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import useLogin from "hooks/useLogin";
 import appRoutes from "utils/app-routes";
 import apiRoutes from "utils/api-routes";
@@ -8,11 +7,33 @@ import request from "utils/api";
 import AuthWall from "components/AuthWall";
 import Custom404 from "pages/404";
 import { setCookie } from "utils/storage";
+import { useRouter } from "next/router";
+import { toast } from "react-toastify";
+import Head from "next/head";
 
 export default function OrgLogin({ orgDetails, isValid }) {
   const router = useRouter();
   const { setStatus, setId, status } = useLogin();
   const [org, setOrg] = useState(orgDetails);
+
+  useEffect(() => {
+    const { query } = router;
+    if (query.error) {
+      toast.error(
+        "Your License has been expired. Please contact cusmat administrator",
+        {
+          toastId: "error",
+          position: "top-center",
+          autoClose: false,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "colored"
+        }
+      );
+    }
+  }, [router.query]);
 
   useEffect(() => {
     if (status === loginStates.IS_LOGGED_IN) {
@@ -31,6 +52,9 @@ export default function OrgLogin({ orgDetails, isValid }) {
       <div>
         {status == loginStates.IS_NOT_LOGGED_IN && (
           <>
+            <Head>
+              <title>{`${org.name} Login`}</title>
+            </Head>
             {org?.logo && (
               <img
                 src={org?.logo}

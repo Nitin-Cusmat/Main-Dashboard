@@ -1,13 +1,14 @@
 import apiRoutes from "./api-routes";
-import appRoutes from "./app-routes";
+import Router from "next/router";
 import {
   COOKIE_KEYS,
   HTTP_METHODS,
   HTTP_STATUSES,
   HTTP_HEADERS
 } from "./constants";
-import { getCookie, setCookie } from "./storage";
+import { deleteCookie, getCookie, setCookie } from "./storage";
 import { getDateFromEpoch } from "./utils";
+import appRoutes from "./app-routes";
 
 //Parse or Decrypt JWT Access and Refresh Tokens to read information
 const parseJwt = token => {
@@ -32,17 +33,41 @@ const getAcessTokenFromRefreshToken = async refreshToken => {
   return accessToken;
 };
 
+const handleTokenExpiration = accessToken => {
+  const parsedAccessToken = parseJwt(accessToken);
+  const currentDate = new Date();
+  const licenseExpiryDate = new Date(parsedAccessToken.license_expiry_date);
+
+  if (licenseExpiryDate < currentDate) {
+    deleteCookie(COOKIE_KEYS.ACCESS);
+    deleteCookie(COOKIE_KEYS.REFRESH);
+    const orgSlugInfo = getCookie(COOKIE_KEYS.ORG_SLUG);
+    if (orgSlugInfo) {
+      const redirectLoginUrl = appRoutes.login.replace(
+        ":slug",
+        JSON.parse(orgSlugInfo).slug
+      );
+      const redirectUrl = `${redirectLoginUrl}?error=LicenseExpired`;
+      window.location.href = redirectUrl;
+    } else {
+      window.location.href = appRoutes.root;
+    }
+  }
+};
+
 // Get Access Token Cookie
 // Only works when called from client side as document is unavailable to server
 const getAccessToken = async () => {
   let accessToken = getCookie(COOKIE_KEYS.ACCESS);
+  if (accessToken) {
+    handleTokenExpiration(accessToken);
+  }
   if (!accessToken) {
     const refreshToken = getCookie(COOKIE_KEYS.REFRESH);
     if (refreshToken) {
       accessToken = await getAcessTokenFromRefreshToken(refreshToken);
       if (accessToken) {
-        const parsedAccessToken = parseJwt(accessToken);
-        const accessTokenExpiryDate = getDateFromEpoch(parsedAccessToken.exp);
+        handleTokenExpiration(accessToken);
         setCookie(COOKIE_KEYS.ACCESS, accessToken, accessTokenExpiryDate);
       }
     }

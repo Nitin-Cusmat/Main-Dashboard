@@ -1,4 +1,5 @@
 import "../styles/globals.css";
+import "../pages/login/toastify.css";
 import { RecoilRoot } from "recoil";
 import InitState from "components/InitState";
 import { LoginProvider } from "hooks/useLogin";
