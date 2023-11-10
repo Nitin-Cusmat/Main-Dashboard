@@ -19,42 +19,28 @@ const extractNumericalValue = (valueWithUnit) => {
   return 0;
 };
 
-const RangeBarChart = ({ rangeData, title, compare, showIdealTime }) => {
+const RangeBarChart1= ({ rangeData, title, compare, showIdealTime }) => {
   const { screenWidth } = useRecoilValue(deviceState);
 
-  const getData = (rangeData, splitOnBracket) => {
-    const dataWithSplit = [];
-  rangeData.forEach(item => {
-    if (splitOnBracket && item.name.includes("(")) {
-      // Separate the entry before "(" and set up an empty y range for spacing
-      dataWithSplit.push({
-        x: item.name.substring(0, item.name.indexOf("(")).trim(),
-        y: [0, 0], // This creates an empty space in the bar for the table label
-      });
-      // The actual data entry with the bar
-      dataWithSplit.push({
+  const getData = rangeData => {
+    return rangeData.map(item => {
+      let dataObj = {
         x: item.name,
         y: [0, item.decimalValue],
-      });
-    } else {
-      dataWithSplit.push({
-        x: item.name,
-        y: [0, item.decimalValue],
-      });
-    }
-    // Append goals if applicable
-    if (showIdealTime && item["Ideal time"]) {
-      const lastEntry = dataWithSplit[dataWithSplit.length - 1];
-      lastEntry.goals = [{
-        name: "Ideal Time",
-        value: extractNumericalValue(item["Ideal time"]),
-        strokeColor: "#CD2F2A"
-      }];
-    }
-  });
+      };
+      if (showIdealTime && item["Ideal time"]) {
+        dataObj.goals = [
+          {
+            name: "Ideal Time",
+            value: extractNumericalValue(item["Ideal time"]),
+            strokeColor: "#CD2F2A"
+          }
+        ];
+      }
+      return dataObj;
+    });
+  };
 
-  return dataWithSplit;
-};
   // const data1 = rangeData.map(item => {
   //   return {
   //     x: item.name,
@@ -78,14 +64,13 @@ const RangeBarChart = ({ rangeData, title, compare, showIdealTime }) => {
 
   const options = {
     chart: {
-      height: 350,
+      height: 450,
       type: "rangeBar",
       toolbar: {
         show: false
       },
       background: "#FFFFFF", // Set the background color of the chart
     },
-    
     dataLabels: {
       enabled: false,
       textAnchor: "start",
@@ -97,13 +82,10 @@ const RangeBarChart = ({ rangeData, title, compare, showIdealTime }) => {
     },
     plotOptions: {
       bar: {
-        borderRadius: 4, // Adjust as needed
-        borderColor: '#333', // The color of the border
-        borderWidth: 2, // The width of the border
         // horizontal: true,
         // barHeight: "80%"
         horizontal: true,
-        barHeight: 40, // Adjust the bar height as needed
+        barHeight: 50, // Adjust the bar height as needed
         distributed: true, // Enable to evenly distribute bars across the available width
         rangeBarGroupRows: true, // Enable to group bars by row
         dataLabels: {
@@ -180,11 +162,10 @@ const RangeBarChart = ({ rangeData, title, compare, showIdealTime }) => {
             : "400px"
         }
         width={
-          screenWidth < 300 ? "200px" : screenWidth < 800 ? "1400px" : "1150px"
-        }
+          screenWidth < 300 ? "200px" : screenWidth < 800 ? "1400px" : "1150px"        }
       />
     </div>
   );
 };
 
-export default RangeBarChart;
+export default RangeBarChart1;

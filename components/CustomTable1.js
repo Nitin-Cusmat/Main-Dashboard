@@ -7,7 +7,7 @@ import { reverse } from "named-urls";
 import { Pagination } from "./Pagination";
 import ReactLoading from "react-loading";
 import { BsDot } from "react-icons/bs";
-const CustomTable = ({
+const CustomTable1 = ({
   columns,
   rows,
   showSelect,
@@ -292,7 +292,7 @@ const CustomTable = ({
   );
 };
 
-CustomTable.propTypes = {
+CustomTable1.propTypes = {
   showSelect: PropTypes.bool,
   selectedIds: PropTypes.array,
   setSelectedIds: PropTypes.func,
@@ -305,7 +305,7 @@ CustomTable.propTypes = {
 
 };
 
-CustomTable.defaultProps = {
+CustomTable1.defaultProps = {
   showSelect: false,
   selectedIds: [],
   setSelectedIds: () => {},
@@ -318,4 +318,4 @@ CustomTable.defaultProps = {
 
 };
 
-export default CustomTable;
+export default CustomTable1;

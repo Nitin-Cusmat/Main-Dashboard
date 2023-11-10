@@ -1,4 +1,4 @@
-import CustomTable from "components/CustomTable";
+import CustomTable from "components/CustomTable1";
 import React, { useEffect, useState } from "react";
 
 import {
@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend
 } from "chart.js";
-import RangeBarChart from "./RangeBarChart";
+import RangeBarChart from "./RangeBarChart1";
 import { getFormattedTime } from "utils/utils";
 ChartJS.register(
   CategoryScale,
@@ -21,14 +21,14 @@ ChartJS.register(
   Legend
 );
 
-const KpiReport = ({ kpis1, kpis2, compare, module, organization }) => {  
+const KpiReport1 = ({ kpitask1, kpitask2, compare, module, organization }) => {
   const [booleanKpis, setBooleanKpis] = useState([]);
   const [decimalKpis, setDecimalKpis] = useState([]);
   const [stringKpis, setStringKpis] = useState([]);
   const [rangeKpis, setRangeKpis] = useState([]);
 
-  const hasIdealTime = kpis1.some(kpi => kpi.ideal_time !== undefined);
-  const hasSpeed = kpis1.some(kpi => kpi.speed !== undefined);
+  const hasIdealTime = kpitask1.some(kpi => kpi.ideal_time !== undefined);
+  const hasSpeed = kpitask1.some(kpi => kpi.speed !== undefined);
   const extractNumericalValue = (valueWithUnit) => {
     if (typeof valueWithUnit === 'number') return valueWithUnit;
     if (typeof valueWithUnit === 'string' && !isNaN(valueWithUnit)) return parseFloat(valueWithUnit);
@@ -48,15 +48,18 @@ const KpiReport = ({ kpis1, kpis2, compare, module, organization }) => {
     }
     return answer.replace(/right/gi, '✅').replace(/wrong/gi, '❌'); 
 };
+
 const isApollo = organization && organization.name.toLowerCase() === "vctpl";
-const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
+const kpiTitle = isApollo ? "Loading KPI" : "KPIS";
+
+
 
   useEffect(() => {
     let bKpis = [];
     let dKpis = [];
     let sKpis = [];
     let rKpis = [];
-    kpis1.forEach((kpi, index) => {
+    kpitask1.forEach((kpi, index) => {
       const idealTimeNumerical = extractNumericalValue(kpi.ideal_time);
   const user1Value = extractNumericalValue(kpi.value);
   let timeDifferenceFormatted, timeDifferenceColor;
@@ -89,8 +92,8 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
 
 
       
-  if (compare && kpis2 && kpis2.length > index && kpis2[index].value && kpis2[index].ideal_time !== undefined) {
-    const user2Value = extractNumericalValue(kpis2[index].value);
+  if (compare && kpitask2 && kpitask2.length > index && kpitask2[index].value && kpitask2[index].ideal_time !== undefined) {
+    const user2Value = extractNumericalValue(kpitask2[index].value);
         const timeDifference2 = user2Value - idealTimeNumerical;
     
         if (timeDifference2 > 0) {
@@ -134,18 +137,18 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
                     decimalValue: kpi.value,
                     range: [min, max],
                     "Ideal time": idealTimeFormatted,
-                    "Spotting attempts by user 1": kpi.Spotting_attempts, // Add this line
+                    "Spotting attempts by user 1": kpi.Spotting_attempt, // Add this line
                     "Collision by user 1": kpi.collision, // And this line
-                    "Spotting attempts by user 2": kpis2[index].Spotting_attempts, // Add this line
-                    "Collision by user 2": kpis2[index].collision,// And this line
+                    "Spotting attempts by user 2": kpitask2[index].Spotting_attempt, // Add this line
+                    "Collision by user 2": kpitask2[index].collision,// And this line
                     "ideal range": kpi.range.min + "-" + kpi.range.max,
                     "Time taken by user 1":
                       getFormattedTime(kpi.value) +
                       (kpi.unit ? " " + kpi.unit : ""),
                     "Time taken by user 2":
-                      getFormattedTime(kpis2[index].value) +
+                      getFormattedTime(kpitask2[index].value) +
                       " " +
-                      (kpis2[index].unit ? " " + kpis2[index].unit : ""),
+                      (kpitask2[index].unit ? " " + kpitask2[index].unit : ""),
                       time_difference_user1: timeDifferenceFormatted,
                       time_difference_color_user1: timeDifferenceColor,
                       time_difference_user2: timeDifference2Formatted,
@@ -161,7 +164,7 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
                     decimalValue: kpi.value,
                     range: [min, max],
                     "Ideal time": idealTimeFormatted,
-                    "Spotting attempts by user": kpi.Spotting_attempts, // Add this line
+                    "Spotting attempts by user": kpi.Spotting_attempt, // Add this line
                     "Collision by user": kpi.collision, // And this line
                     "ideal range": kpi.range.min + "-" + kpi.range.max,
                     time_difference: timeDifferenceFormatted, // Added this field
@@ -185,14 +188,14 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
                     ...kpi,
                     "Assessment Question with correct checklist": kpi.question,  // Assuming the data is in kpi.question
                     "Answer user1": replaceRightWithIcon(kpi.answer),  // Assuming the answer data is in kpi.answer for user1
-                    "Answer user2": replaceRightWithIcon(kpis2[index].answer),
+                    "Answer user2": replaceRightWithIcon(kpitask2[index].answer),
                     "checklist selected by user1": replaceRightWithIcon(kpi.checklist),  // Use replaceWithEmojis for checklist
-                    "checklist selected by user2": replaceRightWithIcon(kpis2[index].checklist),  // And here for user2's checklist
+                    "checklist selected by user2": replaceRightWithIcon(kpitask2[index].checklist),  // And here for user2's checklist
                     "Time taken by user 1": `${getFormattedTime(kpi.value)}`,
-                    "Time taken by user 2": `${getFormattedTime(kpis2[index].value)}`,
+                    "Time taken by user 2": `${getFormattedTime(kpitask2[index].value)}`,
 
                     "value user2": `${getFormattedTime(
-                      kpis2[index]?.value !== undefined ? kpis2[index].value : 0
+                      kpitask2[index]?.value !== undefined ? kpitask2[index].value : 0
                     )}`,
                     ideal_time: kpi?.ideal_time,
                     time_difference_user1: timeDifferenceFormatted,
@@ -222,7 +225,7 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
 
                   value: kpi.value ? "True" : "False",
                   "value user1": kpi.value ? "True" : "False",
-                  "value user2": kpis2[index].value ? "True" : "False"
+                  "value user2": kpitask2[index].value ? "True" : "False"
                 }
               : {
                   ...kpi,
@@ -237,7 +240,7 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
                   ...kpi,
                   value: kpi.value + " " + kpi?.unit,
                   "value user1": kpi.value + " " + kpi?.unit,
-                  "value user2": kpis2[index].value + " " + kpi?.unit
+                  "value user2": kpitask2[index].value + " " + kpi?.unit
                 }
               : {
                   ...kpi,
@@ -251,10 +254,10 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
     setDecimalKpis(dKpis);
     setStringKpis(sKpis);
     setRangeKpis(rKpis);
-  }, [kpis1, kpis2]);
+  }, [kpitask1, kpitask2]);
 
   return (
-<div className="w-full">
+    <div className="w-full">
   <div className="py-3">
     <div className="bg-gradient-to-r from-green-200 via-blue-100 to-purple-200 rounded-t-lg shadow p-3 border-b-2 border-blue-300">
       <div className="flex items-center justify-between text-blue-800">
@@ -268,16 +271,15 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
         </div>
       </div>
     </div>
- 
-  </div>
+    </div>
 
-        <div className="">
+      <div className="">
         <div className="flex flex-col md:flex-row gap-4">
           {booleanKpis && booleanKpis.length > 0 && (
 
             <CustomTable
               columns={
-                compare && kpis2
+                compare && kpitask2
                   ? ["name", "value user1", "value user2"]
                   : ["name", "value"]
               }
@@ -291,7 +293,7 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
 
             <CustomTable
               columns={
-                compare && kpis2
+                compare && kpitask2
                   ? ["name", "value user1", "value user2"]
                   : ["name", "value"]
               }
@@ -309,33 +311,33 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
             <div>
               <CustomTable
                columns={
-                compare && kpis2
+                compare && kpitask2
                   ? [
-                      kpis1.some(kpi => kpi.question) ? "Assessment Question with correct checklist" : null,
-                      kpis1.some(kpi => kpi.answer) ? "Answer user1" : null,
-                      kpis2.some(kpi => kpi.answer) ? "Answer user2" : null,
-                      kpis1.some(kpi => kpi.checklist) ? "checklist selected by user1" : null,
-                      kpis2.some(kpi => kpi.checklist) ? "checklist selected by user2" : null,
-                      kpis1.some(kpi => kpi.name) ? "name" : null,
-                      kpis1.some(kpi => kpi.value) ? "Time taken by user 1" : null,
-                      kpis2.some(kpi => kpi.value) ? "Time taken by user 2" : null,
-                      kpis1.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user 1" : null,
-                      kpis2.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user 2" : null,
-                      kpis1.some(kpi => kpi.collision) ? "Collision by user 1" : null,
-                      kpis2.some(kpi => kpi.collision) ? "Collision by user 2" : null,
+                    kpitask1.some(kpi => kpi.question) ? "Assessment Question with correct checklist" : null,
+                    kpitask1.some(kpi => kpi.answer) ? "Answer user1" : null,
+                    kpitask2.some(kpi => kpi.answer) ? "Answer user2" : null,
+                      kpitask1.some(kpi => kpi.checklist) ? "checklist selected by user1" : null,
+                      kpitask2.some(kpi => kpi.checklist) ? "checklist selected by user2" : null,
+                      kpitask1.some(kpi => kpi.name) ? "name" : null,
+                      kpitask1.some(kpi => kpi.value) ? "Time taken by user 1" : null,
+                      kpitask2.some(kpi => kpi.value) ? "Time taken by user 2" : null,
+                      kpitask1.some(kpi => kpi.Spotting_attempt) ? "Spotting attempts by user 1" : null,
+                      kpitask2.some(kpi => kpi.Spotting_attempt) ? "Spotting attempts by user 2" : null,
+                      kpitask1.some(kpi => kpi.collision) ? "Collision by user 1" : null,
+                      kpitask2.some(kpi => kpi.collision) ? "Collision by user 2" : null,
                       hasIdealTime ? "time_difference_user1" : null,
                       hasIdealTime ? "time_difference_user2" : null,
                       hasIdealTime ? "Ideal time" : null,
                       hasSpeed ? "speed" : null
                     ].filter(Boolean)
                   : [
-                      kpis1.some(kpi => kpi.question) ? "Assessment Question with correct checklist" : null,
-                      kpis1.some(kpi => kpi.answer) ? "Answer" : null,
-                      kpis1.some(kpi => kpi.checklist) ? "checklist selected by user" : null,
-                      kpis1.some(kpi => kpi.name) ? "name" : null,
-                      kpis1.some(kpi => kpi.value) ? "Time taken by user" : null,
-                      kpis1.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user" : null,
-                      kpis1.some(kpi => kpi.collision) ? "Collision by user" : null,
+                    kpitask1.some(kpi => kpi.question) ? "Assessment Question with correct checklist" : null,
+                    kpitask1.some(kpi => kpi.answer) ? "Answer" : null,
+                    kpitask1.some(kpi => kpi.checklist) ? "checklist selected by user" : null,
+                    kpitask1.some(kpi => kpi.name) ? "name" : null,
+                    kpitask1.some(kpi => kpi.value) ? "Time taken by user" : null,
+                    kpitask1.some(kpi => kpi.Spotting_attempt) ? "Spotting attempts by user" : null,
+                    kpitask1.some(kpi => kpi.collision) ? "Collision by user" : null,
                       hasIdealTime ? "time_difference" : null,
                       hasIdealTime ? "Ideal time" : null,
                       hasSpeed ? "speed" : null
@@ -354,7 +356,7 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
 
             <CustomTable
             columns={
-              compare && kpis2
+              compare && kpitask2
                 ? ["name", "Time taken by user 1", "Time taken by user 2", hasIdealTime ? "time_difference_user1" : null, hasIdealTime ? "time_difference_user2" : null, hasIdealTime ? "Ideal time" : null, "Spotting attempts by user 1","Spotting attempts by user 2","Collision by user 1","Collision by user 2",hasSpeed ? "speed" : null].filter(Boolean)
                 : ["name", "Time taken by user", hasIdealTime ? "time_difference" : null, hasIdealTime ? "Ideal time" : null,"Spotting attempts by user", "Collision by user" , hasSpeed ? "speed" : null].filter(Boolean)
             }
@@ -386,4 +388,4 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
 
 
 
-export default KpiReport;
+export default KpiReport1;

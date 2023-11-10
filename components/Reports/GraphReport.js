@@ -37,6 +37,7 @@ const GraphReport = ({
   users,
   isWinder,
   isShovel,
+  ishhovel1,
   pieColor,
   cycleData
 }) => {
@@ -278,7 +279,12 @@ const GraphReport = ({
                 series={
                   compare
                     ? [
-                        { name: "User 1", data: graph.data },
+                      { 
+                        name: "User 1", 
+                        data: graph.data,
+                        type: 'area', // Specify the type as 'area' to fill under the line
+                        
+                      },
                         {
                           name: "User 2",
                           data:
@@ -290,11 +296,37 @@ const GraphReport = ({
                         ...getAdditionalPlots(graph2, compare, 2)
                       ]
                     : [
-                        { name: "User ", data: graph.data },
-                        ...getAdditionalPlots(graph)
+                      { 
+                        name: "User", 
+                        data: graph.data,
+                        type: 'area', // Specify the type as 'area' to fill under the line
+                       
+                      },                       
+                      ...getAdditionalPlots(graph)
                       ]
                 }
                 options={{
+                  fill: {
+                    type: 'gradient',
+                    gradient: {
+                      shadeIntensity: 0.1,
+                      opacityFrom: 0.1,
+                      opacityTo: 0.1,
+                      stops: [0, 100],
+                      colorStops: [
+                        {
+                          offset: 0, // Top of the gradient
+                          color: "#82fff3", // Replace with the desired top color
+                          opacity: 0.2
+                        },
+                        {
+                          offset: 100, // Bottom of the gradient
+                          color: "#adfff3", // Replace with the desired bottom color
+                          opacity: 0.1
+                        }
+                      ]
+                    }
+                  },
                   // fill:
                   //   referenceGraph !== undefined
                   //     ? {

@@ -4,7 +4,7 @@ import Chart from "components/Chart/Chart";
 import { CHART_TYPES } from "utils/constants";
 import IdealActualTimeBar from "./IdealActualTimeBar";
 
-const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
+const DrivingModuleReport = ({ attemptData, attemptData2, compare, organization }) => {
   const path = attemptData.path;
   let idealTime = [];
   const classname = "text-dark";
@@ -63,13 +63,20 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
       }
     }
   };
+  const isApollo = organization && organization.name.toLowerCase() === "vctpl"; //rtgc
+  const engageErrorLabel = isApollo ? "Loading Error[yard to Truck] (Angle)" : "Pallet Engage Error (Angle)";  // for rtgc
+  const engageDistanceLabel = isApollo ? "Loading Error[yard to Truck] (Distance)" : "Pallet Engage Error (Distance)"; // for rtgc
 
+  const stackingErrorLabel = isApollo ? "Stacking Error[Truck to Yard] (Angle)" : "Stacking Error (Angle)"; // for rtgc
+  const stackingDistanceLabel = isApollo ? "Stacking Error[Truck to Yard] (Distance)" : "Stacking Error (Distance)"; // for rtgc
   const getAngleChart = (dataObj, angleField) => {
+    const chartHeight = isApollo ? "180%" : "100%"; // Set the height based on the organization
+
     return (
       <div className="h-full w-full">
         <Chart
           width={"100%"}
-          height={"100%"}
+          height={chartHeight}
           type={CHART_TYPES.LINE}
           options={angleOptions}
           series={
@@ -124,9 +131,9 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
         <div className=" text-primary text-sm p-2 mt-2 border w-full rounded mx-auto flex flex-wrap">
           {attemptData[dataObj].map((d, index) => {
             return (
-              <span key="angle_index" className="p-2 w-1/2">
-                Pallet {parseInt(index + 1)} {compare && "User 1"}:{" "}
-                <span className="font-bold">{d[angleField]}</span>
+              <span key={`angle_${index}`} className="p-2 w-1/2">
+                  Pallet {parseInt(index + 1)} {compare && "User 1"}:{" "}
+                <span className="font-bold">{parseFloat(d[angleField]).toFixed(2)}</span>
               </span>
             );
           })}
@@ -134,10 +141,10 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
             compare &&
             attemptData2[dataObj].map((d, index) => {
               return (
-                <span key="angle_index" className="p-2 w-1/2">
-                  Pallet {parseInt(index + 1)} User 2:{" "}
-                  <span className="font-bold">{d[angleField]}</span>
-                </span>
+                <span key={`angle_${index}`} className="p-2 w-1/2">
+                  Pallet {parseInt(index + 1)} {compare && "User 2"}:{" "}
+                <span className="font-bold">{parseFloat(d[angleField]).toFixed(2)}</span>
+              </span>
               );
             })}
         </div>
@@ -284,8 +291,53 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
             }
           />
         </div> */}
+        {/* This below code is only for RTGC */}
+        {isApollo && attemptData.boxPickupData && attemptData.boxPickupData.length > 0 && (
+         <div className="flex flex-wrap pt-4 print:flex print:flex-row">
+         <div className="p-4 w-full md:w-1/2 print:w-1/2 h-full">
+           <div className="my-2">
+             <div className="flex justify-center">
+               <div className="py-2 transform transition duration-500 hover:scale-105 cursor-pointer">
+                 <div className="bg-gradient-to-r from-green-200 via-blue-100 to-purple-200 rounded-lg shadow-xl p-2 border-b-2 border-blue-300">
+                   <div className="flex items-center justify-center text-blue-800">
+                     <span className="icon text-xl">📊</span> {/* Replace with an actual icon if possible */}
+                     <h2 className="text-md md:text-lg font-medium pl-1">
+                       <strong>{stackingErrorLabel}</strong>
+                     </h2>
+                   </div>
+                 </div>
+               </div>
+             </div>
+           </div>
+              <div className="min-h-96"> 
+                {/* Call getAngleChart with the specific arguments for stackingAngle */}
+                {getAngleChart("boxKeptData", "stackingAngle")}
+              </div>
+            </div>
+            <div className="p-4 w-full md:w-1/2 print:w-1/2 h-full">
+            <div className="my-2">
+              <div className="flex justify-center">
+                <div className="py-2 transform transition duration-500 hover:scale-105 cursor-pointer">
+                  <div className="bg-gradient-to-r from-green-200 via-blue-100 to-purple-200 rounded-lg shadow-xl p-2 border-b-2 border-blue-300">
+                    <div className="flex items-center justify-center text-blue-800">
+                      <span className="icon text-xl">📊</span> {/* Replace with an actual icon if possible */}
+                      <h2 className="text-md md:text-lg font-medium pl-1">
+                        <strong>{engageErrorLabel}</strong>
+                      </h2>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+              <div className="min-h-96"> 
+                {/* Call getAngleChart with the specific arguments for engageAngle */}
+                {getAngleChart("boxPickupData", "engageAngle")}
+              </div>
+            </div>
+          </div>
+        )}
 
-        {attemptData.boxPickupData && attemptData.boxPickupData.length > 0 && (
+{!isApollo && attemptData.boxPickupData && attemptData.boxPickupData.length > 0 && (
           <div className="flex flex-wrap pt-4">
             <div className=" p-4 w-full md:w-1/2">
               <div className={classname}>Pallet engage error(Distance)</div>
@@ -297,7 +349,8 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
             </div>
           </div>
         )}
-        {attemptData.boxKeptData && attemptData.boxKeptData.length > 0 && (
+
+        {!isApollo && attemptData.boxKeptData && attemptData.boxKeptData.length > 0 && (
           <div className="flex flex-wrap">
             <div className=" p-4 w-full md:w-1/2">
               <div className={classname}>Stacking error(Distance)</div>
@@ -309,6 +362,7 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
             </div>
           </div>
         )}
+       
       </div>
     );
 };
