@@ -41,7 +41,7 @@ import ReactLoading from "react-loading";
 import CycleDataVisual from "./CycleDataVisual";
 import { Newtable } from "./newtable";
 import { Pathtable } from "./pathtable";
-
+import KpiReport1 from './KpiReport1';
 // function getRandomInt(min, max) {
 //   min = Math.ceil(min);
 //   max = Math.floor(max);
@@ -72,8 +72,11 @@ const IndividualReport = ({
     router.query.module.toLocaleLowerCase() === "reach truck";
   const isWinder =
     router.query.module && router.query.module.toLocaleLowerCase() === "winder";
+  
   const isShovel =
-    router.query.module && router.query.module.toLocaleLowerCase() === "shovel";
+    router.query.module &&   (router.query.module.toLocaleLowerCase() === "shovel" ||
+    router.query.module.toLocaleLowerCase() === "mining - shovel");
+    
   const isForkLift =
     router.query.module &&
     router.query.module.toLocaleLowerCase() === "forklift";
@@ -579,8 +582,13 @@ const IndividualReport = ({
           {attemptData && attemptData.score && (
             <ScoreRow score={[score]} attemptDuration={[attemptDuration]} />
           )}
+           {attemptData.tableKpis && (
+                  <TableKpis tableKpis={attemptData.tableKpis} />
+                )}
           {attemptData.path && (
-            <DrivingModuleReport attemptData={attemptData} />
+            <DrivingModuleReport attemptData={attemptData} 
+            organization={organization} // Make sure you pass the organization here
+            />
           )}
           {attemptData &&
             attemptData.subActivities &&
@@ -621,10 +629,9 @@ const IndividualReport = ({
                     measurement={attemptData.measurement}
                   />
                 )}
-                {attemptData.tableKpis && (
+                {/* {attemptData.tableKpis && (
                   <TableKpis tableKpis={attemptData.tableKpis} />
-                )}
-
+                )} */}
                 {attemptData.kpitable && (
                   <Newtable kpitable={attemptData.kpitable} />
                 )}
@@ -640,8 +647,16 @@ const IndividualReport = ({
                     />
                   ))} */}
                 {attemptData.kpis && attemptData.kpis.length > 0 && (
-                  <KpiReport kpis1={attemptData.kpis} />
+                  <KpiReport kpis1={attemptData.kpis} 
+                  organization={organization}/> // Make sure to pass the organization here/>
                 )}
+
+                {attemptData.kpitask && attemptData.kpitask.length > 0 && (
+                  <KpiReport1 kpitask1={attemptData.kpitask}
+                  organization={organization} // Make sure to pass the organization here
+                  />
+                )}
+
                 {attemptData.inspections &&
                   attemptData.inspections.length > 0 && (
                     <CarsomeReport attemptData={attemptData} module={module} />
@@ -699,6 +714,7 @@ const IndividualReport = ({
                             index={index}
                             isWinder={isWinder}
                             isShovel={isShovel}
+
                             pieColor={
                               ["pie", "doughnut"].includes(graph.type) &&
                               !["Time Taken by KPIS"].includes(graph.name) &&

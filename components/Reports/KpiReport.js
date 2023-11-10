@@ -21,7 +21,7 @@ ChartJS.register(
   Legend
 );
 
-const KpiReport = ({ kpis1, kpis2, compare, module }) => {
+const KpiReport = ({ kpis1, kpis2, compare, module, organization }) => {  
   const [booleanKpis, setBooleanKpis] = useState([]);
   const [decimalKpis, setDecimalKpis] = useState([]);
   const [stringKpis, setStringKpis] = useState([]);
@@ -29,8 +29,6 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
 
   const hasIdealTime = kpis1.some(kpi => kpi.ideal_time !== undefined);
   const hasSpeed = kpis1.some(kpi => kpi.speed !== undefined);
-
-
   const extractNumericalValue = (valueWithUnit) => {
     if (typeof valueWithUnit === 'number') return valueWithUnit;
     if (typeof valueWithUnit === 'string' && !isNaN(valueWithUnit)) return parseFloat(valueWithUnit);
@@ -50,7 +48,8 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
     }
     return answer.replace(/right/gi, '✅').replace(/wrong/gi, '❌'); 
 };
-
+const isApollo = organization && organization.name.toLowerCase() === "vctpl";
+const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
 
   useEffect(() => {
     let bKpis = [];
@@ -63,6 +62,17 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
   let timeDifferenceFormatted, timeDifferenceColor;
   let timeDifference2Formatted = "";  // Initialize with default value
   let timeDifference2Color = "";    
+
+  let idealTimeFormatted = kpi.ideal_time; // Assume kpi.ideal_time is a string like "120 sec"
+  if (kpi.ideal_time !== undefined) {
+    const idealTimeInSeconds = extractNumericalValue(kpi.ideal_time);
+    if (idealTimeInSeconds >= 60) {
+      const minutes = Math.floor(idealTimeInSeconds / 60);
+      const seconds = idealTimeInSeconds % 60;
+      idealTimeFormatted = `${minutes} min${seconds > 0 ? ` ${seconds.toFixed(2)} sec` : ''}`;
+    }
+  }
+  
 
   if (kpi.ideal_time !== undefined) {
     const timeDifference = user1Value - idealTimeNumerical;
@@ -98,6 +108,10 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
             const min = kpi.range.min ? kpi.range.min : 0;
             let max = kpi.range.max;
             max = Math.ceil(max);
+
+            
+
+            
             // const timeDifferenceFormatted = getFormattedTime(timeDifference); // This will give the time difference in the desired format
 
             // const idealTimeValue1 = extractNumericalValue(kpi.ideal_time);
@@ -119,7 +133,11 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
                     ...kpi,
                     decimalValue: kpi.value,
                     range: [min, max],
-                    "Ideal time": kpi?.ideal_time,
+                    "Ideal time": idealTimeFormatted,
+                    "Spotting attempts by user 1": kpi.Spotting_attempts, // Add this line
+                    "Collision by user 1": kpi.collision, // And this line
+                    "Spotting attempts by user 2": kpis2[index].Spotting_attempts, // Add this line
+                    "Collision by user 2": kpis2[index].collision,// And this line
                     "ideal range": kpi.range.min + "-" + kpi.range.max,
                     "Time taken by user 1":
                       getFormattedTime(kpi.value) +
@@ -142,7 +160,9 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
                       (kpi.unit ? " " + kpi.unit : ""),
                     decimalValue: kpi.value,
                     range: [min, max],
-                    "Ideal time": kpi?.ideal_time,
+                    "Ideal time": idealTimeFormatted,
+                    "Spotting attempts by user": kpi.Spotting_attempts, // Add this line
+                    "Collision by user": kpi.collision, // And this line
                     "ideal range": kpi.range.min + "-" + kpi.range.max,
                     time_difference: timeDifferenceFormatted, // Added this field
 
@@ -234,9 +254,24 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
   }, [kpis1, kpis2]);
 
   return (
-    <div className="my-4">
-      <div className="font-bold text-dark py-2">KPIS</div>
-      <div className="">
+<div className="w-full">
+  <div className="py-3">
+    <div className="bg-gradient-to-r from-green-200 via-blue-100 to-purple-200 rounded-t-lg shadow p-3 border-b-2 border-blue-300">
+      <div className="flex items-center justify-between text-blue-800">
+        <span className="icon text-2xl">📊</span> {/* Replace with an actual icon if possible */}
+        <h2 className="text-xl md:text-2xl font-semibold">
+        {kpiTitle} - Insights and Analytics
+        </h2>
+        <div className="flex items-center">
+          <span className="icon text-xl mr-2">🔍</span> {/* Replace with an actual icon if possible */}
+          <span className="icon text-xl">📈</span> {/* Replace with an actual icon if possible */}
+        </div>
+      </div>
+    </div>
+ 
+  </div>
+
+        <div className="">
         <div className="flex flex-col md:flex-row gap-4">
           {booleanKpis && booleanKpis.length > 0 && (
 
@@ -284,6 +319,10 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
                       kpis1.some(kpi => kpi.name) ? "name" : null,
                       kpis1.some(kpi => kpi.value) ? "Time taken by user 1" : null,
                       kpis2.some(kpi => kpi.value) ? "Time taken by user 2" : null,
+                      kpis1.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user 1" : null,
+                      kpis2.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user 2" : null,
+                      kpis1.some(kpi => kpi.collision) ? "Collision by user 1" : null,
+                      kpis2.some(kpi => kpi.collision) ? "Collision by user 2" : null,
                       hasIdealTime ? "time_difference_user1" : null,
                       hasIdealTime ? "time_difference_user2" : null,
                       hasIdealTime ? "Ideal time" : null,
@@ -295,6 +334,8 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
                       kpis1.some(kpi => kpi.checklist) ? "checklist selected by user" : null,
                       kpis1.some(kpi => kpi.name) ? "name" : null,
                       kpis1.some(kpi => kpi.value) ? "Time taken by user" : null,
+                      kpis1.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user" : null,
+                      kpis1.some(kpi => kpi.collision) ? "Collision by user" : null,
                       hasIdealTime ? "time_difference" : null,
                       hasIdealTime ? "Ideal time" : null,
                       hasSpeed ? "speed" : null
@@ -302,9 +343,11 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
               }
                 rows={decimalKpis.map(row => ({ ...row, className: "table-row-hover" }))}
                 colorField="time_difference_color" // Pass the color field to CustomTable
+                
 
               />
               </div>
+              
           )}
           {rangeKpis.length > 0 && (
 
@@ -312,14 +355,17 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
             <CustomTable
             columns={
               compare && kpis2
-                ? ["name", "Time taken by user 1", "Time taken by user 2", hasIdealTime ? "time_difference_user1" : null, hasIdealTime ? "time_difference_user2" : null, hasIdealTime ? "Ideal time" : null, hasSpeed ? "speed" : null].filter(Boolean)
-                : ["name", "Time taken by user", hasIdealTime ? "time_difference" : null, hasIdealTime ? "Ideal time" : null, hasSpeed ? "speed" : null].filter(Boolean)
+                ? ["name", "Time taken by user 1", "Time taken by user 2", hasIdealTime ? "time_difference_user1" : null, hasIdealTime ? "time_difference_user2" : null, hasIdealTime ? "Ideal time" : null, "Spotting attempts by user 1","Spotting attempts by user 2","Collision by user 1","Collision by user 2",hasSpeed ? "speed" : null].filter(Boolean)
+                : ["name", "Time taken by user", hasIdealTime ? "time_difference" : null, hasIdealTime ? "Ideal time" : null,"Spotting attempts by user", "Collision by user" , hasSpeed ? "speed" : null].filter(Boolean)
             }
             rows={rangeKpis.map(row => ({ ...row, className: "table-row-hover" }))}
             colorField="time_difference_color"  // Specify the color field here
+            
 
             />
           )}
+
+          
         </div>
         {rangeKpis.length > 0 && (
           <div className="border">
@@ -337,5 +383,7 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
     </div>
   );
 };
+
+
 
 export default KpiReport;

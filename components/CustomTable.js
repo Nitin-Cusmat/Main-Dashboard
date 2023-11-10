@@ -154,7 +154,16 @@ const CustomTable = ({
                           return (
                             <td
                             key={`${row[col]}_${index}`}
-                            style={col === "time_difference" && row[colorField] ? {color: row[colorField]} : {}}
+
+                            style={
+                              col === "time_difference_user1" && row["time_difference_color_user1"]
+                                ? { color: row["time_difference_color_user1"] }
+                                : col === "time_difference_user2" && row["time_difference_color_user2"]
+                                ? { color: row["time_difference_color_user2"] }
+                                : col === "time_difference" && row["time_difference_color"]
+                                ? { color: row["time_difference_color"] }
+                                : {}
+                            }                            
                             className={`text-sm md:text-md  p-3 ${valueCss} ${row[col] === "-" ? "text-white" : "text-dark"}`}
                           >
                               {col === "users_completed" && (

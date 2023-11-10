@@ -19,6 +19,8 @@ import { TableKpis } from "./TableKpis";
 import { useRouter } from "next/router";
 import CustomTable from "components/CustomTable";
 import { max } from "lodash";
+import KpiReport1 from "./KpiReport1";
+
 
 const ComparitiveAttemptReport = ({
   score,
@@ -26,7 +28,8 @@ const ComparitiveAttemptReport = ({
   attemptData,
   attemptData2,
   users,
-  module
+  module,
+  organization
 }) => {
   const router = useRouter();
   const getAreasOfImprovement = (attemptData, user) => {
@@ -352,6 +355,7 @@ const ComparitiveAttemptReport = ({
             <DrivingModuleReport
               attemptData={attemptData}
               attemptData2={attemptData2}
+              organization={{ name: "vctpl" }}
               compare
             />
           )}
@@ -403,6 +407,17 @@ const ComparitiveAttemptReport = ({
               <KpiReport
                 kpis1={attemptData.kpis}
                 kpis2={attemptData2.kpis}
+                organization={{ name: "vctpl" }}
+
+                compare
+              />
+            )}
+            {attemptData.kpitask && attemptData.kpitask.length > 0 && (
+              <KpiReport1
+              kpitask1={attemptData.kpitask}
+              kpitask2={attemptData2.kpitask}
+              organization={{ name: "vctpl" }}
+
                 compare
               />
             )}

@@ -277,8 +277,8 @@ const MyChart = ({
     axisLines,
     vAxisLines,
     isReachTruck,
-    title
-    // eventIndexes,
+    title,
+    eventIndexes,
     // eventIndexes2
   );
 
@@ -352,8 +352,8 @@ const MyChart = ({
     radius: context =>
       diff({
         context: context,
-        firstValue: axisLines || vAxisLines ? 7 : 15,
-        lastValue: axisLines || vAxisLines ? 7 : 15
+        firstValue: axisLines || vAxisLines ? 7 : 10,
+        lastValue: axisLines || vAxisLines ? 7 : 10
       })
   };
 
