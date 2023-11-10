@@ -1,5 +1,7 @@
 import DefaultLayout from "components/DefaultLayout";
 import {
+  CHART_COLORS,
+  CHART_TYPES,
   HTTP_METHODS,
   HTTP_STATUSES,
   SIDENAV_ITEM_OBJS
@@ -25,6 +27,7 @@ import { useRouter } from "next/router";
 import { trackPromise } from "react-promise-tracker";
 import ReactLoading from "react-loading";
 import Modal from "components/Modal";
+import Chart from "components/Chart/Chart";
 
 let html2pdf;
 if (typeof window !== "undefined") {
@@ -151,9 +154,17 @@ const Individual = () => {
           const briefDataList = [
             {
               title: "Success Rate",
-              value: resJson.success_rate + "%",
               extraInfo: (
-                <span className="text-sm">{`Attempts passed: ${resJson.completed_levels}`}</span>
+                <div className="flex flex-col items-start">
+                  <Chart
+                    type={CHART_TYPES.RADIAL}
+                    options={options}
+                    series={[resJson.success_rate]}
+                    width={100}
+                    height={120}
+                  ></Chart>
+                  <span className="text-sm">{`Attempts passed: ${resJson.completed_levels}`}</span>
+                </div>
               )
             },
             selectedPeriod === "Attempt Wise" && {
@@ -171,6 +182,10 @@ const Individual = () => {
             {
               title: "Mistakes",
               value: resJson.mistakes_count
+            },
+            {
+              title: "Performance Trend",
+              value: resJson.performance_trend
             }
           ].filter(Boolean);
           setBoxData(briefDataList);
@@ -321,6 +336,26 @@ const Individual = () => {
       });
   };
 
+  const options = {
+    legend: { show: false },
+    colors: [CHART_COLORS.chartBlue],
+    plotOptions: {
+      radialBar: {
+        dataLabels: {
+          show: true,
+          name: { show: false },
+          value: {
+            show: true,
+            offsetY: 6,
+            color: CHART_COLORS.chartBlue,
+            fontWeight: "bold",
+            fontSize: "14px"
+          }
+        }
+      }
+    }
+  };
+
   return (
     <DefaultLayout
       activeItemId={SIDENAV_ITEM_OBJS.REPORTS.id}
@@ -439,25 +474,65 @@ const Individual = () => {
         </div>
         {!loading ? (
           <>
-            <div className="flex flex-col md:flex-row  w-full md:w-[90%] lg:w-[70%] py-2">
+            <div className="flex flex-col md:flex-row  w-full md:w-[90%] lg:w-[80%] py-2">
               {boxData &&
                 boxData.map((element, index) => {
                   return (
                     <div key={index} className="w-full p-4 border-r">
-                      <div className="text-sm text-[#A1A3A8] lg:h-[36px]">
-                        {element && element.title}
-                      </div>
-                      <div className="text-primary font-md font-semibold pt-4">
-                        {element && element.value}
-                      </div>
-                      <div className="underline">
-                        {element && element.extraInfo}
-                      </div>
+                      {element.title && (
+                        <div className="text-sm text-[#A1A3A8] lg:h-[36px]">
+                          {element.title}
+                        </div>
+                      )}
+                      {element.value !== undefined && (
+                        <div className="text-primary font-md font-semibold pt-4">
+                          {element.value}
+                        </div>
+                      )}
+                      {element.extraInfo && (
+                        <div className="underline">{element.extraInfo}</div>
+                      )}
                     </div>
                   );
                 })}
             </div>
             <hr />
+
+            {/* <div className="w-full lg:w-1/2">
+              <Chart
+                type={CHART_TYPES.LINE}
+                height={350}
+                series={[
+                  {
+                    name: "Desktops",
+                    data: [10, 41, 35, 51, 49, 62, 69, 91, 148]
+                  },
+                  {
+                    name: "Desktops",
+                    data: [60, 60, 60, 60, 60, 60, 60, 60, 60]
+                  }
+                ]}
+                options={{
+                  stroke: {
+                    width: [4, 3, 5]
+                  },
+                  xaxis: {
+                    categories: [
+                      "Jan",
+                      "Feb",
+                      "Mar",
+                      "Apr",
+                      "May",
+                      "Jun",
+                      "Jul",
+                      "Aug",
+                      "Sep"
+                    ]
+                  }
+                }}
+              />
+            </div> */}
+
             {/* Mistakes */}
             <div className="mt-8 underline">Mistakes-</div>
             <CustomTable

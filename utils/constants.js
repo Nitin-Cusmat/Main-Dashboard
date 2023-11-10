@@ -17,7 +17,11 @@ const SIDENAV_ITEM_OBJS = {
     title: "Use Cases",
     link: appRoutes.useCases
   },
-  REPORTS: { id: "reports", title: "Reports", link: appRoutes.reports.self },
+  REPORTS: {
+    id: "reports",
+    title: "Trend Report",
+    link: appRoutes.reports.self
+  },
   ACTIVE_USER: {
     id: "activeUser",
     title: "Active User",
@@ -102,7 +106,8 @@ const SIDENAV_ITEMS = [
 
 const COOKIE_KEYS = {
   ACCESS: "access",
-  REFRESH: "refresh"
+  REFRESH: "refresh",
+  ORG_SLUG: "org"
 };
 
 const HTTP_METHODS = {
