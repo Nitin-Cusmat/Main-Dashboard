@@ -67,6 +67,8 @@ const getAccessToken = async () => {
     if (refreshToken) {
       accessToken = await getAcessTokenFromRefreshToken(refreshToken);
       if (accessToken) {
+        const parsedAccessToken = parseJwt(accessToken);
+        const accessTokenExpiryDate = getDateFromEpoch(parsedAccessToken.exp);
         handleTokenExpiration(accessToken);
         setCookie(COOKIE_KEYS.ACCESS, accessToken, accessTokenExpiryDate);
       }
