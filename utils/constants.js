@@ -261,6 +261,10 @@ const AXIS_LINES = [
     color: "b"
   }
 ];
+const ORG_MAPPING = {
+  Thriveni: "Thriveni",
+  DhlIndia: "DHL India"
+};
 export {
   SIDENAV_ITEMS,
   SIDENAV_ITEM_OBJS,
@@ -276,5 +280,6 @@ export {
   USER_TABLE_COLUMN_MAP,
   CHART_COLORS,
   CHART_TYPES,
-  AXIS_LINES
+  AXIS_LINES,
+  ORG_MAPPING
 };

@@ -16,7 +16,8 @@ import deviceState from "states/deviceState";
 import {
   formatDayDisplay,
   secondsToDuration,
-  getTimeFromDate
+  getTimeFromDate,
+  timeConverter
 } from "utils/utils";
 import request from "utils/api";
 import apiRoutes from "utils/api-routes";
@@ -56,6 +57,7 @@ const Individual = () => {
   const [showUsersModal, setShowUsersModal] = useState(false);
   const [message, setMessage] = useState("");
   const [description, setDescription] = useState(null);
+  const [chartData, setChartData] = useState(null);
 
   const today = new Date(); // current date and time
   const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -235,6 +237,7 @@ const Individual = () => {
       setMistakes(null);
       setLoading(true);
       getReportData();
+      getChartData();
     }
   }, [selectedModulesIds, selectedDateRange, selectedPeriod, organization]);
 
@@ -336,6 +339,12 @@ const Individual = () => {
       });
   };
 
+  const maxMonthsKey =
+    chartData &&
+    Object.keys(chartData).reduce((a, b) =>
+      chartData[a].length > chartData[b].length ? a : b
+    );
+
   const options = {
     legend: { show: false },
     colors: [CHART_COLORS.chartBlue],
@@ -354,6 +363,61 @@ const Individual = () => {
         }
       }
     }
+  };
+
+  const getChartData = () => {
+    const requestBody = {
+      start_date: getCorrectDateAfterISOString(selectedDateRange.startDate),
+      end_date: getCorrectDateAfterISOString(selectedDateRange.endDate),
+      module_names: selectedModulesIds
+        .map(id => modules.find(module => module.id == id)?.name)
+        .filter(name => name != "All"),
+      user_id: userId,
+      organization_id: organization.id
+    };
+    trackPromise(
+      request(`${apiRoutes.organization.performanceCharts}`, {
+        method: HTTP_METHODS.POST,
+        body: requestBody,
+        isAuthenticated: true
+      }).then(async response => {
+        if (response.status == HTTP_STATUSES.OK) {
+          const resJson = await response.json();
+          // setChartData(resJson);
+          setChartData({
+            "Reach Truck Double deep": [
+              {
+                month_name: "Sep 2023",
+                attempts_count: 5,
+                duration: 6030.9
+              },
+              {
+                month_name: "Oct 2023",
+                attempts_count: 13,
+                duration: 13207.58
+              },
+              {
+                month_name: "Nov 2023",
+                attempts_count: 10,
+                duration: 10176.52
+              }
+            ],
+            "Reach Truck Single deep": [
+              {
+                month_name: "Sep 2023",
+                attempts_count: 21,
+                duration: 8203.14
+              },
+              {
+                month_name: "Nov 2023",
+                attempts_count: 7,
+                duration: 5221.89
+              }
+            ]
+          });
+        }
+      })
+    );
   };
 
   return (
@@ -497,6 +561,88 @@ const Individual = () => {
                 })}
             </div>
             <hr />
+            {Object.keys(chartData).length > 0 && (
+              <div className="w-full my-3">
+                <Chart
+                  series={Object.keys(chartData).map(key => ({
+                    name: key,
+                    data: chartData[key].map(item => ({
+                      x: item.month_name,
+                      y: item.attempts_count,
+                      duration: item.duration
+                    }))
+                  }))}
+                  type={CHART_TYPES.LINE}
+                  height={350}
+                  options={{
+                    tooltip: {
+                      y: {
+                        formatter: function (
+                          value,
+                          { series, seriesIndex, dataPointIndex, w }
+                        ) {
+                          const duration =
+                            w.config.series[seriesIndex].data[dataPointIndex]
+                              .duration;
+                          const attemptsCount =
+                            w.config.series[seriesIndex].data[dataPointIndex].y;
+
+                          return `
+                            <div>
+                              <span>Attempts Count: ${attemptsCount}</span>
+                              <span>Duration: ${timeConverter(duration)}</span>
+                            </div>`;
+                        }
+                      }
+                    },
+                    markers: {
+                      size: 5,
+                      shape: "circle"
+                    },
+                    colors: Object.values(CHART_COLORS),
+                    stroke: {
+                      width: [4, 3, 5]
+                    },
+                    xaxis: {
+                      // categories: [
+                      //   new Date("2023-09-01").getTime(),
+                      //   new Date("2023-10-01").getTime(),
+                      //   new Date("2023-11-01").getTime()
+                      // ],
+                      showDuplicates: false,
+                      labels: {
+                        formatter: function (val) {
+                          const date = new Date(val);
+                          const monthNames = [
+                            "Jan",
+                            "Feb",
+                            "Mar",
+                            "Apr",
+                            "May",
+                            "Jun",
+                            "Jul",
+                            "Aug",
+                            "Sep",
+                            "Oct",
+                            "Nov",
+                            "Dec"
+                          ];
+                          return (
+                            monthNames[date.getMonth()] +
+                            "'" +
+                            date.getFullYear().toString().substr(-2)
+                          );
+                        }
+                      },
+                      title: {
+                        text: "Average Module Completion Time"
+                      }
+                      // type: "datetime"
+                    }
+                  }}
+                />
+              </div>
+            )}
 
             {/* <div className="w-full lg:w-1/2">
               <Chart

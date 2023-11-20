@@ -41,6 +41,7 @@ const apiRoutes = include("api/v1", {
     latestAttempts: "latest-attempts/",
     userModules: "user-assigned-module-level/",
     individualReport: "attempt-wise-report-table/",
+    performanceCharts: "performance-charts/",
     calculatePerformances: "calculate-performances/",
     applicationUsage: "application-usage/",
     levelAnalytics: "level-wise-analytics/",
@@ -50,7 +51,7 @@ const apiRoutes = include("api/v1", {
     applicationUsageAnalytics: "application-usage-analytics/",
     totalActiveModuleAndUsers: "total-active-module-and-users/",
     adminUserPerformance: "admin-organization-application-usage/",
-    levelUserInfo:"level-user-info/"
+    levelUserInfo: "level-user-info/"
   })
 });
 export default apiRoutes;
