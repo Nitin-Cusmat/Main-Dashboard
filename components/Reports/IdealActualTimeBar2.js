@@ -5,9 +5,10 @@ import { getFormattedTime } from "utils/utils";
 const IdealActualTimeBar2 = ({
   idealTime,
   actualPath,
-  actualPath2,
-  compare
+  compare,
+  actualPath2
 }) => {
+  const chartRef = useRef(null);
   const idealTimeObj = {};
   idealTime.forEach(e => {
     idealTimeObj[e.path] = e.timeTaken;
@@ -18,7 +19,7 @@ const IdealActualTimeBar2 = ({
     !idealTimeList.length || idealTimeList.every(time => time === 0);
 
   if (hasNoIdealTime) {
-    return null;
+    idealTimeList = [];
   }
 
   let actualTimeList = labelsList.map(path => {
@@ -53,8 +54,6 @@ const IdealActualTimeBar2 = ({
         })
       : null;
 
-  const chartRef = useRef(null);
-
   useEffect(() => {
     if (
       actualTimeList &&
@@ -85,7 +84,7 @@ const IdealActualTimeBar2 = ({
         }
       };
 
-      function makeOption(type, symbol) {
+      const makeOption = (type, symbol) => {
         return {
           title: {
             text: "Driving Performance"
@@ -310,7 +309,7 @@ const IdealActualTimeBar2 = ({
                   }
                 ]
         };
-      }
+      };
 
       const options = [
         makeOption("pictorialBar"),
@@ -329,7 +328,8 @@ const IdealActualTimeBar2 = ({
 
       return () => clearInterval(intervalId);
     }
-  }, []);
+  }, [actualTimeList, actualTimeList2, idealTimeList, labelsList]);
+
   return (
     <div className="mt-4">
       <ReactECharts
