@@ -9,7 +9,8 @@ import {
   CHART_COLORS,
   CHART_TYPES,
   HTTP_METHODS,
-  HTTP_STATUSES
+  HTTP_STATUSES,
+  ORG_MAPPING
 } from "utils/constants";
 import KpiReport from "./KpiReport";
 import useUserProfile from "hooks/useUserProfile";
@@ -41,7 +42,9 @@ import ReactLoading from "react-loading";
 import CycleDataVisual from "./CycleDataVisual";
 import { Newtable } from "./newtable";
 import { Pathtable } from "./pathtable";
-import KpiReport1 from './KpiReport1';
+import KpiReport1 from "./KpiReport1";
+import dynamic from "next/dynamic";
+
 // function getRandomInt(min, max) {
 //   min = Math.ceil(min);
 //   max = Math.floor(max);
@@ -72,17 +75,19 @@ const IndividualReport = ({
     router.query.module.toLocaleLowerCase() === "reach truck";
   const isWinder =
     router.query.module && router.query.module.toLocaleLowerCase() === "winder";
-  
+
   const isShovel =
-    router.query.module &&   (router.query.module.toLocaleLowerCase() === "shovel" ||
-    router.query.module.toLocaleLowerCase() === "mining - shovel");
-    
+    router.query.module &&
+    (router.query.module.toLocaleLowerCase() === "shovel" ||
+      router.query.module.toLocaleLowerCase() === "mining - shovel");
+
   const isForkLift =
     router.query.module &&
     router.query.module.toLocaleLowerCase() === "forklift";
 
   const pieColors = ["#580000", "#FF8C00", "#006400", "#00CED1"];
   let pieIndex = -1;
+  const [orgChart, setOrgChart] = useState(null);
 
   const moduleMistakeToLevelRecommendation = {
     "pendent control": {
@@ -188,6 +193,36 @@ const IndividualReport = ({
     setFetchAttemptData(false);
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (
+      organization &&
+      Object.keys(organization).length > 0 &&
+      attemptData &&
+      Object.keys(attemptData).length > 0
+    ) {
+      const valueToFind = organization.name;
+      let foundKey = null;
+      for (const key in ORG_MAPPING) {
+        if (ORG_MAPPING[key] === valueToFind) {
+          foundKey = key;
+          break;
+        }
+      }
+      if (foundKey !== null) {
+        let LazyComponent;
+        try {
+          LazyComponent = dynamic(
+            () => import(`../OrganizationCharts/${foundKey}`),
+            { ssr: false }
+          );
+        } catch (error) {
+          LazyComponent = null;
+        }
+        setOrgChart(<LazyComponent attemptData={attemptData} />);
+      }
+    }
+  }, [organization, attemptData]);
 
   useEffect(() => {
     if (organization) {
@@ -582,12 +617,13 @@ const IndividualReport = ({
           {attemptData && attemptData.score && (
             <ScoreRow score={[score]} attemptDuration={[attemptDuration]} />
           )}
-           {attemptData.tableKpis && (
-                  <TableKpis tableKpis={attemptData.tableKpis} />
-                )}
+          {attemptData.tableKpis && (
+            <TableKpis tableKpis={attemptData.tableKpis} />
+          )}
           {attemptData.path && (
-            <DrivingModuleReport attemptData={attemptData} 
-            organization={organization} // Make sure you pass the organization here
+            <DrivingModuleReport
+              attemptData={attemptData}
+              organization={organization} // Make sure you pass the organization here
             />
           )}
           {attemptData &&
@@ -607,7 +643,6 @@ const IndividualReport = ({
                 {getPairPaths(attemptData).map(e => e)}
               </div>
             )}
-
           <div className="flex flex-wrap ">
             {attemptData && (
               <div className="flex flex-col gap-4 w-full lg:w-3/4">
@@ -647,13 +682,16 @@ const IndividualReport = ({
                     />
                   ))} */}
                 {attemptData.kpis && attemptData.kpis.length > 0 && (
-                  <KpiReport kpis1={attemptData.kpis} 
-                  organization={organization}/> // Make sure to pass the organization here/>
+                  <KpiReport
+                    kpis1={attemptData.kpis}
+                    organization={organization}
+                  /> // Make sure to pass the organization here/>
                 )}
 
                 {attemptData.kpitask && attemptData.kpitask.length > 0 && (
-                  <KpiReport1 kpitask1={attemptData.kpitask}
-                  organization={organization} // Make sure to pass the organization here
+                  <KpiReport1
+                    kpitask1={attemptData.kpitask}
+                    organization={organization} // Make sure to pass the organization here
                   />
                 )}
 
@@ -714,7 +752,6 @@ const IndividualReport = ({
                             index={index}
                             isWinder={isWinder}
                             isShovel={isShovel}
-
                             pieColor={
                               ["pie", "doughnut"].includes(graph.type) &&
                               !["Time Taken by KPIS"].includes(graph.name) &&
@@ -771,6 +808,7 @@ const IndividualReport = ({
                       tableKpis={attemptData.generalkpis[gkpis]}
                     />
                   ))}
+                {orgChart}
               </div>
             )}
             <div className="mt-0  pl-0 pt-4 md:pt-0 w-full lg:w-1/4 ">
