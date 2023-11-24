@@ -3,8 +3,14 @@ import React from "react";
 import Chart from "components/Chart/Chart";
 import { CHART_TYPES } from "utils/constants";
 import IdealActualTimeBar from "./IdealActualTimeBar";
+import IdealActualTimeBar2 from "./IdealActualTimeBar2";
 
-const DrivingModuleReport = ({ attemptData, attemptData2, compare, organization }) => {
+const DrivingModuleReport = ({
+  attemptData,
+  attemptData2,
+  compare,
+  organization
+}) => {
   const path = attemptData.path;
   let idealTime = [];
   const classname = "text-dark";
@@ -13,7 +19,6 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare, organization 
     stroke: {
       width: [2, 2, 1]
     },
-
     responsive: [
       {
         breakpoint: 480,
@@ -65,39 +70,20 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare, organization 
     }
   };
   const isApollo = organization && organization.name.toLowerCase() === "vctpl"; //rtgc
-  const engageErrorLabel = isApollo ? "Loading Error[yard to Truck] (Angle)" : "Pallet Engage Error (Angle)";  // for rtgc
-  const engageDistanceLabel = isApollo ? "Loading Error[yard to Truck] (Distance)" : "Pallet Engage Error (Distance)"; // for rtgc
-  const isTataSteel = organization && organization.name.toLowerCase() === "tata steel";
+  const engageErrorLabel = isApollo
+    ? "Loading Error[yard to Truck] (Angle)"
+    : "Pallet Engage Error (Angle)"; // for rtgc
+  const engageDistanceLabel = isApollo
+    ? "Loading Error[yard to Truck] (Distance)"
+    : "Pallet Engage Error (Distance)"; // for rtgc
 
-
-  const stackingErrorLabel = isApollo ? "Stacking Error[Truck to Yard] (Angle)" : "Stacking Error (Angle)"; // for rtgc
-  const stackingDistanceLabel = isApollo ? "Stacking Error[Truck to Yard] (Distance)" : "Stacking Error (Distance)"; // for rtgc
+  const stackingErrorLabel = isApollo
+    ? "Stacking Error[Truck to Yard] (Angle)"
+    : "Stacking Error (Angle)"; // for rtgc
+  const stackingDistanceLabel = isApollo
+    ? "Stacking Error[Truck to Yard] (Distance)"
+    : "Stacking Error (Distance)"; // for rtgc
   const getAngleChart = (dataObj, angleField) => {
-      const xAxisMin = isTataSteel ? -45 : -5;
-      const xAxisMax = isTataSteel ? 45 : 5;
-
-      const updatedAngleOptions = {
-        ...angleOptions,
-        xaxis: {
-          ...angleOptions.xaxis,
-          min: xAxisMin,
-          max: xAxisMax
-        }
-      };
-
-      const mainSeries = isTataSteel
-    ? {
-        name: "Ideal Line",
-        data: [[-45, 1], [0, 0], [45, 1]]
-      }
-    : {
-        name: "main",
-        data: [
-          [0, 0],
-          [0, 1]
-        ]
-      };
-
     const chartHeight = isApollo ? "180%" : "100%"; // Set the height based on the organization
 
     return (
@@ -106,7 +92,7 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare, organization 
           width={"100%"}
           height={chartHeight}
           type={CHART_TYPES.LINE}
-          options={updatedAngleOptions}
+          options={angleOptions}
           series={
             !compare && !attemptData2
               ? [
@@ -119,11 +105,15 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare, organization 
                       ]
                     };
                   }),
-                  
-                    mainSeries
-
-                  ]
-                : [
+                  {
+                    name: "main",
+                    data: [
+                      [0, 0],
+                      [0, 1]
+                    ]
+                  }
+                ]
+              : [
                   ...attemptData[dataObj].map((d, index) => {
                     return {
                       name: "Pallet " + parseInt(index + 1) + " User 1",
@@ -142,7 +132,13 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare, organization 
                       ]
                     };
                   }),
-                  mainSeries
+                  {
+                    name: "main",
+                    data: [
+                      [0, 0],
+                      [0, 1]
+                    ]
+                  }
                 ]
           }
         />
@@ -150,8 +146,10 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare, organization 
           {attemptData[dataObj].map((d, index) => {
             return (
               <span key={`angle_${index}`} className="p-2 w-1/2">
-                  Pallet {parseInt(index + 1)} {compare && "User 1"}:{" "}
-                <span className="font-bold">{parseFloat(d[angleField]).toFixed(2)}</span>
+                Pallet {parseInt(index + 1)} {compare && "User 1"}:{" "}
+                <span className="font-bold">
+                  {parseFloat(d[angleField]).toFixed(2)}
+                </span>
               </span>
             );
           })}
@@ -161,8 +159,10 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare, organization 
               return (
                 <span key={`angle_${index}`} className="p-2 w-1/2">
                   Pallet {parseInt(index + 1)} {compare && "User 2"}:{" "}
-                <span className="font-bold">{parseFloat(d[angleField]).toFixed(2)}</span>
-              </span>
+                  <span className="font-bold">
+                    {parseFloat(d[angleField]).toFixed(2)}
+                  </span>
+                </span>
               );
             })}
         </div>
@@ -229,63 +229,27 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare, organization 
       />
     );
   };
-
   if (attemptData && attemptData.path) idealTime = attemptData.path.ideal_time;
-  if (!path && isApollo && attemptData.boxKeptData && attemptData.boxKeptData.length > 0) {
-    return (
-      <div className="flex flex-wrap pt-4 print:flex print:flex-row">
-        {/* Angle Chart Section */}
-        <div className="p-4 w-full md:w-1/2 print:w-1/2 h-full">
-          <div className="my-2">
-            <div className="flex justify-center">
-              <div className="py-2 transform transition duration-500 hover:scale-105 cursor-pointer">
-                <div className="bg-gradient-to-r from-green-200 via-blue-100 to-purple-200 rounded-lg shadow-xl p-2 border-b-2 border-blue-300">
-                  <div className="flex items-center justify-center text-blue-800">
-                    <span className="icon text-xl">📊</span> {/* Icon */}
-                    <h2 className="text-md md:text-lg font-medium pl-1">
-                      <strong>{stackingErrorLabel}</strong>
-                    </h2>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="min-h-96"> 
-            {getAngleChart("boxKeptData", "stackingAngle")}
-          </div>
-        </div>
-
-        {/* Distance Chart Section */}
-        <div className="p-4 w-full md:w-1/2 print:w-1/2 h-full">
-          <div className="my-2">
-            <div className="flex justify-center">
-              <div className="py-2 transform transition duration-500 hover:scale-105 cursor-pointer">
-                <div className="bg-gradient-to-r from-green-200 via-blue-100 to-purple-200 rounded-lg shadow-xl p-2 border-b-2 border-blue-300">
-                  <div className="flex items-center justify-center text-blue-800">
-                    <span className="icon text-xl">📊</span> {/* Icon */}
-                    <h2 className="text-md md:text-lg font-medium pl-1">
-                      <strong>{stackingDistanceLabel}</strong>
-                    </h2>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="min-h-96">
-            {getDistanceChart("boxKeptData", "stackingDistance")}
-          </div>
-        </div>
-      </div>
-    );
-
-  }
-  else{
+  if (path)
     return (
       <div className="w-full">
         {idealTime && idealTime.length > 0 && (
           <div className="flex w-full flex-wrap">
             <div className="w-full lg:w-3/4">
               <IdealActualTimeBar
+                idealTime={attemptData?.path?.ideal_time}
+                actualPath={attemptData.path.actual_path}
+                compare={compare}
+                actualPath2={
+                  compare &&
+                  attemptData2 &&
+                  attemptData2.path &&
+                  attemptData2.path.actual_path
+                    ? attemptData2.path.actual_path
+                    : null
+                }
+              />
+              <IdealActualTimeBar2
                 idealTime={attemptData?.path?.ideal_time}
                 actualPath={attemptData.path.actual_path}
                 compare={compare}
@@ -359,42 +323,86 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare, organization 
           />
         </div> */}
         {/* This below code is only for RTGC */}
-        {console.log("DrivingModuleReport Props:", { attemptData, attemptData2, organization })}
-    
+        {isApollo &&
+          attemptData.boxPickupData &&
+          attemptData.boxPickupData.length > 0 && (
+            <div className="flex flex-wrap pt-4 print:flex print:flex-row">
+              <div className="p-4 w-full md:w-1/2 print:w-1/2 h-full">
+                <div className="my-2">
+                  <div className="flex justify-center">
+                    <div className="py-2 transform transition duration-500 hover:scale-105 cursor-pointer">
+                      <div className="bg-gradient-to-r from-green-200 via-blue-100 to-purple-200 rounded-lg shadow-xl p-2 border-b-2 border-blue-300">
+                        <div className="flex items-center justify-center text-blue-800">
+                          <span className="icon text-xl">📊</span>{" "}
+                          {/* Replace with an actual icon if possible */}
+                          <h2 className="text-md md:text-lg font-medium pl-1">
+                            <strong>{stackingErrorLabel}</strong>
+                          </h2>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="min-h-96">
+                  {/* Call getAngleChart with the specific arguments for stackingAngle */}
+                  {getAngleChart("boxKeptData", "stackingAngle")}
+                </div>
+              </div>
+              <div className="p-4 w-full md:w-1/2 print:w-1/2 h-full">
+                <div className="my-2">
+                  <div className="flex justify-center">
+                    <div className="py-2 transform transition duration-500 hover:scale-105 cursor-pointer">
+                      <div className="bg-gradient-to-r from-green-200 via-blue-100 to-purple-200 rounded-lg shadow-xl p-2 border-b-2 border-blue-300">
+                        <div className="flex items-center justify-center text-blue-800">
+                          <span className="icon text-xl">📊</span>{" "}
+                          {/* Replace with an actual icon if possible */}
+                          <h2 className="text-md md:text-lg font-medium pl-1">
+                            <strong>{engageErrorLabel}</strong>
+                          </h2>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="min-h-96">
+                  {/* Call getAngleChart with the specific arguments for engageAngle */}
+                  {getAngleChart("boxPickupData", "engageAngle")}
+                </div>
+              </div>
+            </div>
+          )}
 
-        {!isApollo && attemptData.boxPickupData && attemptData.boxPickupData.length > 0 && (
-          <div className="flex flex-wrap pt-4">
-            <div className=" p-4 w-full md:w-1/2">
-              <div className={classname}>Pallet engage error(Distance)</div>
-              {getDistanceChart("boxPickupData", "engageDistance")}
+        {!isApollo &&
+          attemptData.boxPickupData &&
+          attemptData.boxPickupData.length > 0 && (
+            <div className="flex flex-wrap pt-4">
+              <div className=" p-4 w-full md:w-1/2">
+                <div className={classname}>Pallet engage error(Distance)</div>
+                {getDistanceChart("boxPickupData", "engageDistance")}
+              </div>
+              <div className=" p-4 w-full md:w-1/2">
+                <div className={classname}>Pallet engage error(Angle)</div>
+                {getAngleChart("boxPickupData", "engageAngle")}
+              </div>
             </div>
-            <div className=" p-4 w-full md:w-1/2">
-              <div className={classname}>Pallet engage error(Angle)</div>
-              {getAngleChart("boxPickupData", "engageAngle")}
-            </div>
-          </div>
-        )}
+          )}
 
-        {!isApollo && attemptData.boxKeptData && attemptData.boxKeptData.length > 0 && (
-          <div className="flex flex-wrap">
-            <div className=" p-4 w-full md:w-1/2">
-              <div className={classname}>Stacking error(Distance)</div>
-              {getDistanceChart("boxKeptData", "stackingDistance")}
+        {!isApollo &&
+          attemptData.boxKeptData &&
+          attemptData.boxKeptData.length > 0 && (
+            <div className="flex flex-wrap">
+              <div className=" p-4 w-full md:w-1/2">
+                <div className={classname}>Stacking error(Distance)</div>
+                {getDistanceChart("boxKeptData", "stackingDistance")}
+              </div>
+              <div className=" p-4 w-full md:w-1/2">
+                <div className={classname}>Stacking error(Angle)</div>
+                {getAngleChart("boxKeptData", "stackingAngle")}
+              </div>
             </div>
-            <div className=" p-4 w-full md:w-1/2">
-              <div className={classname}>Stacking error(Angle)</div>
-              {getAngleChart("boxKeptData", "stackingAngle")}
-            </div>
-          </div>
-        )}
-       
+          )}
       </div>
     );
-
-
-  }
-    
-    
 };
 
 export default DrivingModuleReport;
