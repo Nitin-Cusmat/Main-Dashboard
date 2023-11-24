@@ -29,6 +29,10 @@ const KpiReport = ({ kpis1, kpis2, compare, module, organization }) => {
 
   const hasIdealTime = kpis1.some(kpi => kpi.ideal_time !== undefined);
   const hasSpeed = kpis1.some(kpi => kpi.speed !== undefined);
+
+  const hasSpottingAttempts = kpis1.some(kpi => kpi.Spotting_attempts !== undefined);
+  const hasCollision = kpis1.some(kpi => kpi.collision !== undefined);
+
   const extractNumericalValue = (valueWithUnit) => {
     if (typeof valueWithUnit === 'number') return valueWithUnit;
     if (typeof valueWithUnit === 'string' && !isNaN(valueWithUnit)) return parseFloat(valueWithUnit);
@@ -319,10 +323,10 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
                       kpis1.some(kpi => kpi.name) ? "name" : null,
                       kpis1.some(kpi => kpi.value) ? "Time taken by user 1" : null,
                       kpis2.some(kpi => kpi.value) ? "Time taken by user 2" : null,
-                      kpis1.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user 1" : null,
-                      kpis2.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user 2" : null,
-                      kpis1.some(kpi => kpi.collision) ? "Collision by user 1" : null,
-                      kpis2.some(kpi => kpi.collision) ? "Collision by user 2" : null,
+                      hasSpottingAttempts ? "Spotting attempts by user 1" : null,
+                      hasSpottingAttempts ? "Spotting attempts by user 2" : null,
+                      hasCollision ? "Collision by user 1" : null,
+                      hasCollision ? "Collision by user 2" : null,
                       hasIdealTime ? "time_difference_user1" : null,
                       hasIdealTime ? "time_difference_user2" : null,
                       hasIdealTime ? "Ideal time" : null,
@@ -334,8 +338,8 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
                       kpis1.some(kpi => kpi.checklist) ? "checklist selected by user" : null,
                       kpis1.some(kpi => kpi.name) ? "name" : null,
                       kpis1.some(kpi => kpi.value) ? "Time taken by user" : null,
-                      kpis1.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user" : null,
-                      kpis1.some(kpi => kpi.collision) ? "Collision by user" : null,
+                      hasSpottingAttempts ? "Spotting attempts by user" : null,
+                      hasCollision ? "Collision by user" : null,
                       hasIdealTime ? "time_difference" : null,
                       hasIdealTime ? "Ideal time" : null,
                       hasSpeed ? "speed" : null
@@ -355,8 +359,8 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
             <CustomTable
             columns={
               compare && kpis2
-                ? ["name", "Time taken by user 1", "Time taken by user 2", hasIdealTime ? "time_difference_user1" : null, hasIdealTime ? "time_difference_user2" : null, hasIdealTime ? "Ideal time" : null, "Spotting attempts by user 1","Spotting attempts by user 2","Collision by user 1","Collision by user 2",hasSpeed ? "speed" : null].filter(Boolean)
-                : ["name", "Time taken by user", hasIdealTime ? "time_difference" : null, hasIdealTime ? "Ideal time" : null,"Spotting attempts by user", "Collision by user" , hasSpeed ? "speed" : null].filter(Boolean)
+                ? ["name", "Time taken by user 1", "Time taken by user 2", hasIdealTime ? "time_difference_user1" : null, hasIdealTime ? "time_difference_user2" : null, hasIdealTime ? "Ideal time" : null, hasSpottingAttempts ? "Spotting attempts by user 1" : null,hasSpottingAttempts ? "Spotting attempts by user 2" : null,hasCollision ? "Collision by user 1" : null,hasCollision ? "Collision by user 2" : null,hasSpeed ? "speed" : null].filter(Boolean)
+                : ["name", "Time taken by user", hasIdealTime ? "time_difference" : null, hasIdealTime ? "Ideal time" : null,hasSpottingAttempts ? "Spotting attempts by user" : null,hasCollision ? "Collision by user" : null, , hasSpeed ? "speed" : null].filter(Boolean)
             }
             rows={rangeKpis.map(row => ({ ...row, className: "table-row-hover" }))}
             colorField="time_difference_color"  // Specify the color field here
