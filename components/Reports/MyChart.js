@@ -14,12 +14,13 @@ const getActualPath = actual => {
   return actualPath;
 };
 
-const getEvents = actualPath => {
+const getEvents = (actualPath, selectedEventType) => {
   let events = actualPath
     .filter(e => {
-      return e.collisionStatus == "1";
+      return e[selectedEventType] == "1";
     })
-    .map(e => [e.x, e.y, "collision", e.z]);
+    .map(e => [e.x, e.y, selectedEventType, e.z]);
+
   return events;
 };
 
@@ -229,6 +230,7 @@ const MyChart = ({
   title
 }) => {
   const [loading, setLoading] = useState(true);
+  const [selectedEventType, setSelectedEventType] = useState("collisionStatus");
   // getting data set paths pass these through props with appropriate variable name
 
   let idealPath = ideal ? ideal.map(e => [e.x, e.z, e.directionArrow]) : [];
@@ -236,7 +238,7 @@ const MyChart = ({
   let actualPath = getActualPath(actual);
   let actualPath2 = actual2 && getActualPath(actual2);
 
-  let events = getEvents(actual);
+  let events = getEvents(actual, selectedEventType);
   let events2 = actual2 && getEvents(actual2);
 
   let eventsText = getEventsText(events);
@@ -278,7 +280,7 @@ const MyChart = ({
     vAxisLines,
     isReachTruck,
     title,
-    eventIndexes,
+    eventIndexes
     // eventIndexes2
   );
 
@@ -612,6 +614,24 @@ const MyChart = ({
   }
   return (
     <div className="rounded  text-slate-500">
+      <div className="mb-4">
+        <label htmlFor="eventType" className="mr-2">
+          Select Event Type:
+        </label>
+        <select
+          id="eventType"
+          value={selectedEventType}
+          onChange={e => {
+            setSelectedEventType(e.target.value);
+            e.target.blur();
+          }}
+        >
+          <option value="collisionStatus">Collision</option>
+          <option value="pedestrial_colloision">Pedestrian Collision</option>
+          <option value="object_colloision">Object Collision</option>
+          <option value="mines_colloision">Mines Collision</option>
+        </select>
+      </div>
       <div className="min-h-[300px] relative pt-8">
         {loading && (
           <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
