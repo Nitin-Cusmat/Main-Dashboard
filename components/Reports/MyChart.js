@@ -15,11 +15,33 @@ const getActualPath = actual => {
 };
 
 const getEvents = (actualPath, selectedEventType) => {
-  let events = actualPath
-    .filter(e => {
-      return e[selectedEventType] == "1";
-    })
-    .map(e => [e.x, e.y, selectedEventType, e.z]);
+  let events;
+  if (selectedEventType === "all") {
+    events = actualPath
+      .filter(e => e.collisionStatus === "1")
+      .map(e => [e.x, e.y, e.collisionStatus, e.z])
+      .concat(
+        actualPath
+          .filter(e => e.pedestrian_colloision === "1")
+          .map(e => [e.x, e.y, e.pedestrian_colloision, e.z])
+      )
+      .concat(
+        actualPath
+          .filter(e => e.object_colloision === "1")
+          .map(e => [e.x, e.y, e.object_colloision, e.z])
+      )
+      .concat(
+        actualPath
+          .filter(e => e.mines_colloision === "1")
+          .map(e => [e.x, e.y, e.mines_colloision, e.z])
+      );
+  } else {
+    events = actualPath
+      .filter(e => {
+        return e[selectedEventType] == "1";
+      })
+      .map(e => [e.x, e.y, selectedEventType, e.z]);
+  }
 
   return events;
 };
@@ -230,7 +252,7 @@ const MyChart = ({
   title
 }) => {
   const [loading, setLoading] = useState(true);
-  const [selectedEventType, setSelectedEventType] = useState("collisionStatus");
+  const [selectedEventType, setSelectedEventType] = useState("all");
   // getting data set paths pass these through props with appropriate variable name
 
   let idealPath = ideal ? ideal.map(e => [e.x, e.z, e.directionArrow]) : [];
@@ -626,6 +648,7 @@ const MyChart = ({
             e.target.blur();
           }}
         >
+          <option value="all">All</option>
           <option value="collisionStatus">Collision</option>
           <option value="pedestrial_colloision">Pedestrian Collision</option>
           <option value="object_colloision">Object Collision</option>
