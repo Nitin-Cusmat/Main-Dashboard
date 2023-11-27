@@ -76,7 +76,15 @@ const KpiReport = ({ kpis1, kpis2, compare, module }) => {
     }
   }
 
-
+  let idealTimeFormatted = kpi.ideal_time; // Assume kpi.ideal_time is a string like "120 sec"
+  if (kpi.ideal_time !== undefined) {
+    const idealTimeInSeconds = extractNumericalValue(kpi.ideal_time);
+    if (idealTimeInSeconds >= 60) {
+      const minutes = Math.floor(idealTimeInSeconds / 60);
+      const seconds = idealTimeInSeconds % 60;
+      idealTimeFormatted = `${minutes} min${seconds > 0 ? ` ${seconds.toFixed(2)} sec` : ''}`;
+    }
+  }
 
       
   if (compare && kpis2 && kpis2.length > index && kpis2[index].value && kpis2[index].ideal_time !== undefined) {
