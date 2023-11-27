@@ -198,7 +198,7 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
                     "value user2": `${getFormattedTime(
                       kpis2[index]?.value !== undefined ? kpis2[index].value : 0
                     )}`,
-                    ideal_time: kpi?.ideal_time,
+                    "Ideal time": idealTimeFormatted,                    
                     time_difference_user1: timeDifferenceFormatted,
                       time_difference_color_user1: timeDifferenceColor,
                       time_difference_user2: timeDifference2Formatted,
@@ -208,8 +208,8 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
                     ...kpi,
                     "Assessment Question with correct checklist": kpi.question,  // Assuming the data is in kpi.question
                     "Answer": replaceRightWithIcon(kpi.answer),  // Assuming the answer data is in kpi.answer
-                    "checklist selected by user": replaceRightWithIcon(kpi.checklist), // Assuming the checklist data is in kpi.checklist
-                    ideal_time: kpi?.ideal_time,
+                    "checklist selected by user": replaceRightWithIcon(kpi.checklist),// Assuming the checklist data is in kpi.checklist
+                    "Ideal time": idealTimeFormatted, 
                     "Time taken by user": `${getFormattedTime(kpi.value)}`,
                     time_difference: timeDifferenceFormatted,
                     time_difference_color: timeDifferenceColor,

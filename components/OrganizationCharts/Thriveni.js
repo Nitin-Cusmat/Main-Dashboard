@@ -1,6 +1,7 @@
 import React from "react";
 import ReactECharts from "echarts-for-react";
 import Chart from "react-apexcharts";
+import * as echarts from 'echarts';
 
 
 const Thriveni = ({ attemptData }) => {
@@ -23,7 +24,14 @@ const Thriveni = ({ attemptData }) => {
 
   const modeCount = {};
 
-
+  let kpiNames = [];
+  let kpiValues = [];
+  
+  if (attemptData && attemptData.kpis) {
+    kpiNames = attemptData.kpis.map(kpi => kpi.name);
+    kpiValues = attemptData.kpis.map(kpi => parseFloat(kpi.value));
+    
+  }
 // Step 2: Prepare data for the pie chart
 
 
@@ -49,6 +57,8 @@ const Thriveni = ({ attemptData }) => {
           symbol: 'none' // Optional: to hide individual data point symbols
         };
       });
+
+      
 
     brakeData = filteredData.map(item => item.brake);
     accelerationData = filteredData.map(item => item.acceleration);
@@ -156,12 +166,17 @@ const Thriveni = ({ attemptData }) => {
   }
   
 
+  // const speedTimeData = attemptData.map(item => {
+  //   return [parseFloat(item.time), parseFloat(item.speed)];
+  // });
+
   const gears = Object.keys(maxSpeedByGear);
   const maxSpeeds = Object.values(maxSpeedByGear);
 
   const gears1 = Object.keys(collisionCountByGear);
   const totalCollisions = Object.values(collisionCountByGear);
 
+  const totalTime = kpiValues.reduce((acc, val) => acc + val, 0) / 60; // Convert total to hours
 
   const pieChartData = Object.keys(modeDurations).map(mode => {
     return { name: mode, value: modeDurations[mode] };
@@ -223,13 +238,13 @@ const Thriveni = ({ attemptData }) => {
       {
         left: 50,
         right: 50,
-        height: "35%"
+        height: "33%"
       },
       {
         left: 50,
         right: 50,
         top: "55%",
-        height: "35%"
+        height: "33%"
       }
     ],
     xAxis: [
@@ -515,6 +530,166 @@ const Thriveni = ({ attemptData }) => {
     }]
   }
 
+  const optionspeed = {
+    title: {
+      text: 'Speed vs Time',
+      subtext: 'Vehicle Speed Analysis',
+      left: 'center'
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'cross'
+      },
+      formatter: function (params) {
+        return `Time: ${params[0].axisValue}<br/>Speed: ${params[0].data[1]} units`;
+      }
+    },
+    legend: {
+      data: ['Speed'],
+      left: '10%'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '10%', // Increase this value to move the chart up
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: timeData,
+      axisLabel: {
+        formatter: function (value) {
+          return `${value} s`;
+        }
+      }
+    },
+    yAxis: {
+      type: 'value',
+      axisLabel: {
+        formatter: '{value} km/h'
+      }
+    },
+    series: [{
+      name: 'Speed',
+      type: 'line',
+      smooth: true,
+      lineStyle: {
+        color: '#007bff',
+        width: 2
+      },
+      itemStyle: {
+        color: '#007bff'
+      },
+      areaStyle: {
+        normal: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+            offset: 0,
+            color: 'rgba(0, 123, 255, 0.5)' // top color
+          }, {
+            offset: 1,
+            color: 'rgba(0, 123, 255, 0)' // bottom color, more transparent
+          }]),
+        }
+      },
+      data: speedData.map((speed, index) => [timeData[index], parseFloat(speed)])
+    }],
+    dataZoom: [
+      {
+        type: 'inside',
+        start: 0,
+        end: 100
+      },
+      {
+        start: 0,
+        end: 10,
+        handleIcon: 'M8.2,13.6V4H11v9.6L15.5,18H20v3H0v-3h4.5L8.2,13.6z',
+        handleSize: '80%',
+        handleStyle: {
+          color: '#fff',
+          shadowBlur: 3,
+          shadowColor: 'rgba(0, 0, 0, 0.6)',
+          shadowOffsetX: 2,
+          shadowOffsetY: 2
+        }
+      }
+    ],
+    animation: {
+      duration: 1000,
+      easing: 'cubicInOut'
+    }
+  };
+
+  const chartConfig = {
+    series: kpiValues.map(value => parseFloat(parseFloat(value).toFixed(1))),
+    options: {
+      chart: {
+        width: 380,
+        type: 'donut',
+        dropShadow: {
+          enabled: true,
+          color: '#111',
+          top: -1,
+          left: 3,
+          blur: 3,
+          opacity: 0.2
+        }
+      },
+      stroke: {
+        width: 0,
+      },
+      plotOptions: {
+        pie: {
+          donut: {
+            labels: {
+              show: true,
+              total: {
+                showAlways: true,
+                show: true,
+                label: 'Total Hours',
+                formatter: function () {
+                  return totalTime.toFixed(2) + ' hrs';
+                }
+              }
+            }
+          }
+        }
+      },
+      labels: kpiNames,
+      dataLabels: {
+        dropShadow: {
+          blur: 3,
+          opacity: 0.8
+        }
+      },
+      fill: {
+        type: 'pattern',
+        opacity: 1,
+        pattern: {
+          enabled: true,
+          style: ['verticalLines', 'squares', 'horizontalLines', 'circles', 'slantedLines'],
+        }
+      },
+      states: {
+        hover: {
+          filter: 'none'
+        }
+      },
+      theme: {
+        palette: 'palette2'
+      },
+      title: {
+        text: "Time Kpis"
+      },
+      legend: {
+        show: true,
+        position: 'top', // Set this property to false to hide the legend
+      },
+      // ... other configurations if necessary
+    }
+  };
+
   const option1 = {  // pie chart of different mode
     tooltip: {
         trigger: 'item',
@@ -582,33 +757,51 @@ const Thriveni = ({ attemptData }) => {
 
   return (
     <>
+
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <Chart
+        options={chartConfig.options}
+        series={chartConfig.series}
+        type="donut"
+        width={870} // Adjust width if needed
+        height={350}
+      />
+    </div>
+
+     <ReactECharts
+      style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
+      option={option1}
+        notMerge={true}
+        lazyUpdate={true}
+      />
+
       <ReactECharts
-        style={{
-          height: "500px"
-        }}
+         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
+
         option={vehicleChartOptions}
         notMerge={true}
         lazyUpdate={true}
       />
 
       <ReactECharts
-        style={{ height: "500px" }}   // two line chart loading and dumping area w.r to time
-        option={option}
+      style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
+      option={option}
+        notMerge={true}
+        lazyUpdate={true}
+      />
+
+     
+
+      <ReactECharts
+      style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
+      option={optionspeed}
         notMerge={true}
         lazyUpdate={true}
       />
 
       <ReactECharts
-        style={{ height: "500px" }}   // Pie chart mode
-        option={option1}
-        notMerge={true}
-        lazyUpdate={true}
-      />
+         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
 
-      <ReactECharts
-        style={{
-          height: "500px"
-        }}
         option={rpmChartOptions}
         notMerge={true}
         lazyUpdate={true}

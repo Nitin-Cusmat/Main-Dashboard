@@ -561,7 +561,7 @@ const Individual = () => {
                 })}
             </div>
             <hr />
-            {Object.keys(chartData).length > 0 && (
+            {/* {Object.keys(chartData).length > 0 && (
               <div className="w-full my-3">
                 <Chart
                   series={Object.keys(chartData).map(key => ({
@@ -642,7 +642,7 @@ const Individual = () => {
                   }}
                 />
               </div>
-            )}
+            )} */}
 
             {/* <div className="w-full lg:w-1/2">
               <Chart
