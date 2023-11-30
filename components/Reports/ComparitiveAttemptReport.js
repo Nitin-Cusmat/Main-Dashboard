@@ -20,6 +20,8 @@ import { useRouter } from "next/router";
 import CustomTable from "components/CustomTable";
 import { max } from "lodash";
 import KpiReport1 from "./KpiReport1";
+import KpiReport2 from "./KpiReport2";
+
 
 
 const ComparitiveAttemptReport = ({
@@ -43,6 +45,8 @@ const ComparitiveAttemptReport = ({
     }
     return [];
   };
+
+  const isApollo = organization && organization.name.toLowerCase() === "vctpl";
 
   const areasOfImprovement1 = getAreasOfImprovement(attemptData, "User 1");
   const areasOfImprovement2 = getAreasOfImprovement(attemptData2, "User 2");
@@ -351,17 +355,16 @@ const ComparitiveAttemptReport = ({
     <div className="p-1 pt-0">
       {attemptData && (
         <div className="flex flex-col gap-4 w-full ">
-          {attemptData.path && (
-            <DrivingModuleReport
+          {attemptData.path ?? (
+           <DrivingModuleReport
               attemptData={attemptData}
               attemptData2={attemptData2}
               organization={{ name: "vctpl" }}
-              compare
+              compare 
             />
           )}
           <div className="w-full ">
-            {attemptData.path &&
-              attemptData2.path &&
+            {attemptData.path && attemptData2.path &&
               attemptData.path.actual_path &&
               attemptData.path.actual_path &&
               attemptData.path.ideal_path && (
@@ -407,20 +410,31 @@ const ComparitiveAttemptReport = ({
               <KpiReport
                 kpis1={attemptData.kpis}
                 kpis2={attemptData2.kpis}
-                organization={{ name: "vctpl" }}
 
                 compare
               />
             )}
-            {attemptData.kpitask && attemptData.kpitask.length > 0 && (
+           {attemptData.loading && attemptData.loading.length > 0 && (
               <KpiReport1
-              kpitask1={attemptData.kpitask}
-              kpitask2={attemptData2.kpitask}
+              kpitask1={attemptData.loading}
+              kpitask2={attemptData2.loading}
               organization={{ name: "vctpl" }}
 
                 compare
               />
             )}
+
+            {attemptData.unloading && attemptData.unloading.length > 0 && (
+              <KpiReport2
+              kpis3={attemptData.unloading}
+              kpis4={attemptData2.unloading}
+              organization={{ name: "vctpl" }}
+
+                compare
+              />
+            )}
+
+
             {attemptData.inspections && attemptData.inspections.length > 0 && (
               <CarsomeReport
                 attemptData={attemptData}
@@ -553,7 +567,6 @@ const ComparitiveAttemptReport = ({
                   />
                 </div>
               )}
-
               {areasOfImprovement2.length > 0 && (
                 <div className="flex-1 pl-5">
                   <CustomTable

@@ -691,43 +691,52 @@ const GraphReport = ({
                       }
                     ]
                   : [
-                      {
-                        type: "pie",
-                        radius: ["50%", "70%"],
-                        color:
-                          pieColor && graph.data.length === 1
-                            ? pieColor
-                            : Object.values(CHART_COLORS),
-                        data:
-                          graph.name === "Total quantity used in assembly"
-                            ? graph.data
-                                .filter(x => x > 0)
-                                .map((item, index) => {
-                                  return {
-                                    value: parseFloat(item),
-                                    name: graph.labels[index]
-                                  };
-                                })
-                            : graph.data
-                                .map((item, index) => {
-                                  return {
-                                    value: parseFloat(item),
-                                    name: graph.labels[index]
-                                  };
-                                })
-                                .filter(item => item.value > 0),
-                        emphasis: {
-                          itemStyle: {
-                            shadowBlur: 10,
-                            shadowOffsetX: 0,
-                            shadowColor: "rgba(0, 0, 0, 0.5)"
+                    {
+                      type: "pie",
+                      radius: ["50%", "70%"],
+                      color: pieColor && graph.data.length === 1 ? pieColor : Object.values(CHART_COLORS),
+                      data: (() => {
+                        const aggregatedData = {};
+                        let lastTimeByLabel = {};
+                        let previousLabel = null;
+                    
+                        graph.data.forEach((item, index) => {
+                          const label = graph.labels[index];
+                          const currentTime = parseFloat(item);
+                    
+                          if (label !== previousLabel && previousLabel !== null) {
+                            // Reset the last occurrence time for the previous label
+                            lastTimeByLabel[previousLabel] = null;
                           }
-                        },
-                        labelLine: {
-                          show: false
+                    
+                          if (label in lastTimeByLabel && lastTimeByLabel[label] !== null) {
+                            // For repeating labels in sequence, calculate the time difference
+                            const timeDiff = currentTime - lastTimeByLabel[label];
+                            aggregatedData[label] = (aggregatedData[label] || 0) + timeDiff;
+                          }
+                    
+                          // Update the last occurrence time for this label
+                          lastTimeByLabel[label] = currentTime;
+                          previousLabel = label; // Update the previous label
+                        });
+                    
+                        // Convert the aggregated data back into the array format
+                        return Object.entries(aggregatedData)
+                          .map(([name, value]) => ({ name, value }))
+                          .filter(item => item.value > 0);
+                      })(),
+                      emphasis: {
+                        itemStyle: {
+                          shadowBlur: 10,
+                          shadowOffsetX: 0,
+                          shadowColor: "rgba(0, 0, 0, 0.5)"
                         }
+                      },
+                      labelLine: {
+                        show: false
                       }
-                    ]
+                    }
+                  ]
               }}
             />
           </div>
@@ -735,6 +744,7 @@ const GraphReport = ({
       );
     }
   };
+
   return (
     <>
       <div className="pb-4 w-full ">{getGraph()}</div>
