@@ -13,6 +13,8 @@ const Thriveni = ({ attemptData }) => {
   let speedDataFiltered = []; // Declare it here
   let gearNames = [];
   let modeData = [];
+  let speedDataFiltered1 = []; // Declare it here
+
 
   let maxSpeedByGear = {};
   let collisionCountByGear = {};
@@ -51,6 +53,15 @@ const Thriveni = ({ attemptData }) => {
 
       speedDataFiltered = filteredData     // this code is for two line chart where need to see dumping area and loading area
       .filter(item => item.loadingstatus === "1")
+      .map(item => {
+        return {
+          value: [item.time, parseFloat(item.rpm)],
+          symbol: 'none' // Optional: to hide individual data point symbols
+        };
+      });
+
+      speedDataFiltered1 = filteredData     // this code is for two line chart where need to see dumping area and loading area
+      .filter(item => item.unloadingstatus === "1")
       .map(item => {
         return {
           value: [item.time, parseFloat(item.rpm)],
@@ -376,24 +387,53 @@ const Thriveni = ({ attemptData }) => {
 
       title: [{
           left: 'center',
-          text: 'Gradient along the y axis'
+          text: 'Loading Area (speed should be below 5)'
       }, {
           top: '55%',
           left: 'center',
-          text: 'Gradient along the x axis'
+          text: 'Dumping Area (Speed should be below 5)'
       }],
       tooltip: {
-          trigger: 'axis'
+        trigger: 'axis',
+        formatter: function (params) {
+          let result = `Time: ${params[0].axisValue}<br/>`;
+    
+          params.forEach(param => {
+            const color = param.data[1] > 5 ? '#FF0000' : '#00FF00'; // The same logic as your line color
+            result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
+            result += `Speed: ${param.data[1]} m/s<br/>`; // Replace 'Speed' with your desired label
+          });
+    
+          return result;
+        }
       },
       xAxis: [{
-          data: timeData
+        type: 'category',
+        boundaryGap: false,
+        data: timeData,
+        name: 'Time (sec)', // Label for the X-axis
+        nameLocation: 'middle', // Location of the label
+        nameGap: 30, // Gap b
       }, {
-          data: timeData,
+        type: 'category',
+        boundaryGap: false,
+        data: timeData,
+        name: 'Time (sec)', // Label for the X-axis
+        nameLocation: 'middle', // Location of the label
+        nameGap: 30, // Gap b
           gridIndex: 1
       }],
       yAxis: [{
+        type: 'value',
+        name: 'Speed (m/s)', // Label for the Y-axis
+        nameLocation: 'middle', // Location of the label
+        nameGap: 50, // 
           splitLine: {show: false}
       }, {
+        type: 'value',
+        name: 'Speed (m/s)', // Label for the Y-axis
+        nameLocation: 'middle', // Location of the label
+        nameGap: 50, // 
           splitLine: {show: false},
           gridIndex: 1
       }],
@@ -404,8 +444,8 @@ const Thriveni = ({ attemptData }) => {
       }],
       series: [{
           type: 'line',
-          showSymbol: false,
-          data: speedData.map((speed, index) => speed !== null ? [timeData[index], speed] : [timeData[index], null]),
+          symbol: 'none', // This hides the data point markers
+          data: speedDataFiltered1,
           markLine: {
             data: [
               {
@@ -679,9 +719,19 @@ const Thriveni = ({ attemptData }) => {
       theme: {
         palette: 'palette2'
       },
-      title: {
-        text: "Time Kpis"
-      },
+      // title: {
+      //   text: "Different Task Time KPI",
+      //   align: 'center',
+      //   style: {
+      //     fontFamily: 'Arial, Helvetica, sans-serif',
+      //     fontSize: '20px',
+      //     color: '#34495e',
+      //     textShadow: '0px 1px 2px rgba(0, 0, 0, 0.5)',
+      //     padding: '10px',
+      //     borderRadius: '5px',
+      //     background: 'linear-gradient(to right, #bdc3c7, #2c3e50)', // Gradient background
+      //   }
+      // },
       legend: {
         show: true,
         position: 'top', // Set this property to false to hide the legend
@@ -692,8 +742,14 @@ const Thriveni = ({ attemptData }) => {
 
   const option1 = {  // pie chart of different mode
     tooltip: {
-        trigger: 'item',
-        formatter: '{a} <br/>{b}: {c} ({d}%)'
+      trigger: 'item',
+      formatter: function(params) {
+        // params.value[0] for category name, params.value[1] for value
+        let name = params.name;
+        let value = params.value;
+        let percentage = params.percent;
+        return `${name}: ${value.toFixed(1)} (${percentage}%)`;
+      }
     },
     legend: {
       orient: 'vertical',
@@ -703,7 +759,7 @@ const Thriveni = ({ attemptData }) => {
     series: [
         
         {
-            name: '访问来源',
+            name: 'Time (sec)',
             type: 'pie',
             radius: ['40%', '55%'],
             label: {
@@ -748,7 +804,10 @@ const Thriveni = ({ attemptData }) => {
                     }
                 }
             },
-            data: pieChartData
+            data: pieChartData.map(item => ({
+              name: item.name,
+              value: parseFloat(item.value.toFixed(2)) // Round the value to 2 decimal places
+            }))
 
         }
     ]
@@ -757,7 +816,20 @@ const Thriveni = ({ attemptData }) => {
 
   return (
     <>
-
+    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+      <div style={{
+        display: 'inline-block',
+        padding: '10px',
+        borderRadius: '5px',
+        background: 'linear-gradient(to right, #bdc3c7, #2c3e50)',
+        color: '#fff',
+        fontFamily: 'Arial, Helvetica, sans-serif',
+        fontSize: '20px',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+      }}>
+        Different Task Time KPI
+      </div>
+    </div>
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <Chart
         options={chartConfig.options}
@@ -767,6 +839,26 @@ const Thriveni = ({ attemptData }) => {
         height={350}
       />
     </div>
+
+
+
+    <div style={{ textAlign: 'center', marginTop: '30px', marginBottom: '0px' }}>
+    <div style={{
+      display: 'inline-block',
+      padding: '10px',
+      borderRadius: '5px',
+      background: 'linear-gradient(to right, #bdc3c7, #2c3e50)',
+      color: '#fff',
+      fontFamily: 'Arial, Helvetica, sans-serif',
+      fontSize: '20px',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+    }}>
+      Different Modes Time
+    </div>
+  </div>
+
+
+
 
      <ReactECharts
       style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin

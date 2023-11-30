@@ -744,6 +744,7 @@ const GraphReport = ({
       );
     }
   };
+
   return (
     <>
       <div className="pb-4 w-full ">{getGraph()}</div>

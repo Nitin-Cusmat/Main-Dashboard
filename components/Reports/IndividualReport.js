@@ -62,6 +62,8 @@ const IndividualReport = ({
   users,
   setUsers,
   loading,
+  graph,
+  graph2,
   getAttemptDataCallback = () => {},
   setLoading
 }) => {
@@ -929,6 +931,7 @@ const IndividualReport = ({
     </div>
   </div>
 )} */}
+{console.log(attemptData&&attemptData.graphs)}
             </div>
           </div>
         </div>
