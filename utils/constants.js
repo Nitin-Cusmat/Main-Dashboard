@@ -263,9 +263,9 @@ const AXIS_LINES = [
 ];
 const ORG_MAPPING = {
   Thriveni: "Thriveni",
-  DhlIndia: "DHL India",
+  // DhlIndia: "DHL India",
   Apollo: "Apollo",
-  VCTPL: "VCTPL",
+  VCTPL: "VCTPL"
 };
 export {
   SIDENAV_ITEMS,
