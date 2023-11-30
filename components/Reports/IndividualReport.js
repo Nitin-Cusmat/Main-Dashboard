@@ -27,6 +27,7 @@ import AssemblyReport from "./AssemblyReport";
 import GraphReport from "./GraphReport";
 import IdealActualPath from "./IdealActualPath";
 import DrivingModuleReport from "./DrivingModuleReport";
+import KpiReport2 from './KpiReport2';
 import {
   formatTimeDay,
   getFormattedTime,
@@ -61,6 +62,8 @@ const IndividualReport = ({
   users,
   setUsers,
   loading,
+  graph,
+  graph2,
   getAttemptDataCallback = () => {},
   setLoading
 }) => {
@@ -283,6 +286,9 @@ const IndividualReport = ({
     let axisLines = attemptData.hAxisLines ? attemptData.hAxisLines : null;
     let vAxisLines = attemptData.vAxisLines ? attemptData.vAxisLines : null;
     let extraPlots = [];
+
+    const noPathData = !attemptData.path || !attemptData.path.actual_path || !attemptData.path.ideal_path;
+
 
     if (attemptData.boxPickupData) {
       attemptData.boxPickupData.forEach((d, index) => {
@@ -617,13 +623,12 @@ const IndividualReport = ({
           {attemptData && attemptData.score && (
             <ScoreRow score={[score]} attemptDuration={[attemptDuration]} />
           )}
-          {attemptData.tableKpis && (
-            <TableKpis tableKpis={attemptData.tableKpis} />
-          )}
-          {attemptData.path && (
-            <DrivingModuleReport
-              attemptData={attemptData}
-              organization={organization} // Make sure you pass the organization here
+           {attemptData.tableKpis && (
+                  <TableKpis tableKpis={attemptData.tableKpis} />
+                )}
+          {attemptData && (
+            <DrivingModuleReport attemptData={attemptData} 
+            organization={organization} // Make sure you pass the organization here
             />
           )}
           {attemptData &&
@@ -682,16 +687,19 @@ const IndividualReport = ({
                     />
                   ))} */}
                 {attemptData.kpis && attemptData.kpis.length > 0 && (
-                  <KpiReport
-                    kpis1={attemptData.kpis}
-                    organization={organization}
+                  <KpiReport kpis1={attemptData.kpis} 
                   /> // Make sure to pass the organization here/>
                 )}
 
-                {attemptData.kpitask && attemptData.kpitask.length > 0 && (
-                  <KpiReport1
-                    kpitask1={attemptData.kpitask}
-                    organization={organization} // Make sure to pass the organization here
+                {attemptData.loading && attemptData.loading.length > 0 && (
+                  <KpiReport1 kpitask1={attemptData.loading}
+                  organization={organization} // Make sure to pass the organization here
+                  />
+                )}
+
+                {attemptData.unloading && attemptData.unloading.length > 0 && (
+                  <KpiReport2 kpis3={attemptData.unloading}
+                  organization={organization} // Make sure to pass the organization here
                   />
                 )}
 
@@ -923,6 +931,7 @@ const IndividualReport = ({
     </div>
   </div>
 )} */}
+{/* {console.log(attemptData&&attemptData.graphs)} */}
             </div>
           </div>
         </div>
