@@ -29,6 +29,7 @@ import { trackPromise } from "react-promise-tracker";
 import ReactLoading from "react-loading";
 import Modal from "components/Modal";
 import Chart from "components/Chart/Chart";
+import PerformanceCharts from "../../../components/Reports/PerformanceCharts";
 
 let html2pdf;
 if (typeof window !== "undefined") {
@@ -339,12 +340,6 @@ const Individual = () => {
       });
   };
 
-  const maxMonthsKey =
-    chartData &&
-    Object.keys(chartData).reduce((a, b) =>
-      chartData[a].length > chartData[b].length ? a : b
-    );
-
   const options = {
     legend: { show: false },
     colors: [CHART_COLORS.chartBlue],
@@ -383,38 +378,7 @@ const Individual = () => {
       }).then(async response => {
         if (response.status == HTTP_STATUSES.OK) {
           const resJson = await response.json();
-          // setChartData(resJson);
-          setChartData({
-            "Reach Truck Double deep": [
-              {
-                month_name: "Sep 2023",
-                attempts_count: 5,
-                duration: 6030.9
-              },
-              {
-                month_name: "Oct 2023",
-                attempts_count: 13,
-                duration: 13207.58
-              },
-              {
-                month_name: "Nov 2023",
-                attempts_count: 10,
-                duration: 10176.52
-              }
-            ],
-            "Reach Truck Single deep": [
-              {
-                month_name: "Sep 2023",
-                attempts_count: 21,
-                duration: 8203.14
-              },
-              {
-                month_name: "Nov 2023",
-                attempts_count: 7,
-                duration: 5221.89
-              }
-            ]
-          });
+          setChartData(resJson);
         }
       })
     );
@@ -561,123 +525,8 @@ const Individual = () => {
                 })}
             </div>
             <hr />
-            {Object.keys(chartData).length > 0 && (
-              <div className="w-full my-3">
-                <Chart
-                  series={Object.keys(chartData).map(key => ({
-                    name: key,
-                    data: chartData[key].map(item => ({
-                      x: item.month_name,
-                      y: item.attempts_count,
-                      duration: item.duration
-                    }))
-                  }))}
-                  type={CHART_TYPES.LINE}
-                  height={350}
-                  options={{
-                    tooltip: {
-                      y: {
-                        formatter: function (
-                          value,
-                          { series, seriesIndex, dataPointIndex, w }
-                        ) {
-                          const duration =
-                            w.config.series[seriesIndex].data[dataPointIndex]
-                              .duration;
-                          const attemptsCount =
-                            w.config.series[seriesIndex].data[dataPointIndex].y;
 
-                          return `
-                            <div>
-                              <span>Attempts Count: ${attemptsCount}</span>
-                              <span>Duration: ${timeConverter(duration)}</span>
-                            </div>`;
-                        }
-                      }
-                    },
-                    markers: {
-                      size: 5,
-                      shape: "circle"
-                    },
-                    colors: Object.values(CHART_COLORS),
-                    stroke: {
-                      width: [4, 3, 5]
-                    },
-                    xaxis: {
-                      // categories: [
-                      //   new Date("2023-09-01").getTime(),
-                      //   new Date("2023-10-01").getTime(),
-                      //   new Date("2023-11-01").getTime()
-                      // ],
-                      showDuplicates: false,
-                      labels: {
-                        formatter: function (val) {
-                          const date = new Date(val);
-                          const monthNames = [
-                            "Jan",
-                            "Feb",
-                            "Mar",
-                            "Apr",
-                            "May",
-                            "Jun",
-                            "Jul",
-                            "Aug",
-                            "Sep",
-                            "Oct",
-                            "Nov",
-                            "Dec"
-                          ];
-                          return (
-                            monthNames[date.getMonth()] +
-                            "'" +
-                            date.getFullYear().toString().substr(-2)
-                          );
-                        }
-                      },
-                      title: {
-                        text: "Average Module Completion Time"
-                      }
-                      // type: "datetime"
-                    }
-                  }}
-                />
-              </div>
-            )}
-
-            {/* <div className="w-full lg:w-1/2">
-              <Chart
-                type={CHART_TYPES.LINE}
-                height={350}
-                series={[
-                  {
-                    name: "Desktops",
-                    data: [10, 41, 35, 51, 49, 62, 69, 91, 148]
-                  },
-                  {
-                    name: "Desktops",
-                    data: [60, 60, 60, 60, 60, 60, 60, 60, 60]
-                  }
-                ]}
-                options={{
-                  stroke: {
-                    width: [4, 3, 5]
-                  },
-                  xaxis: {
-                    categories: [
-                      "Jan",
-                      "Feb",
-                      "Mar",
-                      "Apr",
-                      "May",
-                      "Jun",
-                      "Jul",
-                      "Aug",
-                      "Sep"
-                    ]
-                  }
-                }}
-              />
-            </div> */}
+            {chartData && <PerformanceCharts data={chartData} />}
 
             {/* Mistakes */}
             <div className="mt-8 underline">Mistakes-</div>
