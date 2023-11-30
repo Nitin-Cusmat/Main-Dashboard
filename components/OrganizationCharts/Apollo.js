@@ -54,15 +54,15 @@ kpiNames.forEach((name, index) => {
 });
 
            
-      var canvas = document.createElement('canvas');
-      var ctx = canvas.getContext('2d');
-      canvas.width = canvas.height = 100;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.globalAlpha = 0.08;
-      ctx.font = '20px Microsoft Yahei';
-      ctx.translate(50, 50);
-      ctx.rotate(-Math.PI / 4);
+    //   var canvas = document.createElement('canvas');
+    //   var ctx = canvas.getContext('2d');
+    //   canvas.width = canvas.height = 100;
+    //   ctx.textAlign = 'center';
+    //   ctx.textBaseline = 'middle';
+    //   ctx.globalAlpha = 0.08;
+    //   ctx.font = '20px Microsoft Yahei';
+    //   ctx.translate(50, 50);
+    //   ctx.rotate(-Math.PI / 4);
       
 
       function determineInsightText(kpis) {

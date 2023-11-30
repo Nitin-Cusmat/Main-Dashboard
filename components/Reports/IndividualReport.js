@@ -931,7 +931,7 @@ const IndividualReport = ({
     </div>
   </div>
 )} */}
-{console.log(attemptData&&attemptData.graphs)}
+{/* {console.log(attemptData&&attemptData.graphs)} */}
             </div>
           </div>
         </div>
