@@ -39,7 +39,8 @@ const GraphReport = ({
   isShovel,
   ishhovel1,
   pieColor,
-  cycleData
+  cycleData,
+  organization
 }) => {
   const colors = ["#82E0AA", "#622F22", "black", "yellow"];
 
@@ -579,7 +580,7 @@ const GraphReport = ({
         </div>
       );
     } else if (
-      (graph.type == "doughnut" || "pie") &&
+      (graph.type == "doughnut" || "pie") &&    organization == "Apollo" &&
       graph.data &&
       graph.data.length > 0
     ) {
