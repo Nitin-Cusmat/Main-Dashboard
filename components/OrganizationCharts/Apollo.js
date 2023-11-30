@@ -65,7 +65,7 @@ kpiNames.forEach((name, index) => {
     //   ctx.rotate(-Math.PI / 4);
       
 
-      function determineInsightText(kpis) {
+      const determineInsightText=(kpis)=> {
         let actualTimeExceeds = false;
       
         for (let i = 0; i < kpis.length; i++) {
