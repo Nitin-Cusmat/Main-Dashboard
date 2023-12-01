@@ -3,8 +3,14 @@ import React from "react";
 import Chart from "components/Chart/Chart";
 import { CHART_TYPES } from "utils/constants";
 import IdealActualTimeBar from "./IdealActualTimeBar";
+import IdealActualTimeBar2 from "./IdealActualTimeBar2";
 
-const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
+const DrivingModuleReport = ({
+  attemptData,
+  attemptData2,
+  compare,
+  organization
+}) => {
   const path = attemptData.path;
   let idealTime = [];
   const classname = "text-dark";
@@ -21,7 +27,7 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
             textAnchor: "start",
             offsetX: -20,
             width: "100%",
-            height: 350,
+            height: 150,
             style: {
               colors: ["#000000"], // set label color to black
               fontWeight: "500"
@@ -63,13 +69,28 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
       }
     }
   };
+  const isApollo = organization && organization.name.toLowerCase() === "vctpl"; //rtgc
+  const engageErrorLabel = isApollo
+    ? "Loading Error[yard to Truck] (Angle)"
+    : "Pallet Engage Error (Angle)"; // for rtgc
+  const engageDistanceLabel = isApollo
+    ? "Loading Error[yard to Truck] (Distance)"
+    : "Pallet Engage Error (Distance)"; // for rtgc
 
+  const stackingErrorLabel = isApollo
+    ? "Stacking Error[Truck to Yard] (Angle)"
+    : "Stacking Error (Angle)"; // for rtgc
+  const stackingDistanceLabel = isApollo
+    ? "Stacking Error[Truck to Yard] (Distance)"
+    : "Stacking Error (Distance)"; // for rtgc
   const getAngleChart = (dataObj, angleField) => {
+    const chartHeight = isApollo ? "99%" : "100%"; // Set the height based on the organization
+
     return (
       <div className="h-full w-full">
         <Chart
           width={"100%"}
-          height={"100%"}
+          height={chartHeight}
           type={CHART_TYPES.LINE}
           options={angleOptions}
           series={
@@ -124,9 +145,11 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
         <div className=" text-primary text-sm p-2 mt-2 border w-full rounded mx-auto flex flex-wrap">
           {attemptData[dataObj].map((d, index) => {
             return (
-              <span key="angle_index" className="p-2 w-1/2">
+              <span key={`angle_${index}`} className="p-2 w-1/2">
                 Pallet {parseInt(index + 1)} {compare && "User 1"}:{" "}
-                <span className="font-bold">{d[angleField]}</span>
+                <span className="font-bold">
+                  {parseFloat(d[angleField]).toFixed(2)}
+                </span>
               </span>
             );
           })}
@@ -134,9 +157,11 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
             compare &&
             attemptData2[dataObj].map((d, index) => {
               return (
-                <span key="angle_index" className="p-2 w-1/2">
-                  Pallet {parseInt(index + 1)} User 2:{" "}
-                  <span className="font-bold">{d[angleField]}</span>
+                <span key={`angle_${index}`} className="p-2 w-1/2">
+                  Pallet {parseInt(index + 1)} {compare && "User 2"}:{" "}
+                  <span className="font-bold">
+                    {parseFloat(d[angleField]).toFixed(2)}
+                  </span>
                 </span>
               );
             })}
@@ -204,14 +229,76 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
       />
     );
   };
+
+
   if (attemptData && attemptData.path) idealTime = attemptData.path.ideal_time;
-  if (path)
+  if (!path && isApollo && attemptData.boxKeptData && attemptData.boxKeptData.length > 0) {
     return (
-      <div className="w-full">
-        {idealTime && idealTime.length > 0 && (
-          <div className="flex w-full flex-wrap">
-            <div className="w-full lg:w-3/4">
-              <IdealActualTimeBar
+      <div className="flex flex-wrap pt-4 print:flex print:flex-row">
+        {/* Angle Chart Section */}
+        <div className="p-4 w-full md:w-1/2 print:w-1/2 h-full">
+          <div className="my-2">
+            <div className="flex justify-center">
+              <div className="py-2 transform transition duration-500 hover:scale-105 cursor-pointer">
+                <div className="bg-gradient-to-r from-green-200 via-blue-100 to-purple-200 rounded-lg shadow-xl p-2 border-b-2 border-blue-300">
+                  <div className="flex items-center justify-center text-blue-800">
+                    <span className="icon text-xl">📊</span> {/* Icon */}
+                    <h2 className="text-md md:text-lg font-medium pl-1">
+                      <strong>{stackingErrorLabel}</strong>
+                    </h2>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="min-h-96"> 
+            {getAngleChart("boxKeptData", "stackingAngle")}
+          </div>
+        </div>
+
+        {/* Distance Chart Section */}
+        <div className="p-4 w-full md:w-1/2 print:w-1/2 h-full">
+          <div className="my-2">
+            <div className="flex justify-center">
+              <div className="py-2 transform transition duration-500 hover:scale-105 cursor-pointer">
+                <div className="bg-gradient-to-r from-green-200 via-blue-100 to-purple-200 rounded-lg shadow-xl p-2 border-b-2 border-blue-300">
+                  <div className="flex items-center justify-center text-blue-800">
+                    <span className="icon text-xl">📊</span> {/* Icon */}
+                    <h2 className="text-md md:text-lg font-medium pl-1">
+                      <strong>{stackingDistanceLabel}</strong>
+                    </h2>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="min-h-96">
+            {getDistanceChart("boxKeptData", "stackingDistance")}
+          </div>
+        </div>
+      </div>
+    );
+
+  }
+  return (
+    <div className="w-full">
+      {idealTime && idealTime.length > 0 && (
+        <div className="flex w-full flex-wrap">
+          <div className="w-full lg:w-3/4">
+            <IdealActualTimeBar
+              idealTime={attemptData?.path?.ideal_time}
+              actualPath={attemptData.path.actual_path}
+              compare={compare}
+              actualPath2={
+                compare &&
+                attemptData2 &&
+                attemptData2.path &&
+                attemptData2.path.actual_path
+                  ? attemptData2.path.actual_path
+                  : null
+              }
+            />
+             <IdealActualTimeBar2
                 idealTime={attemptData?.path?.ideal_time}
                 actualPath={attemptData.path.actual_path}
                 compare={compare}
@@ -224,50 +311,52 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
                     : null
                 }
               />
-            </div>
-            {path.ideal_time &&
-              path.ideal_time.length > 0 &&
-              path.ideal_time[0].path &&
-              path.ideal_time[0].name && (
-                <div className="w-full lg:w-1/4 lg:pl-5 pt-7">
-                  <CustomTable
-                    columns={["Path Definition"]}
-                    rows={path.ideal_time
-                      .map(path => {
-                        if (path.name !== undefined && path.name !== "") {
+          </div>
+          {path.ideal_time &&
+            path.ideal_time.length > 0 &&
+            path.ideal_time[0].path &&
+            path.ideal_time[0].name && (
+              <div className="w-full lg:w-1/4 lg:pl-5 pt-7">
+                <CustomTable
+                  columns={["Path Definition"]}
+                  rows={path.ideal_time
+                    .map(path => {
+                      if (path.name !== undefined && path.name !== "") {
+                        return {
+                          "Path Definition": `${
+                            path.name.toLowerCase().startsWith("path")
+                              ? path.name
+                              : `${path.path}: ${path.name}`
+                          }`
+                        };
+                      }
+                    })
+                    .filter(x => x !== undefined)}
+                  compare
+                  rows2={
+                    compare &&
+                    attemptData2.path &&
+                    attemptData2.path.idealTime
+                      ? attemptData2.path.ideal_time.map(path => {
                           return {
                             "Path Definition": `${
+                              path.name !== undefined &&
+                              path.name !== "" &&
                               path.name.toLowerCase().startsWith("path")
                                 ? path.name
                                 : `${path.path}: ${path.name}`
                             }`
                           };
-                        }
-                      })
-                      .filter(x => x !== undefined)}
-                    compare
-                    rows2={
-                      compare &&
-                      attemptData2.path &&
-                      attemptData2.path.idealTime
-                        ? attemptData2.path.ideal_time.map(path => {
-                            return {
-                              "Path Definition": `${
-                                path.name !== undefined &&
-                                path.name !== "" &&
-                                path.name.toLowerCase().startsWith("path")
-                                  ? path.name
-                                  : `${path.path}: ${path.name}`
-                              }`
-                            };
-                          })
-                        : null
-                    }
-                  />
-                </div>
-              )}
-          </div>
-        )}
+                        })
+                      : null
+                  }
+                />
+              </div>
+            )}
+        </div>
+      )}
+ 
+   
         {/* <div className="w-full lg:w-3/4">
           <GearCollisionGraph
             graphs={attemptData.graphs}
@@ -284,31 +373,37 @@ const DrivingModuleReport = ({ attemptData, attemptData2, compare }) => {
             }
           />
         </div> */}
+        {/* This below code is only for RTGC */}
 
-        {attemptData.boxPickupData && attemptData.boxPickupData.length > 0 && (
-          <div className="flex flex-wrap pt-4">
-            <div className=" p-4 w-full md:w-1/2">
-              <div className={classname}>Pallet engage error(Distance)</div>
-              {getDistanceChart("boxPickupData", "engageDistance")}
+        {!isApollo &&
+          attemptData.boxPickupData &&
+          attemptData.boxPickupData.length > 0 && (
+            <div className="flex flex-wrap pt-4">
+              <div className=" p-4 w-full md:w-1/2">
+                <div className={classname}>Pallet engage error(Distance)</div>
+                {getDistanceChart("boxPickupData", "engageDistance")}
+              </div>
+              <div className=" p-4 w-full md:w-1/2">
+                <div className={classname}>Pallet engage error(Angle)</div>
+                {getAngleChart("boxPickupData", "engageAngle")}
+              </div>
             </div>
-            <div className=" p-4 w-full md:w-1/2">
-              <div className={classname}>Pallet engage error(Angle)</div>
-              {getAngleChart("boxPickupData", "engageAngle")}
+          )}
+
+        {!isApollo &&
+          attemptData.boxKeptData &&
+          attemptData.boxKeptData.length > 0 && (
+            <div className="flex flex-wrap">
+              <div className=" p-4 w-full md:w-1/2">
+                <div className={classname}>Stacking error(Distance)</div>
+                {getDistanceChart("boxKeptData", "stackingDistance")}
+              </div>
+              <div className=" p-4 w-full md:w-1/2">
+                <div className={classname}>Stacking error(Angle)</div>
+                {getAngleChart("boxKeptData", "stackingAngle")}
+              </div>
             </div>
-          </div>
-        )}
-        {attemptData.boxKeptData && attemptData.boxKeptData.length > 0 && (
-          <div className="flex flex-wrap">
-            <div className=" p-4 w-full md:w-1/2">
-              <div className={classname}>Stacking error(Distance)</div>
-              {getDistanceChart("boxKeptData", "stackingDistance")}
-            </div>
-            <div className=" p-4 w-full md:w-1/2">
-              <div className={classname}>Stacking error(Angle)</div>
-              {getAngleChart("boxKeptData", "stackingAngle")}
-            </div>
-          </div>
-        )}
+          )}
       </div>
     );
 };

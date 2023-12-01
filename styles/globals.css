@@ -59,12 +59,16 @@
 }
 
 .animatedGradient {
-  background: linear-gradient(45deg, #4CAF50, #2196F3, #6d6dd9, #c689e8);
+  background: linear-gradient(45deg, #e8ffe9, #c3e4ff, #c3c3f8, #ecd8f6);
   background-size: 200% 200%;
   animation: gradientAnimation 10s ease infinite;
+  padding: 5px;
+  font-weight: bold;
+  border-radius: 5px;
   height: 30px;  /* Adjust this value to your desired gap size */
   line-height: 16px;
-  font-size: 18px;  /* Adjust this value to change the font size */
+
+  font-size: 18px;  
 
   
 }
@@ -276,3 +280,24 @@ td {
 .mistakes-list li {
   margin-bottom: 10px; /* Space between each bullet point */
 }
+.gap-above-row {
+  height: 30px;  /* Adjust this value to your desired gap size */
+  line-height: 16px;
+  font-size: 18px;  /* Adjust this value to change the font size */}
+
+  .special--tata {
+    /* Define your custom styles here */
+    background: linear-gradient(45deg, #e8ffe9, #c3e4ff, #b1b1ff, #eac2ff);
+    animation: gradientAnimation 10s ease infinite;
+
+    color: #616161; /* Example text color */
+    padding: 5px;
+    font-weight: bold;
+    border-radius: 5px;
+    height: 30px;  /* Adjust this value to your desired gap size */
+    line-height: 16px;
+
+    font-size: 18px;  /* Adjust this value to change the font size *
+       /* Add any other styles you want for this heading */
+  }
+  

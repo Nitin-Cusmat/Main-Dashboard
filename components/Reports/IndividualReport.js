@@ -9,7 +9,8 @@ import {
   CHART_COLORS,
   CHART_TYPES,
   HTTP_METHODS,
-  HTTP_STATUSES
+  HTTP_STATUSES,
+  ORG_MAPPING
 } from "utils/constants";
 import KpiReport from "./KpiReport";
 import useUserProfile from "hooks/useUserProfile";
@@ -26,6 +27,7 @@ import AssemblyReport from "./AssemblyReport";
 import GraphReport from "./GraphReport";
 import IdealActualPath from "./IdealActualPath";
 import DrivingModuleReport from "./DrivingModuleReport";
+import KpiReport2 from './KpiReport2';
 import {
   formatTimeDay,
   getFormattedTime,
@@ -41,6 +43,8 @@ import ReactLoading from "react-loading";
 import CycleDataVisual from "./CycleDataVisual";
 import { Newtable } from "./newtable";
 import { Pathtable } from "./pathtable";
+import KpiReport1 from "./KpiReport1";
+import dynamic from "next/dynamic";
 
 // function getRandomInt(min, max) {
 //   min = Math.ceil(min);
@@ -58,6 +62,8 @@ const IndividualReport = ({
   users,
   setUsers,
   loading,
+  graph,
+  graph2,
   getAttemptDataCallback = () => {},
   setLoading
 }) => {
@@ -72,14 +78,19 @@ const IndividualReport = ({
     router.query.module.toLocaleLowerCase() === "reach truck";
   const isWinder =
     router.query.module && router.query.module.toLocaleLowerCase() === "winder";
+
   const isShovel =
-    router.query.module && router.query.module.toLocaleLowerCase() === "shovel";
+    router.query.module &&
+    (router.query.module.toLocaleLowerCase() === "shovel" ||
+      router.query.module.toLocaleLowerCase() === "mining - shovel");
+
   const isForkLift =
     router.query.module &&
     router.query.module.toLocaleLowerCase() === "forklift";
 
   const pieColors = ["#580000", "#FF8C00", "#006400", "#00CED1"];
   let pieIndex = -1;
+  const [orgChart, setOrgChart] = useState(null);
 
   const moduleMistakeToLevelRecommendation = {
     "pendent control": {
@@ -187,6 +198,36 @@ const IndividualReport = ({
   };
 
   useEffect(() => {
+    if (
+      organization &&
+      Object.keys(organization).length > 0 &&
+      attemptData &&
+      Object.keys(attemptData).length > 0
+    ) {
+      const valueToFind = organization.name;
+      let foundKey = null;
+      for (const key in ORG_MAPPING) {
+        if (ORG_MAPPING[key] === valueToFind) {
+          foundKey = key;
+          break;
+        }
+      }
+      if (foundKey !== null) {
+        let LazyComponent;
+        try {
+          LazyComponent = dynamic(
+            () => import(`../OrganizationCharts/${foundKey}`),
+            { ssr: false }
+          );
+        } catch (error) {
+          LazyComponent = null;
+        }
+        setOrgChart(<LazyComponent attemptData={attemptData} />);
+      }
+    }
+  }, [organization, attemptData]);
+
+  useEffect(() => {
     if (organization) {
       if (!["Attempt", ""].includes(attempt) && fetchAttemptData) {
         setLoading(true);
@@ -245,6 +286,9 @@ const IndividualReport = ({
     let axisLines = attemptData.hAxisLines ? attemptData.hAxisLines : null;
     let vAxisLines = attemptData.vAxisLines ? attemptData.vAxisLines : null;
     let extraPlots = [];
+
+    const noPathData = !attemptData.path || !attemptData.path.actual_path || !attemptData.path.ideal_path;
+
 
     if (attemptData.boxPickupData) {
       attemptData.boxPickupData.forEach((d, index) => {
@@ -579,8 +623,13 @@ const IndividualReport = ({
           {attemptData && attemptData.score && (
             <ScoreRow score={[score]} attemptDuration={[attemptDuration]} />
           )}
-          {attemptData.path && (
-            <DrivingModuleReport attemptData={attemptData} />
+           {attemptData.tableKpis && (
+                  <TableKpis tableKpis={attemptData.tableKpis} />
+                )}
+          {attemptData && (
+            <DrivingModuleReport attemptData={attemptData} 
+            organization={organization} // Make sure you pass the organization here
+            />
           )}
           {attemptData &&
             attemptData.subActivities &&
@@ -599,7 +648,6 @@ const IndividualReport = ({
                 {getPairPaths(attemptData).map(e => e)}
               </div>
             )}
-
           <div className="flex flex-wrap ">
             {attemptData && (
               <div className="flex flex-col gap-4 w-full lg:w-3/4">
@@ -621,10 +669,9 @@ const IndividualReport = ({
                     measurement={attemptData.measurement}
                   />
                 )}
-                {attemptData.tableKpis && (
+                {/* {attemptData.tableKpis && (
                   <TableKpis tableKpis={attemptData.tableKpis} />
-                )}
-
+                )} */}
                 {attemptData.kpitable && (
                   <Newtable kpitable={attemptData.kpitable} />
                 )}
@@ -640,8 +687,22 @@ const IndividualReport = ({
                     />
                   ))} */}
                 {attemptData.kpis && attemptData.kpis.length > 0 && (
-                  <KpiReport kpis1={attemptData.kpis} />
+                  <KpiReport kpis1={attemptData.kpis} 
+                  /> // Make sure to pass the organization here/>
                 )}
+
+                {attemptData.loading && attemptData.loading.length > 0 && (
+                  <KpiReport1 kpitask1={attemptData.loading}
+                  organization={organization} // Make sure to pass the organization here
+                  />
+                )}
+
+                {attemptData.unloading && attemptData.unloading.length > 0 && (
+                  <KpiReport2 kpis3={attemptData.unloading}
+                  organization={organization} // Make sure to pass the organization here
+                  />
+                )}
+
                 {attemptData.inspections &&
                   attemptData.inspections.length > 0 && (
                     <CarsomeReport attemptData={attemptData} module={module} />
@@ -681,7 +742,12 @@ const IndividualReport = ({
                       ) {
                         deviationGraph = true;
                       }
-                      return (
+                      const isApolloOrg = organization.name.toLowerCase() === "apollo";
+                      const isVCTPLOrg = organization.name.toLowerCase() === "vctpl";
+                      const shouldRenderGraph =
+                        !(isApolloOrg && ["pie", "doughnut"].includes(graph.type)) &&
+                        !(isVCTPLOrg && graph.type === "line");
+                      return shouldRenderGraph && (
                         <div
                           key={`doughnut_${index}`}
                           className={`w-full ${
@@ -755,6 +821,7 @@ const IndividualReport = ({
                       tableKpis={attemptData.generalkpis[gkpis]}
                     />
                   ))}
+                {orgChart}
               </div>
             )}
             <div className="mt-0  pl-0 pt-4 md:pt-0 w-full lg:w-1/4 ">
@@ -869,6 +936,7 @@ const IndividualReport = ({
     </div>
   </div>
 )} */}
+{/* {console.log(attemptData&&attemptData.graphs)} */}
             </div>
           </div>
         </div>

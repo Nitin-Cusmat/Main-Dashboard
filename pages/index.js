@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import AuthWall from "components/AuthWall";
 import useLogin from "hooks/useLogin";
 import appRoutes from "utils/app-routes";
+import Head from "next/head";
 
 export default function Home() {
   const router = useRouter();
@@ -18,6 +19,9 @@ export default function Home() {
       <div>
         {status == loginStates.IS_NOT_LOGGED_IN && (
           <>
+            <Head>
+              <title>Cusmat Login</title>
+            </Head>
             <img
               src={"/images/cusmat-logo.svg"}
               width="120px"

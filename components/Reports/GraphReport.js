@@ -37,6 +37,7 @@ const GraphReport = ({
   users,
   isWinder,
   isShovel,
+  ishhovel1,
   pieColor,
   cycleData
 }) => {
@@ -278,7 +279,12 @@ const GraphReport = ({
                 series={
                   compare
                     ? [
-                        { name: "User 1", data: graph.data },
+                      { 
+                        name: "User 1", 
+                        data: graph.data,
+                        type: 'area', // Specify the type as 'area' to fill under the line
+                        
+                      },
                         {
                           name: "User 2",
                           data:
@@ -290,11 +296,37 @@ const GraphReport = ({
                         ...getAdditionalPlots(graph2, compare, 2)
                       ]
                     : [
-                        { name: "User ", data: graph.data },
-                        ...getAdditionalPlots(graph)
+                      { 
+                        name: "User", 
+                        data: graph.data,
+                        type: 'area', // Specify the type as 'area' to fill under the line
+                       
+                      },                       
+                      ...getAdditionalPlots(graph)
                       ]
                 }
                 options={{
+                  fill: {
+                    type: 'gradient',
+                    gradient: {
+                      shadeIntensity: 0.1,
+                      opacityFrom: 0.1,
+                      opacityTo: 0.1,
+                      stops: [0, 100],
+                      colorStops: [
+                        {
+                          offset: 0, // Top of the gradient
+                          color: "#82fff3", // Replace with the desired top color
+                          opacity: 0.2
+                        },
+                        {
+                          offset: 100, // Bottom of the gradient
+                          color: "#adfff3", // Replace with the desired bottom color
+                          opacity: 0.1
+                        }
+                      ]
+                    }
+                  },
                   // fill:
                   //   referenceGraph !== undefined
                   //     ? {
@@ -677,43 +709,52 @@ const GraphReport = ({
                       }
                     ]
                   : [
-                      {
-                        type: "pie",
-                        radius: ["50%", "70%"],
-                        color:
-                          pieColor && graph.data.length === 1
-                            ? pieColor
-                            : Object.values(CHART_COLORS),
-                        data:
-                          graph.name === "Total quantity used in assembly"
-                            ? graph.data
-                                .filter(x => x > 0)
-                                .map((item, index) => {
-                                  return {
-                                    value: parseFloat(item),
-                                    name: graph.labels[index]
-                                  };
-                                })
-                            : graph.data
-                                .map((item, index) => {
-                                  return {
-                                    value: parseFloat(item),
-                                    name: graph.labels[index]
-                                  };
-                                })
-                                .filter(item => item.value > 0),
-                        emphasis: {
-                          itemStyle: {
-                            shadowBlur: 10,
-                            shadowOffsetX: 0,
-                            shadowColor: "rgba(0, 0, 0, 0.5)"
+                    {
+                      type: "pie",
+                      radius: ["50%", "70%"],
+                      color: pieColor && graph.data.length === 1 ? pieColor : Object.values(CHART_COLORS),
+                      data: (() => {
+                        const aggregatedData = {};
+                        let lastTimeByLabel = {};
+                        let previousLabel = null;
+                    
+                        graph.data.forEach((item, index) => {
+                          const label = graph.labels[index];
+                          const currentTime = parseFloat(item);
+                    
+                          if (label !== previousLabel && previousLabel !== null) {
+                            // Reset the last occurrence time for the previous label
+                            lastTimeByLabel[previousLabel] = null;
                           }
-                        },
-                        labelLine: {
-                          show: false
+                    
+                          if (label in lastTimeByLabel && lastTimeByLabel[label] !== null) {
+                            // For repeating labels in sequence, calculate the time difference
+                            const timeDiff = currentTime - lastTimeByLabel[label];
+                            aggregatedData[label] = (aggregatedData[label] || 0) + timeDiff;
+                          }
+                    
+                          // Update the last occurrence time for this label
+                          lastTimeByLabel[label] = currentTime;
+                          previousLabel = label; // Update the previous label
+                        });
+                    
+                        // Convert the aggregated data back into the array format
+                        return Object.entries(aggregatedData)
+                          .map(([name, value]) => ({ name, value }))
+                          .filter(item => item.value > 0);
+                      })(),
+                      emphasis: {
+                        itemStyle: {
+                          shadowBlur: 10,
+                          shadowOffsetX: 0,
+                          shadowColor: "rgba(0, 0, 0, 0.5)"
                         }
+                      },
+                      labelLine: {
+                        show: false
                       }
-                    ]
+                    }
+                  ]
               }}
             />
           </div>

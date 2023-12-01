@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import CasesReport from "./CasesReport";
 import CycleDataVisual from "./CycleDataVisual";
 import SequenceReport from "./sequenceReport";
@@ -19,6 +19,10 @@ import { TableKpis } from "./TableKpis";
 import { useRouter } from "next/router";
 import CustomTable from "components/CustomTable";
 import { max } from "lodash";
+import KpiReport1 from "./KpiReport1";
+import KpiReport2 from "./KpiReport2";
+import { ORG_MAPPING } from "utils/constants";
+import dynamic from "next/dynamic";
 
 const ComparitiveAttemptReport = ({
   score,
@@ -26,9 +30,11 @@ const ComparitiveAttemptReport = ({
   attemptData,
   attemptData2,
   users,
-  module
+  module,
+  organization
 }) => {
   const router = useRouter();
+  const [orgChart, setOrgChart] = useState(null);
   const getAreasOfImprovement = (attemptData, user) => {
     if (attemptData && attemptData.mistakes) {
       return attemptData.mistakes.map(mistake => {
@@ -40,6 +46,8 @@ const ComparitiveAttemptReport = ({
     }
     return [];
   };
+
+  const isApollo = organization && organization.name.toLowerCase() === "vctpl";
 
   const areasOfImprovement1 = getAreasOfImprovement(attemptData, "User 1");
   const areasOfImprovement2 = getAreasOfImprovement(attemptData2, "User 2");
@@ -65,13 +73,13 @@ const ComparitiveAttemptReport = ({
     const maxLength = Math.max(paths1.length, paths2.length);
     let obstaclesArray = Array.isArray(attemptData.obstacles)
       ? attemptData.obstacles
-      : [attemptData.obstacles]; 
+      : [attemptData.obstacles];
 
-      let obstacles1Array = Array.isArray(attemptData.obstacles1)
+    let obstacles1Array = Array.isArray(attemptData.obstacles1)
       ? attemptData.obstacles1
-      : [attemptData.obstacles1];  
-      
-     const mergedPaths = [];
+      : [attemptData.obstacles1];
+
+    const mergedPaths = [];
     const isReachTruck =
       router.query.module &&
       router.query.module.toLocaleLowerCase() === "reach truck";
@@ -108,13 +116,13 @@ const ComparitiveAttemptReport = ({
       }
     });
 
-    const getObstaclesForPath = (pathNames) => {
+    const getObstaclesForPath = pathNames => {
       // Assuming obstaclesArray is accessible in this scope
-      
+
       if (!obstaclesArray || obstaclesArray.length === 0) {
         return [];
       }
-    
+
       return obstaclesArray
         .filter(
           obstacle =>
@@ -125,13 +133,13 @@ const ComparitiveAttemptReport = ({
         .flatMap(obstacle => obstacle.coordinates);
     };
 
-    const getObstacles1ForPath = (pathNames) => {
+    const getObstacles1ForPath = pathNames => {
       // Assuming obstaclesArray is accessible in this scope
-      
+
       if (!obstacles1Array || obstacles1Array.length === 0) {
         return [];
       }
-    
+
       return obstacles1Array
         .filter(
           obstacle1 =>
@@ -169,9 +177,9 @@ const ComparitiveAttemptReport = ({
             isForkLift={isForkLift}
             axisLines={axisLines}
             vAxisLines={vAxisLines}
-            obstacles={obstacleCoords.length > 0 ? obstacleCoords : null}  
-            obstacles1={obstacle1Coords.length > 0 ? obstacle1Coords : null}        />
-            
+            obstacles={obstacleCoords.length > 0 ? obstacleCoords : null}
+            obstacles1={obstacle1Coords.length > 0 ? obstacle1Coords : null}
+          />
         );
       }
     }
@@ -196,7 +204,7 @@ const ComparitiveAttemptReport = ({
 
       let pathNames =
         i == paths1.length - 1 ? [paths1[i]] : [paths1[i], paths1[i + 1]];
-      let extraPlotPoits = extraPlots.filter(p => pathNames.includes(p.path))
+      let extraPlotPoits = extraPlots.filter(p => pathNames.includes(p.path));
       const uniquePaths = [paths1[i]];
       if (i + 1 < paths1.length) {
         uniquePaths.push(paths1[i + 1]);
@@ -237,9 +245,8 @@ const ComparitiveAttemptReport = ({
           isReachTruck={isReachTruck}
           axisLines={axisLines}
           vAxisLines={vAxisLines}
-          obstacles={obstacleCoords2.length > 0 ? obstacleCoords2 : null}  
-          obstacles1={obstacle1Coords2.length > 0 ? obstacle1Coords2 : null}      
-   
+          obstacles={obstacleCoords2.length > 0 ? obstacleCoords2 : null}
+          obstacles1={obstacle1Coords2.length > 0 ? obstacle1Coords2 : null}
           extraPlots={extraPlotPoits}
           isForkLift={isForkLift}
         />
@@ -292,21 +299,20 @@ const ComparitiveAttemptReport = ({
           axisLines={axisLines}
           vAxisLines={vAxisLines}
           extraPlots={extraPlotPoits}
-          obstacles={obstacleCoords2.length > 0 ? obstacleCoords2 : null}    
-          obstacles1={obstacle1Coords2.length > 0 ? obstacle1Coords2 : null}     
-
+          obstacles={obstacleCoords2.length > 0 ? obstacleCoords2 : null}
+          obstacles1={obstacle1Coords2.length > 0 ? obstacle1Coords2 : null}
           isForkLift={isForkLift}
         />
       );
     }
     return mergedPaths;
   };
-  
+
   const getObstaclesForPath = (pathNames, obstaclesArray) => {
     if (!obstaclesArray || obstaclesArray.length === 0) {
       return [];
     }
-  
+
     return obstaclesArray
       .filter(
         obstacle =>
@@ -321,7 +327,7 @@ const ComparitiveAttemptReport = ({
     if (!obstacles1Array || obstacles1Array.length === 0) {
       return [];
     }
-  
+
     return obstacles1Array
       .filter(
         obstacle1 =>
@@ -344,14 +350,52 @@ const ComparitiveAttemptReport = ({
       );
     });
   };
+
+  useEffect(() => {
+    if (
+      organization &&
+      Object.keys(organization).length > 0 &&
+      attemptData &&
+      Object.keys(attemptData).length > 0
+    ) {
+      const valueToFind = organization.name;
+      let foundKey = null;
+      for (const key in ORG_MAPPING) {
+        if (ORG_MAPPING[key] === valueToFind) {
+          foundKey = key;
+          break;
+        }
+      }
+      if (foundKey !== null) {
+        let LazyComponent;
+        try {
+          LazyComponent = dynamic(
+            () => import(`../OrganizationCharts/${foundKey}`),
+            { ssr: false }
+          );
+        } catch (error) {
+          LazyComponent = null;
+        }
+        setOrgChart(
+          <LazyComponent
+            attemptData={attemptData}
+            attemptData2={attemptData2}
+            compare={true}
+          />
+        );
+      }
+    }
+  }, [organization, attemptData, attemptData2]);
+
   return (
     <div className="p-1 pt-0">
       {attemptData && (
         <div className="flex flex-col gap-4 w-full ">
-          {attemptData.path && (
+          {attemptData.path ?? (
             <DrivingModuleReport
               attemptData={attemptData}
               attemptData2={attemptData2}
+              organization={{ name: "vctpl" }}
               compare
             />
           )}
@@ -406,6 +450,24 @@ const ComparitiveAttemptReport = ({
                 compare
               />
             )}
+            {attemptData.loading && attemptData.loading.length > 0 && (
+              <KpiReport1
+                kpitask1={attemptData.loading}
+                kpitask2={attemptData2.loading}
+                organization={{ name: "vctpl" }}
+                compare
+              />
+            )}
+
+            {attemptData.unloading && attemptData.unloading.length > 0 && (
+              <KpiReport2
+                kpis3={attemptData.unloading}
+                kpis4={attemptData2.unloading}
+                organization={{ name: "vctpl" }}
+                compare
+              />
+            )}
+
             {attemptData.inspections && attemptData.inspections.length > 0 && (
               <CarsomeReport
                 attemptData={attemptData}
@@ -449,50 +511,57 @@ const ComparitiveAttemptReport = ({
                 compare
               />
             )}
-         
+
             {attemptData.graphs && attemptData.graphs.length > 0 && (
               <div className="">
                 {attemptData.graphs.map((graph, index) => {
-                  attemptData.graphs[index];
-                  return (
-                    <div key={index} className="w-full">
-                      <div className="w-full">
-                        <GraphReport
-                       
-                          graph={graph}
-                          graph2={
-                            attemptData2.graphs.filter(
-                              x => x.name == graph.name
-                            )[0]
-                          }
-                          index={index}
-                          users={users}
-                          compare
-                        />
-                      </div>
-                      {module == "EOT-Crane" && (
-                        <div>
-                          {graph.name == "LT & CT Speed vs Time" &&
-                            graph.data && (
-                              <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
-                                {getAverageSpeed(graph)}
-                              </div>
+                  const isApolloOrg =
+                    organization.name.toLowerCase() === "apollo";
+                  const isVCTPLOrg =
+                    organization.name.toLowerCase() === "vctpl";
+                  const shouldRenderGraph =
+                    !(
+                      isApolloOrg && ["pie", "doughnut"].includes(graph.type)
+                    ) && !(isVCTPLOrg && graph.type === "line");
+                  if (shouldRenderGraph) {
+                    return (
+                      <div key={index} className="w-full">
+                        <div className="w-full">
+                          <GraphReport
+                            graph={graph}
+                            graph2={attemptData2.graphs.find(
+                              x => x.name === graph.name
                             )}
-                          {attemptData.graphs[1]?.name ==
-                            "LT & CT Speed vs Time" &&
-                            attemptData.graphs[1]?.data && (
-                              <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
-                                {getAverageSpeed(attemptData.graphs[1].data)}
-                              </div>
-                            )}
+                            index={index}
+                            users={users}
+                            compare
+                          />
                         </div>
-                      )}
-                    </div>
-                  );
+                        {module === "EOT-Crane" &&
+                          graph.name === "LT & CT Speed vs Time" &&
+                          graph.data && (
+                            <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
+                              {getAverageSpeed(graph)}
+                              {/* The next conditional can be adjusted or removed depending on your needs */}
+                              {attemptData.graphs[1]?.name ===
+                                "LT & CT Speed vs Time" &&
+                                attemptData.graphs[1]?.data && (
+                                  <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
+                                    {getAverageSpeed(
+                                      attemptData.graphs[1].data
+                                    )}
+                                  </div>
+                                )}
+                            </div>
+                          )}
+                      </div>
+                    );
+                  }
+                  return null;
                 })}
               </div>
             )}
-               {attemptData.cycleData && attemptData.cycleData.length > 0 && (
+            {attemptData.cycleData && attemptData.cycleData.length > 0 && (
               <CycleDataVisual
                 cycleData={attemptData.cycleData}
                 cycleData2={attemptData2.cycleData}
@@ -516,19 +585,18 @@ const ComparitiveAttemptReport = ({
                   : null
               }
             />
-             {attemptData.generalkpis &&
-                  Object.keys(attemptData.generalkpis).length > 0 &&
-                  Object.keys(attemptData.generalkpis).map((gkpis, index) => (
-                    <TableKpis
-                      key={`gkpis_${index}`}
-                      tableKpis={attemptData.generalkpis[gkpis]}
-                      tableKpis2={attemptData2.generalkpis[gkpis]}
-                      compare
+            {attemptData.generalkpis &&
+              Object.keys(attemptData.generalkpis).length > 0 &&
+              Object.keys(attemptData.generalkpis).map((gkpis, index) => (
+                <TableKpis
+                  key={`gkpis_${index}`}
+                  tableKpis={attemptData.generalkpis[gkpis]}
+                  tableKpis2={attemptData2.generalkpis[gkpis]}
+                  compare
+                />
+              ))}
+            {orgChart}
 
-                    />
-                  ))}
-
-        
             <div className="flex w-full">
               {areasOfImprovement1.length > 0 && (
                 <div className="pl-0 flex-1 pr-5">
@@ -538,7 +606,6 @@ const ComparitiveAttemptReport = ({
                   />
                 </div>
               )}
-
               {areasOfImprovement2.length > 0 && (
                 <div className="flex-1 pl-5">
                   <CustomTable

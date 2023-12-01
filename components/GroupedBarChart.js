@@ -23,6 +23,8 @@ ChartJS.register(
   ChartDataLabels
 );
 
+import LoadingSpillageGraph from "components/Reports/LoadingSpillageGraph";
+
 const GroupedBarChart = ({
   title,
   dataset,
@@ -31,11 +33,18 @@ const GroupedBarChart = ({
   xLabel,
   yLabel,
   isWinder,
-  isShovel,
-  horizontalBars,
   maxValue
 }) => {
   const { screenWidth } = useRecoilValue(deviceState);
+  if (title === "loading and spillage") {
+    return (
+      <LoadingSpillageGraph
+        data={dataset}
+        labels={labels}
+        maxValue={maxValue}
+      />
+    );
+  }
 
   const options = {
     barPercentage: 0.8,
@@ -54,43 +63,19 @@ const GroupedBarChart = ({
     plugins: {
       tooltip: {
         displayColors: false,
-        callbacks: !isShovel
-          ? {
-              title: function (tooltipItem) {
-                return tooltipItem[0].label;
-              },
-              label: tooltipItem => {
-                const datasetLabel = tooltipItem.dataset.label;
-                if (datasetLabel && datasetLabel.trim() !== "")
-                  return `${tooltipItem.dataset.label}: ${
-                    tooltipItem.dataset.data[tooltipItem.dataIndex]
-                  }`;
-                else
-                  return `${tooltipItem.dataset.data[tooltipItem.dataIndex]}`;
-              }
-            }
-          : {
-              title: function () {
-                return null;
-              },
-              label: tooltipItem => {
-                const loading =
-                  ((tooltipItem.parsed._stacks.x[0] +
-                    tooltipItem.parsed._stacks.x[1]) /
-                    maxValue) *
-                  100;
-                const spillage =
-                  (tooltipItem.parsed._stacks.x[1] /
-                    (tooltipItem.parsed._stacks.x[0] +
-                      tooltipItem.parsed._stacks.x[1])) *
-                  100;
-                return `Loading: ${loading
-                  .toFixed(2)
-                  .replace(/\.00$/, "")}%, Spillage: ${spillage
-                  .toFixed(2)
-                  .replace(/\.00$/, "")}%`;
-              }
-            }
+        callbacks: {
+          title: function (tooltipItem) {
+            return tooltipItem[0].label;
+          },
+          label: tooltipItem => {
+            const datasetLabel = tooltipItem.dataset.label;
+            if (datasetLabel && datasetLabel.trim() !== "")
+              return `${tooltipItem.dataset.label}: ${
+                tooltipItem.dataset.data[tooltipItem.dataIndex]
+              }`;
+            else return `${tooltipItem.dataset.data[tooltipItem.dataIndex]}`;
+          }
+        }
       },
       datalabels: {
         display: isWinder ? true : false,
@@ -114,7 +99,7 @@ const GroupedBarChart = ({
     },
     scales: {
       x: {
-        max: horizontalBars ? maxValue : dataset[0].data.length,
+        max: dataset[0].data.length,
         stacked: true,
         title: {
           display: true,
@@ -132,16 +117,19 @@ const GroupedBarChart = ({
           font: {
             weight: "bold"
           }
+        },
+        grid: {
+          display: false
         }
       }
-    },
-    indexAxis: horizontalBars ? "y" : "x"
+    }
   };
 
   const data = {
     labels: labels,
-    datasets: dataset,
+    datasets: dataset
   };
+
   return (
     <div className="max-md:w-full p-5">
       <Bar options={options} data={data} width={"100%"} height={"100%"} />
