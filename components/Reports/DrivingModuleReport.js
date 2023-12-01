@@ -298,7 +298,7 @@ const DrivingModuleReport = ({
                   : null
               }
             />
-             <IdealActualTimeBar2
+             {/* <IdealActualTimeBar2
                 idealTime={attemptData?.path?.ideal_time}
                 actualPath={attemptData.path.actual_path}
                 compare={compare}
@@ -310,7 +310,7 @@ const DrivingModuleReport = ({
                     ? attemptData2.path.actual_path
                     : null
                 }
-              />
+              /> */}
           </div>
           {path.ideal_time &&
             path.ideal_time.length > 0 &&
