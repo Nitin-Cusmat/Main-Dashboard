@@ -39,15 +39,15 @@ const GraphReport = ({
   isShovel,
   ishhovel1,
   pieColor,
-  cycleData,
-  organization
+  cycleData
 }) => {
-  const colors = ["#82E0AA", "#622F22", "black", "yellow"];
+  const colors = ["#82E0AA", "#622F22","black","yellow"];
 
   const [value, setValue] = useState([
     graph.data && graph.data[0]?.x,
     graph.data && graph.data[graph.data.length - 1]?.x
   ]);
+  let transformedDataset = [];
   const getGraph = () => {
     if (
       (graph.type == "bar" || graph.type == "stacked_bar") &&
@@ -84,7 +84,7 @@ const GraphReport = ({
                   : graph2.prefix,
                 data: d.data,
                 backgroundColor: cycleData
-                  ? colors[index + 2]
+                  ? colors[index+2]
                   : Object.values(CHART_COLORS)[index + 2],
                 stack: getStackData()[d.name]
               };
@@ -105,6 +105,18 @@ const GraphReport = ({
           })
         : [];
 
+      if (cycleData) {
+        transformedDataset = dataset.map((dataEntry, index) => {
+          if (index === 0) {
+            const transformedData = dataEntry.data.map(
+              (loading, dataIndex) => loading - dataset[1].data[dataIndex]
+            );
+            return { ...dataEntry, data: transformedData };
+          }
+          return dataEntry;
+        });
+      }
+
       const labelsStacked = graph.prefix
         ? dataset[0].data.map((d, index) => {
             return `${graph.prefix} ${index}`;
@@ -122,13 +134,14 @@ const GraphReport = ({
                 ? cycleData.map(data => data.name)
                 : graph.labels
             }
-            dataset={dataset || []}
+            dataset={cycleData ? transformedDataset : dataset || []}
             stacked
             xLabel={graph["xlabel"] || ""}
             yLabel={graph["ylabel"] || ""}
             isWinder={isWinder}
+            isShovel={isShovel}
             maxValue={isShovel && graph.maxValue}
-            title={graph.name.toLowerCase()}
+            horizontalBars={graph.name.toLowerCase() === "loading and spillage"}
           />
         </div>
       );
@@ -219,10 +232,7 @@ const GraphReport = ({
           <div className="">
             <div className="p-1 md:py-4 md:pl-2 text-dark capitalize text-sm md:text-sm underline font-semibold">
               {" "}
-              {graph.name}{" "}
-              {compare &&
-                graph.name.toLowerCase() != "speed vs time" &&
-                "user 1"}
+              {graph.name} {compare&& graph.name.toLowerCase() != "speed vs time" && "user 1"}
             </div>
 
             {/* {referenceGraph !== undefined && (
@@ -260,7 +270,7 @@ const GraphReport = ({
            )} */}
           </div>
           {graph?.hAxisLines ? (
-            <DeviationGraph graph={graph} />
+            <DeviationGraph graph={graph}/>
           ) : (
             <div>
               <Chart
@@ -269,11 +279,12 @@ const GraphReport = ({
                 series={
                   compare
                     ? [
-                        {
-                          name: "User 1",
-                          data: graph.data,
-                          type: "area" // Specify the type as 'area' to fill under the line
-                        },
+                      { 
+                        name: "User 1", 
+                        data: graph.data,
+                        type: 'area', // Specify the type as 'area' to fill under the line
+                        
+                      },
                         {
                           name: "User 2",
                           data:
@@ -285,17 +296,18 @@ const GraphReport = ({
                         ...getAdditionalPlots(graph2, compare, 2)
                       ]
                     : [
-                        {
-                          name: "User",
-                          data: graph.data,
-                          type: "area" // Specify the type as 'area' to fill under the line
-                        },
-                        ...getAdditionalPlots(graph)
+                      { 
+                        name: "User", 
+                        data: graph.data,
+                        type: 'area', // Specify the type as 'area' to fill under the line
+                       
+                      },                       
+                      ...getAdditionalPlots(graph)
                       ]
                 }
                 options={{
                   fill: {
-                    type: "gradient",
+                    type: 'gradient',
                     gradient: {
                       shadeIntensity: 0.1,
                       opacityFrom: 0.1,
@@ -357,7 +369,8 @@ const GraphReport = ({
                           width: 1
                         }
                       }
-                    }
+                    },
+                   
                   },
                   markers: {
                     size: compare ? [0, 0, 2, 2] : [0, 2],
@@ -528,13 +541,17 @@ const GraphReport = ({
               />
             </div>
           )}
-          {compare && graph2.name.toLowerCase() != "speed vs time" && (
-            <div className="p-1 md:py-4 md:pl-2 text-dark capitalize text-sm md:text-sm underline font-semibold">
+          {compare&&graph2.name.toLowerCase() != "speed vs time"&&
+           <div className="p-1 md:py-4 md:pl-2 text-dark capitalize text-sm md:text-sm underline font-semibold">
+
               {" "}
               {graph2.name} {"user 2"}
             </div>
-          )}
-          {compare && graph2?.hAxisLines && <DeviationGraph graph={graph2} />}
+          }
+            {compare&&graph2?.hAxisLines && (
+            <DeviationGraph graph={graph2}/>
+          ) }
+         
         </div>
       );
     } else if (
@@ -580,7 +597,7 @@ const GraphReport = ({
         </div>
       );
     } else if (
-      (graph.type == "doughnut" || "pie") &&    organization == "Apollo" &&
+      (graph.type == "doughnut" || "pie") &&
       graph.data &&
       graph.data.length > 0
     ) {
@@ -745,7 +762,6 @@ const GraphReport = ({
       );
     }
   };
-
   return (
     <>
       <div className="pb-4 w-full ">{getGraph()}</div>

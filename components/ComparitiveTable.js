@@ -38,7 +38,7 @@ const ComparativeTable = ({
     return Object.values(row).some(value => String(value).includes(task));
   };
 
-  const isTataSteel = organization && organization.name.toLowerCase() === "apollo";
+  const isTataSteel = organization && organization.name.toLowerCase() === "rane";
 
 
   const renderColumnHeaders = () => (

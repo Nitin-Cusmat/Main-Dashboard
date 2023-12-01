@@ -742,7 +742,12 @@ const IndividualReport = ({
                       ) {
                         deviationGraph = true;
                       }
-                      return (
+                      const isApolloOrg = organization.name.toLowerCase() === "apollo";
+                      const isVCTPLOrg = organization.name.toLowerCase() === "vctpl";
+                      const shouldRenderGraph =
+                        !(isApolloOrg && ["pie", "doughnut"].includes(graph.type)) &&
+                        !(isVCTPLOrg && graph.type === "line");
+                      return shouldRenderGraph && (
                         <div
                           key={`doughnut_${index}`}
                           className={`w-full ${

@@ -180,7 +180,7 @@ const RangeBarChart = ({ rangeData, title, compare, showIdealTime }) => {
             : "400px"
         }
         width={
-          screenWidth < 300 ? "200px" : screenWidth < 800 ? "1400px" : "1150px"
+          screenWidth < 300 ? "200px" : screenWidth < 800 ? "1400px" : "1000px"
         }
       />
     </div>
