@@ -66,12 +66,12 @@ const CustomLegend = ({ showLegend, isForkLift, obstacles = null }) => {
           <div className="w-[40px] h-[1px] border-b-2 border-black"></div>
         </CommonCode> */}
         <CommonCode title="Collisions">
-          <div class="w-[10px] h-[10px] rounded-full bg-black absolute" />
+          <div className="w-[10px] h-[10px] rounded-full bg-black absolute" />
           <div className="w-[40px] h-[1px] border-b-2 border-black"></div>
         </CommonCode>
         {obstacles && (
           <CommonCode title="Obstacle">
-            <div class="w-[8px] h-[8px] transform rotate-45 bg-[#800000]"></div>
+            <div className="w-[8px] h-[8px] transform rotate-45 bg-[#800000]"></div>
           </CommonCode>
         )}
       </ul>
