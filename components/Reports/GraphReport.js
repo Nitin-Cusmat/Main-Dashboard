@@ -66,11 +66,23 @@ const GraphReport = ({
     graph.data && graph.data[0]?.x,
     graph.data && graph.data[graph.data.length - 1]?.x
   ]);
+<<<<<<< Updated upstream
   const [userPerformanceData, setUserPerformanceData] = useState(null);
   const { organization } = useUserProfile();
   const isVCTPL = organization.name.toLowerCase() === "vctpl";
     console.log(isVCTPL); // Debugging output
 
+=======
+<<<<<<< Updated upstream
+  let transformedDataset = [];
+=======
+  const [userPerformanceData, setUserPerformanceData] = useState(null);
+  const { organization } = useUserProfile();
+  const isVCTPL = organization.name.toLowerCase() === "vctpl";
+    // console.log(isVCTPL); // Debugging output
+
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
   const getGraph = () => {
     if (
       (graph.type == "bar" || graph.type == "stacked_bar") &&

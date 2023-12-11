@@ -390,7 +390,22 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
       }
     ]
   };
-
+  let filteredData21= [];
+  if (attemptData2 && attemptData2.path && attemptData2.path.actual_path) {
+    filteredData21 = Object.keys(attemptData2.path.actual_path)
+      .map(key => attemptData2.path.actual_path[key])
+      .flat();
+  } 
+  // Extracting data for User 2
+  let accelerationData2 = [];
+  let brakeData2 = [];
+  let timeData21 = [];
+  
+  if (filteredData21.length > 0) {
+    accelerationData2 = filteredData21.map(item => item.acceleration);
+    brakeData2 = filteredData21.map(item => item.brake);
+    timeData21 = filteredData21.map(item => item.time);
+  }
   const vehicleChartOptionscomp = {
     // acc and break graph
     title: {
@@ -462,14 +477,14 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
         type: "category",
         boundaryGap: false,
         axisLine: { onZero: true },
-        data: timeData
+        data: timeData21
       },
       {
         gridIndex: 1,
         type: "category",
         boundaryGap: false,
         axisLine: { onZero: true },
-        data: timeData,
+        data: timeData21,
         position: "top"
       }
     ],
@@ -494,7 +509,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
         type: "line",
         symbolSize: 8,
         hoverAnimation: false,
-        data: accelerationData
+        data: accelerationData2
       },
       {
         name: "Brake - User 2",
@@ -503,7 +518,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
         yAxisIndex: 1,
         symbolSize: 8,
         hoverAnimation: false,
-        data: brakeData
+        data: brakeData2
       }
     ]
   };
@@ -643,12 +658,12 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
   const series1 = [
     {
       // gear colloision graph
-      name: "Max Speed",
+      name: compare ? "Max Speed - User 1" : "Max Speed",
       type: "column",
       data: maxSpeeds
     },
     {
-      name: "Total Collisions",
+      name: compare ? "Total Collisions - User 1" : "Total Collisions",
       type: "line",
       data: gears1.map(gear => getCollisionCount(gear))
     }
@@ -675,7 +690,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
       width: [0, 4]
     },
     title: {
-      text: "Gear Collision Graph"
+      text: compare ? "Gear Collision Graph - User 1" : "Gear Collision Graph",
     },
     dataLabels: {
       enabled: true,
@@ -709,18 +724,52 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
       }
     ]
   };
+  let maxSpeedByGear2 = {};
+  let collisionCountByGear2 = {};
 
+  // ... (existing code for processing attemptData)
+
+  // Process attemptData2
+  let filteredData2gear = [];
+  if (attemptData2 && attemptData2.path && attemptData2.path.actual_path) {
+    filteredData2gear = Object.keys(attemptData2.path.actual_path)
+      .map(key => attemptData2.path.actual_path[key])
+      .flat();
+
+      filteredData2gear.forEach(item => {
+      const gear = item.gear;
+      const speed = parseFloat(item.speed); // Convert string to number
+      const collisionStatus = parseInt(item.collisionStatus, 10); // Convert to a number
+
+      // Calculate max speed by gear for attemptData2
+      if (!maxSpeedByGear2[gear] || maxSpeedByGear2[gear] < speed) {
+        maxSpeedByGear2[gear] = speed;
+      }
+
+      // Initialize and calculate collision count by gear for attemptData2
+      if (!collisionCountByGear2[gear]) {
+        collisionCountByGear2[gear] = 0;
+      }
+      collisionCountByGear2[gear] += collisionStatus;
+    });
+  }
+
+  // ... (rest of the existing code)
+
+  const getCollisionCount2 = gear => {
+    return collisionCountByGear2[gear] || 0;
+  };
   const series2 = [
     {
       // gear colloision graph
-      name: "Max Speed",
+      name: "Max Speed - User 2",
       type: "column",
-      data: maxSpeeds
+      data: Object.values(maxSpeedByGear2) // Replace with your method of calculating max speed for each gear from attemptData2
     },
     {
-      name: "Total Collisions",
+      name: "Total Collisions - User 2",
       type: "line",
-      data: gears1.map(gear => getCollisionCount(gear))
+      data: Object.keys(collisionCountByGear2).map(gear => getCollisionCount2(gear))
     }
   ];
   const options2 = {
@@ -745,7 +794,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
       width: [0, 4]
     },
     title: {
-      text: "Gear Collision Graph"
+      text: "Gear Collision Graph-User-2"
     },
     dataLabels: {
       enabled: true,
@@ -782,7 +831,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
 
   const optionspeed = {
     title: {
-      text: "Speed vs Time",
+      text: compare ? "Speed vs Time - User 1" : "Speed vs Time",
       subtext: "Vehicle Speed Analysis",
       left: "center"
     },
@@ -796,7 +845,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
       }
     },
     legend: {
-      data: ["Speed"],
+      data: compare ? ["Speed - User 1"] : ["Speed"],
       left: "10%"
     },
     grid: {
@@ -823,7 +872,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
     },
     series: [
       {
-        name: "Speed",
+        name: compare ? "Speed - User 1" : "Speed",
         type: "line",
         smooth: true,
         lineStyle: {
@@ -851,6 +900,116 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
           timeData[index],
           parseFloat(speed)
         ])
+      }
+    ],
+    dataZoom: [
+      {
+        type: "inside",
+        start: 0,
+        end: 100
+      },
+      {
+        start: 0,
+        end: 10,
+        handleIcon: "M8.2,13.6V4H11v9.6L15.5,18H20v3H0v-3h4.5L8.2,13.6z",
+        handleSize: "80%",
+        handleStyle: {
+          color: "#fff",
+          shadowBlur: 3,
+          shadowColor: "rgba(0, 0, 0, 0.6)",
+          shadowOffsetX: 2,
+          shadowOffsetY: 2
+        }
+      }
+    ],
+    animation: {
+      duration: 1000,
+      easing: "cubicInOut"
+    }
+  };
+  let filteredData2 = [];
+if (attemptData2 && attemptData2.path && attemptData2.path.actual_path) {
+  filteredData2 = Object.keys(attemptData2.path.actual_path)
+    .map(key => attemptData2.path.actual_path[key])
+    .flat();
+}
+  let timeData2 = [];
+let speedData2 = [];
+let chartData2 = [];
+
+if (filteredData2.length > 0) {
+  timeData2 = filteredData2.map(item => item.time);
+  speedData2 = filteredData2.map(item => parseFloat(item.speed));
+  chartData2 = speedData2.map((speed, index) => [timeData2[index], speed]);
+}
+  const optionspeedcomp = {
+    title: {
+      text: "Speed vs Time - User 2",
+      subtext: "Vehicle Speed Analysis",
+      left: "center"
+    },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
+        type: "cross"
+      },
+      formatter: function (params) {
+        return `Time: ${params[0].axisValue} sec <br/>Speed: ${params[0].data[1]} m/s`;
+      }
+    },
+    legend: {
+      data: ["Speed - User 2"],
+      left: "10%"
+    },
+    grid: {
+      left: "3%",
+      right: "4%",
+      bottom: "10%", // Increase this value to move the chart up
+      containLabel: true
+    },
+    xAxis: {
+      type: "category",
+      boundaryGap: false,
+      data: timeData2,
+      axisLabel: {
+        formatter: function (value) {
+          return `${value} s`;
+        }
+      }
+    },
+    yAxis: {
+      type: "value",
+      axisLabel: {
+        formatter: "{value} km/h"
+      }
+    },
+    series: [
+      {
+        name: "Speed - User 2",
+        type: "line",
+        smooth: true,
+        lineStyle: {
+          color: "#007bff",
+          width: 2
+        },
+        itemStyle: {
+          color: "#007bff"
+        },
+        areaStyle: {
+          normal: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              {
+                offset: 0,
+                color: "rgba(0, 123, 255, 0.5)" // top color
+              },
+              {
+                offset: 1,
+                color: "rgba(0, 123, 255, 0)" // bottom color, more transparent
+              }
+            ])
+          }
+        },
+        data: chartData2   
       }
     ],
     dataZoom: [
@@ -1869,7 +2028,7 @@ const option2 = {    // option for two lines chart dumping and loading area
 };
   return (
     <>
-      <div style={{ textAlign: "center", marginBottom: "20px" }}>
+      {/* <div style={{ textAlign: "center", marginBottom: "20px" }}>
         <div
           style={{
             display: "inline-block",
@@ -1917,13 +2076,13 @@ const option2 = {    // option for two lines chart dumping and loading area
         >
           Different Modes Time
         </div>
-      </div>
-      <ReactECharts
+      </div> */}
+      {/* <ReactECharts
         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
         option={option1}
         notMerge={true}
         lazyUpdate={true}
-      />
+      /> */}
       <ReactECharts
         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
         option={vehicleChartOptions}
@@ -1940,7 +2099,7 @@ const option2 = {    // option for two lines chart dumping and loading area
       )}
       
     {/* Area filter dropdown */}
-    <div 
+    {/* <div 
   className="area-filter-container" 
   style={{ 
     display: "flex", 
@@ -1993,16 +2152,16 @@ const option2 = {    // option for two lines chart dumping and loading area
       <option value="parking">Parking Area</option>
     </select>
   </div>
-</div>
+</div> */}
 
 {selectedArea === 'all' ? (
       <>
         {/* Render all charts for 'all' selection */}
+<<<<<<< Updated upstream
         <ReactECharts
-          style={{ height: "500px", margin: "30px 0" }}
-          option={option} // Option for the loading area chart
+=======
+        {/* <ReactECharts
           notMerge={true}
-          lazyUpdate={true}
         />
         {compare && (
       <ReactECharts
@@ -2011,13 +2170,21 @@ const option2 = {    // option for two lines chart dumping and loading area
         notMerge={true}
         lazyUpdate={true}
       />
+<<<<<<< Updated upstream
     )}
+=======
+    )} */}
+>>>>>>> Stashed changes
         {/* ... similarly, add the other charts using the same 'option' ... */}
       </>
     ) : null}
 
     {/* Conditionally render charts based on the selected area */}
+<<<<<<< Updated upstream
     {selectedArea === 'loading' && (
+=======
+    {/* {selectedArea === 'loading' && (
+>>>>>>> Stashed changes
   <>
     <ReactECharts
       style={{ height: "500px", margin: "30px 0" }}
@@ -2071,16 +2238,30 @@ const option2 = {    // option for two lines chart dumping and loading area
       />
     )}
   </>
+<<<<<<< Updated upstream
 )}
+=======
+)} */}
 
-      
       <ReactECharts
         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
         option={optionspeed}
         notMerge={true}
         lazyUpdate={true}
       />
+<<<<<<< Updated upstream
       <ReactECharts
+=======
+        {compare && (
+        <ReactECharts
+          style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
+          option={optionspeedcomp}
+          notMerge={true}
+          lazyUpdate={true}
+        />
+        )}
+      {/* <ReactECharts
+>>>>>>> Stashed changes
         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
         option={rpmChartOptions}
         notMerge={true}
@@ -2093,6 +2274,7 @@ const option2 = {    // option for two lines chart dumping and loading area
           notMerge={true}
           lazyUpdate={true}
         />
+<<<<<<< Updated upstream
       )}
       <div className="filter-container">
         <label htmlFor="collisionType" className="filter-label">
@@ -2112,6 +2294,10 @@ const option2 = {    // option for two lines chart dumping and loading area
           {/* ... other options ... */}
         </select>
       </div>
+=======
+      )} */}
+     
+>>>>>>> Stashed changes
       <Chart
         options={options1}
         series={series1} //gear collosion graph

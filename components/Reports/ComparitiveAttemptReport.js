@@ -55,6 +55,7 @@ const ComparitiveAttemptReport = ({
     areasOfImprovement1.length,
     areasOfImprovement2.length
   );
+  const isThriveniOrg1 = organization && organization.name.toLowerCase() === "thriveni";
 
   while (areasOfImprovement1.length < maxLength) {
     areasOfImprovement1.push({ [`Areas of Improvement for User 1`]: "-" });
@@ -391,8 +392,17 @@ const ComparitiveAttemptReport = ({
     <div className="p-1 pt-0">
       {attemptData && (
         <div className="flex flex-col gap-4 w-full ">
+<<<<<<< Updated upstream
       {(organization.name.toLowerCase() === "vctpl" ||
             attemptData.path) && (
+=======
+<<<<<<< Updated upstream
+          {attemptData.path && (
+=======
+          {(organization.name.toLowerCase() === "vctpl" ||
+            attemptData.path) && (
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
             <DrivingModuleReport
               attemptData={attemptData}
               attemptData2={attemptData2}
@@ -516,14 +526,45 @@ const ComparitiveAttemptReport = ({
             {attemptData.graphs && attemptData.graphs.length > 0 && (
               <div className="">
                 {attemptData.graphs.map((graph, index) => {
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+                  attemptData.graphs[index];
+                  return (
+                    <div key={index} className="w-full">
+                      <div className="w-full">
+                        <GraphReport
+                       
+                          graph={graph}
+                          graph2={
+                            attemptData2.graphs.filter(
+                              x => x.name == graph.name
+                            )[0]
+                          }
+                          index={index}
+                          users={users}
+                          compare
+                        />
+=======
+>>>>>>> Stashed changes
                   const isApolloOrg =
                     organization.name.toLowerCase() === "apollo";
                   const isVCTPLOrg =
                     organization.name.toLowerCase() === "vctpl";
+<<<<<<< Updated upstream
                   const shouldRenderGraph =
                     !(
                       isApolloOrg && ["pie", "doughnut"].includes(graph.type)
                     ) && !(isVCTPLOrg && graph.type === "line");
+=======
+                  const isThriveniOrg =
+                    organization.name.toLowerCase() === "thriveni"; // Add this line to define the thriveniOrg condition
+
+                  const shouldRenderGraph =
+                    ((isApolloOrg || isThriveniOrg) &&
+                      ["pie", "doughnut"].includes(graph.type)) ||
+                    (!(isVCTPLOrg || isThriveniOrg) && graph.type !== "line");
+>>>>>>> Stashed changes
                   if (shouldRenderGraph) {
                     return (
                       <div key={index} className="w-full">
@@ -532,6 +573,48 @@ const ComparitiveAttemptReport = ({
                             graph={graph}
                             graph2={attemptData2.graphs.find(
                               x => x.name === graph.name
+<<<<<<< Updated upstream
+=======
+                            )}
+                            index={index}
+                            users={users}
+                            compare
+                          />
+                        </div>
+                        {module === "EOT-Crane" &&
+                          graph.name === "LT & CT Speed vs Time" &&
+                          graph.data && (
+                            <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
+                              {getAverageSpeed(graph)}
+                              {/* The next conditional can be adjusted or removed depending on your needs */}
+                              {attemptData.graphs[1]?.name ===
+                                "LT & CT Speed vs Time" &&
+                                attemptData.graphs[1]?.data && (
+                                  <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
+                                    {getAverageSpeed(
+                                      attemptData.graphs[1].data
+                                    )}
+                                  </div>
+                                )}
+                            </div>
+                          )}
+>>>>>>> Stashed changes
+                      </div>
+                      {module == "EOT-Crane" && (
+                        <div>
+                          {graph.name == "LT & CT Speed vs Time" &&
+                            graph.data && (
+                              <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
+                                {getAverageSpeed(graph)}
+                              </div>
+                            )}
+                          {attemptData.graphs[1]?.name ==
+                            "LT & CT Speed vs Time" &&
+                            attemptData.graphs[1]?.data && (
+                              <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
+                                {getAverageSpeed(attemptData.graphs[1].data)}
+                              </div>
+>>>>>>> Stashed changes
                             )}
                             index={index}
                             users={users}
@@ -569,6 +652,7 @@ const ComparitiveAttemptReport = ({
                 compare
               />
             )}
+<<<<<<< Updated upstream
             <GearCollisionGraph
               graphs={attemptData.graphs}
               graphs2={attemptData2.graphs}
@@ -586,6 +670,35 @@ const ComparitiveAttemptReport = ({
                   : null
               }
             />
+<<<<<<< Updated upstream
+=======
+             {attemptData.generalkpis &&
+                  Object.keys(attemptData.generalkpis).length > 0 &&
+                  Object.keys(attemptData.generalkpis).map((gkpis, index) => (
+                    <TableKpis
+                      key={`gkpis_${index}`}
+                      tableKpis={attemptData.generalkpis[gkpis]}
+                      tableKpis2={attemptData2.generalkpis[gkpis]}
+                      compare
+=======
+            {!isThriveniOrg1 && (
+              <GearCollisionGraph
+                graphs={attemptData.graphs}
+                graphs2={attemptData2.graphs}
+                actualPath={
+                  attemptData?.path?.actual_path
+                    ? attemptData.path.actual_path
+                    : null
+                }
+                compare
+                actualPath2={
+                  attemptData2?.path?.actual_path
+                    ? attemptData2.path.actual_path
+                    : null
+                }
+              />
+            )}
+>>>>>>> Stashed changes
             {attemptData.generalkpis &&
               Object.keys(attemptData.generalkpis).length > 0 &&
               Object.keys(attemptData.generalkpis).map((gkpis, index) => (
@@ -597,6 +710,10 @@ const ComparitiveAttemptReport = ({
                 />
               ))}
             {orgChart}
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 
             <div className="flex w-full">
               {areasOfImprovement1.length > 0 && (
