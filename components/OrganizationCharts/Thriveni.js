@@ -1,218 +1,300 @@
-// import React from "react";
-// import ReactECharts from "echarts-for-react";
-// import Chart from "react-apexcharts";
-// import * as echarts from 'echarts';
+import React, { useState } from "react";
+import ReactECharts from "echarts-for-react";
+import Chart from "react-apexcharts";
+import * as echarts from "echarts";
 
+const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
+  const [selectedCollisionType, setSelectedCollisionType] = useState("total");
+  const [selectedArea, setSelectedArea] = useState('all');
 
-// const Thriveni = ({ attemptData }) => {
-//   let brakeData = [];
-//   let accelerationData = [];
-//   let timeData = [];
-//   let rpmData = [];
-//   let speedData = [];
-//   let speedDataFiltered = []; // Declare it here
-//   let gearNames = [];
-//   let modeData = [];
-//   let speedDataFiltered1 = []; // Declare it here
+  // Initialize other collision types if needed
 
+  let brakeData = [];
+  let accelerationData = [];
+  let timeData = [];
+  let rpmData = [];
+  let speedData = [];
+  let speedDataFiltered = []; // Declare it here
+  let gearNames = [];
+  let modeData = [];
+  let speedDataFiltered1 = []; // Declare it here
+  let totalCollisions = {}; // Object to store total collisions by gear
+  let additionalSpeedData = {};
 
-//   let maxSpeedByGear = {};
-//   let collisionCountByGear = {};
+  let maxSpeedByGear = {};
+  let collisionCountByGear = {};
 
-//   const modeDurations = {};
-//   let lastMode = null;
-//   let lastTime = 0;
+  const modeDurations = {};
+  let lastMode = null;
+  let lastTime = 0;
 
+  const modeCount = {};
 
-//   const modeCount = {};
+  let kpiNames = [];
+  let kpiValues = [];
 
-//   let kpiNames = [];
-//   let kpiValues = [];
-  
-//   if (attemptData && attemptData.kpis) {
-//     kpiNames = attemptData.kpis.map(kpi => kpi.name);
-//     kpiValues = attemptData.kpis.map(kpi => parseFloat(kpi.value));
-    
-//   }
-// // Step 2: Prepare data for the pie chart
+  if (attemptData && attemptData.kpis) {
+    kpiNames = attemptData.kpis.map(kpi => kpi.name);
+    kpiValues = attemptData.kpis.map(kpi => parseFloat(kpi.value));
+  }
+  // Step 2: Prepare data for the pie chart
 
+  const intervals = [];
+  const pieces = [];
 
+  if (attemptData) {
+    const {
+      path: { actual_path }
+    } = attemptData;
 
+    const filteredData = Object.keys(actual_path)
+      .map(key => actual_path[key])
+      .flat();
 
-//   const intervals = [];
-//   const pieces = [];
+    speedDataFiltered = filteredData // this code is for two line chart where need to see dumping area and loading area
+      .filter(item => item.loadingstatus === "1")
+      .map(item => {
+        return {
+          value: [item.time, parseFloat(item.speed)],
+          symbol: "none" // Optional: to hide individual data point symbols
+        };
+      });
 
-//   if (attemptData) {
-//     const {
-//       path: { actual_path }
-//     } = attemptData;
+    speedDataFiltered1 = filteredData // this code is for two line chart where need to see dumping area and loading area
+      .filter(item => item.unloadingstatus === "1")
+      .map(item => {
+        return {
+          value: [item.time, parseFloat(item.speed)],
+          symbol: "none" // Optional: to hide individual data point symbols
+        };
+      });
 
-//     const filteredData = Object.keys(actual_path)
-//       .map(key => actual_path[key])
-//       .flat();
+    additionalSpeedData = filteredData // this code is for two line chart where need to see dumping area and loading area
+      .filter(item => item.loadingarea === "1")
+      .map(item => {
+        return {
+          value: [item.time, parseFloat(item.speed)],
+          symbol: "none" // Optional: to hide individual data point symbols
+        };
+      });
 
-//       speedDataFiltered = filteredData     // this code is for two line chart where need to see dumping area and loading area
-//       .filter(item => item.loadingstatus === "1")
-//       .map(item => {
-//         return {
-//           value: [item.time, parseFloat(item.rpm)],
-//           symbol: 'none' // Optional: to hide individual data point symbols
-//         };
-//       });
+    filteredData.forEach(item => {
+      const gear = item.gear;
+      // Initialize the object for each gear if not already done
+      if (!totalCollisions[gear]) {
+        totalCollisions[gear] = 0;
+        // Initialize other collision types here
+      }
 
-//       speedDataFiltered1 = filteredData     // this code is for two line chart where need to see dumping area and loading area
-//       .filter(item => item.unloadingstatus === "1")
-//       .map(item => {
-//         return {
-//           value: [item.time, parseFloat(item.rpm)],
-//           symbol: 'none' // Optional: to hide individual data point symbols
-//         };
-//       });
+      // Update collision counts
+      totalCollisions[gear] += parseInt(item.collisionStatus, 10);
+      // Update other collision types here
+    });
 
-      
+    brakeData = filteredData.map(item => item.brake);
+    accelerationData = filteredData.map(item => item.acceleration);
+    timeData = filteredData.map(item => item.time);
+    rpmData = filteredData.map(item => item.rpm);
+    speedData = filteredData.map(item => item.speed);
+    modeData = filteredData.map(item => item.mode);
 
-//     brakeData = filteredData.map(item => item.brake);
-//     accelerationData = filteredData.map(item => item.acceleration);
-//     timeData = filteredData.map(item => item.time);
-//     rpmData = filteredData.map(item => item.rpm);
-//     speedData = filteredData.map(item => item.speed);
-//     modeData = filteredData.map(item => item.mode);
+    gearNames = [...new Set(filteredData.map(item => item.gear))];
 
-//     gearNames = [...new Set(filteredData.map(item => item.gear))];
+    filteredData.forEach(item => {
+      // This is for gear colloision graph from line 62 to line 95
+      const gear = item.gear;
+      const collisionStatus = item.collisionStatus; // This is a string
 
-//     filteredData.forEach(item => {       // This is for gear colloision graph from line 62 to line 95
-//       const gear = item.gear;
-//       const collisionStatus = item.collisionStatus; // This is a string
-    
-//       if (!collisionCountByGear[gear]) {
-//         collisionCountByGear[gear] = 0;
-//       }
-    
-//       if (collisionStatus === "1") { // Compare as a string
-//         collisionCountByGear[gear]++;
-//       }
-//     });
+      if (!collisionCountByGear[gear]) {
+        collisionCountByGear[gear] = 0;
+      }
 
-//     filteredData.forEach(item => {
-//       const gear = item.gear;
-//       const collisionStatus = parseInt(item.collisionStatus, 10); // Convert to a number
-    
-//       if (!collisionCountByGear[gear]) {
-//         collisionCountByGear[gear] = 0;
-//       }
-    
-//       if (collisionStatus === 1) { // Now comparing numbers
-//         collisionCountByGear[gear]++;
-//       }
-//     });
+      if (collisionStatus === "1") {
+        // Compare as a string
+        collisionCountByGear[gear]++;
+      }
+    });
 
-//     filteredData.forEach(item => {
-//       const gear = item.gear;
-//       const speed = parseFloat(item.speed); // Convert string to number
-  
-//       if (!maxSpeedByGear[gear] || maxSpeedByGear[gear] < speed) {
-//         maxSpeedByGear[gear] = speed;
-//       }
-//     });
+    filteredData.forEach(item => {
+      const gear = item.gear;
+      const collisionStatus = parseInt(item.collisionStatus, 10); // Convert to a number
 
+      if (!collisionCountByGear[gear]) {
+        collisionCountByGear[gear] = 0;
+      }
 
-//     filteredData.forEach(item => {       // this is for pie chart of mode from line 98 to 122
-//       const mode = item.mode;
-//       if (!modeCount[mode]) {
-//         modeCount[mode] = 0;
-//       }
-//       modeCount[mode]++;
-//     });
+      if (collisionStatus === 1) {
+        // Now comparing numbers
+        collisionCountByGear[gear]++;
+      }
+    });
 
-//     filteredData.forEach((item, index) => {
-//       const currentMode = item.mode;
-//       const currentTime = parseFloat(item.time);
-    
-//       if (lastMode !== currentMode) {
-//         if (lastMode !== null) {
-//           // Calculate duration for the last mode
-//           modeDurations[lastMode] = (modeDurations[lastMode] || 0) + (currentTime - lastTime);
-//         }
-//         // Update last mode and time
-//         lastMode = currentMode;
-//         lastTime = currentTime;
-//       } else if (index === filteredData.length - 1) {
-//         // Calculate duration for the last mode entry
-//         modeDurations[currentMode] = (modeDurations[currentMode] || 0) + (currentTime - lastTime);
-//       }
-//     });
+    filteredData.forEach(item => {
+      const gear = item.gear;
+      const speed = parseFloat(item.speed); // Convert string to number
 
-//     let startInterval = null;
+      if (!maxSpeedByGear[gear] || maxSpeedByGear[gear] < speed) {
+        maxSpeedByGear[gear] = speed;
+      }
+    });
 
-//     for (let i = 0; i < filteredData.length; i++) {
-//       const point = filteredData[i];
-//       if (point.loadingstatus === "1") {
-//         if (startInterval === null) {
-//           startInterval = point.time;
-//         }
-//         pieces.push({
-//           lte: i + 1,
-//           color: "red"
-//         });
-//       } else {
-//         if (startInterval !== null) {
-//           intervals.push([
-//             { name: "Loading", xAxis: startInterval },
-//             { name: "Loading", xAxis: point.time }
-//           ]);
-//           startInterval = null;
-//         }
-//         pieces.push({
-//           lte: i + 1,
-//           color: "green"
-//         });
-//       }
-//     }
-//     if (startInterval !== null) {
-//       intervals.push([
-//         { name: "Loading", xAxis: startInterval },
-//         { name: "Loading", xAxis: filteredData[filteredData.length - 1].time }
-//       ]);
-//     }
-//   }
-  
+    filteredData.forEach(item => {
+      // this is for pie chart of mode from line 98 to 122
+      const mode = item.mode;
+      if (!modeCount[mode]) {
+        modeCount[mode] = 0;
+      }
+      modeCount[mode]++;
+    });
 
-//   // const speedTimeData = attemptData.map(item => {
-//   //   return [parseFloat(item.time), parseFloat(item.speed)];
-//   // });
+    filteredData.forEach((item, index) => {
+      const currentMode = item.mode;
+      const currentTime = parseFloat(item.time);
 
-//   const gears = Object.keys(maxSpeedByGear);
-//   const maxSpeeds = Object.values(maxSpeedByGear);
+      if (lastMode !== currentMode) {
+        if (lastMode !== null) {
+          // Calculate duration for the last mode
+          modeDurations[lastMode] =
+            (modeDurations[lastMode] || 0) + (currentTime - lastTime);
+        }
+        // Update last mode and time
+        lastMode = currentMode;
+        lastTime = currentTime;
+      } else if (index === filteredData.length - 1) {
+        // Calculate duration for the last mode entry
+        modeDurations[currentMode] =
+          (modeDurations[currentMode] || 0) + (currentTime - lastTime);
+      }
+    });
 
-//   const gears1 = Object.keys(collisionCountByGear);
-//   const totalCollisions = Object.values(collisionCountByGear);
+    let startInterval = null;
 
-//   const totalTime = kpiValues.reduce((acc, val) => acc + val, 0) / 60; // Convert total to hours
+    for (let i = 0; i < filteredData.length; i++) {
+      const point = filteredData[i];
+      if (point.loadingstatus === "1") {
+        if (startInterval === null) {
+          startInterval = point.time;
+        }
+        pieces.push({
+          lte: i + 1,
+          color: "red"
+        });
+      } else {
+        if (startInterval !== null) {
+          intervals.push([
+            { name: "Loading", xAxis: startInterval },
+            { name: "Loading", xAxis: point.time }
+          ]);
+          startInterval = null;
+        }
+        pieces.push({
+          lte: i + 1,
+          color: "green"
+        });
+      }
+    }
+    if (startInterval !== null) {
+      intervals.push([
+        { name: "Loading", xAxis: startInterval },
+        { name: "Loading", xAxis: filteredData[filteredData.length - 1].time }
+      ]);
+    }
+  }
 
-//   const pieChartData = Object.keys(modeDurations).map(mode => {
-//     return { name: mode, value: modeDurations[mode] };
-//   });
+  let filteredData = [];
+  if (attemptData && attemptData.path && attemptData.path.actual_path) {
+    filteredData = Object.keys(attemptData.path.actual_path)
+      .map(key => attemptData.path.actual_path[key])
+      .flat();
+  }
 
-//   const vehicleChartOptions = {       // acc and break graph
-//     title: {
-//       text: "Vehicle Analytics",
-//       subtext: "Speed vs time graph",
-//       left: "center"
-//     },
-//    tooltip: {
-//     trigger: 'axis',
-//     axisPointer: {
-//       animation: false
-//     },
-//     formatter: function (params) {
-//       // Assuming the first series in the params array corresponds to the time axis label
-//       let timeValue = params[0].axisValueLabel; // Or params[0].axisValue if axisValueLabel is not available
-//       let result = `Time: ${timeValue}`; // Prepend 'Time: ' to the axis value (time)
+  const getCollisionCount = gear => {
+    let count = 0;
+    filteredData.forEach(item => {
+      if (item.gear === gear) {
+        let collisionCount = 0;
 
-//       // Append other series data
-//       params.forEach((param) => {
-//         result += `<br/>${param.marker}${param.seriesName}: ${param.value}`;
-//       });
+        // Check the selectedCollisionType and calculate accordingly
+        switch (selectedCollisionType) {
+          case "pedestrial":
+            collisionCount = parseInt(item.pedestrial_colloision, 10) || 0;
+            break;
+          case "object":
+            collisionCount = parseInt(item.object_colloision, 10) || 0;
+            break;
+          case "mines":
+            collisionCount = parseInt(item.mines_colloision, 10) || 0;
+            break;
+          case "total": // Assuming 'total' is the key for total collisions
+            collisionCount = parseInt(item.collisionStatus, 10) || 0;
+            break;
+          case "all":
+            // Sum all collision types for 'All' option
+            collisionCount += parseInt(item.pedestrial_colloision, 10) || 0;
+            collisionCount += parseInt(item.object_colloision, 10) || 0;
+            collisionCount += parseInt(item.mines_colloision, 10) || 0;
+            collisionCount += parseInt(item.collisionStatus, 10) || 0;
+            break;
+          // Default case if needed
+        }
+
+        count += collisionCount;
+      }
+    });
+    return count;
+  };
+  const getFilteredDataByArea = () => {
+    switch (selectedArea) {
+      case 'loading':
+        return speedDataFiltered;
+      case 'dumping':
+        return speedDataFiltered1;
+      case 'parking':
+        return additionalSpeedData;
+      default:
+        return null; // Return null or an appropriate default value
+    }
+  };
+
+  const filteredChartData = getFilteredDataByArea();
+
+  // const speedTimeData = attemptData.map(item => {
+  //   return [parseFloat(item.time), parseFloat(item.speed)];
+  // });
+
+  const gears = Object.keys(maxSpeedByGear);
+  const maxSpeeds = Object.values(maxSpeedByGear);
+
+  const gears1 = Object.keys(collisionCountByGear);
+  // const totalCollisions = Object.values(collisionCountByGear);
+
+  const totalTime = kpiValues.reduce((acc, val) => acc + val, 0) / 60; // Convert total to hours
+
+  const pieChartData = Object.keys(modeDurations).map(mode => {
+    return { name: mode, value: modeDurations[mode] };
+  });
+
+  const vehicleChartOptions = {
+    // acc and break graph
+    title: {
+      text: "Vehicle Analytics",
+      subtext: "Speed vs time graph",
+      left: "center"
+    },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
+        animation: false
+      },
+      formatter: function (params) {
+        // Assuming the first series in the params array corresponds to the time axis label
+        let timeValue = params[0].axisValueLabel; // Or params[0].axisValue if axisValueLabel is not available
+        let result = `Time: ${timeValue}`; // Prepend 'Time: ' to the axis value (time)
+
+        // Append other series data
+        params.forEach(param => {
+          result += `<br/>${param.marker}${param.seriesName}: ${param.value}`;
+        });
 
         return result;
       }
