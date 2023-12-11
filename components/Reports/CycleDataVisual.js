@@ -24,36 +24,35 @@ const CycleDataVisual = ({ cycleData, cycleData2, compare }) => {
 
   const columnsToDisplay = ["Truck Cycle Count", ...new Set([...presentColumnsCycleData, ...presentColumnsCycleData2].map(field => cycleDataFields[field]))];
   const parsedCycleData = (data, presentColumns) => {
-    return data.map((item, index) => {
+    return data.map((item) => {
       let cycleObj = {};
       presentColumns.forEach(field => {
-                if (field === 'cycleTime' || field === 'loadingTime' || field === 'dumpingTime') {
-                    if (item[field] >= 60) {
-                        cycleObj[cycleDataFields[field]] = `${(item[field] / 60).toFixed(2)} min`;
-                    } else {
-                        cycleObj[cycleDataFields[field]] = `${item[field].toFixed(2)} sec`;
-                    }
-                } else if (field === 'bucketanglewhileloading' || field === 'bucketanglewhiledumping') {
-                    let angle = item[field];
-                    if (angle < -45 || angle > 45) {
-                      cycleObj[cycleDataFields[field]] = {
-                          value: `${angle}°`,
-                          style: { color: 'red' }
-                      };
-                  } else {
-                      cycleObj[cycleDataFields[field]] = {
-                          value: `${angle}°`,
-                          style: { color: 'green' }
-                      };
-                  }
-                } else {
-                    cycleObj[cycleDataFields[field]] = item[field];
-                }
-            });
-        return { ...cycleObj, "Truck Cycle Count": cycleData[index].name };
+        if (field === 'cycleTime' || field === 'loadingTime' || field === 'dumpingTime') {
+          if (item[field] >= 60) {
+            cycleObj[cycleDataFields[field]] = `${(item[field] / 60).toFixed(2)} min`;
+          } else {
+            cycleObj[cycleDataFields[field]] = `${item[field].toFixed(2)} sec`;
+          }
+        } else if (field === 'bucketanglewhileloading' || field === 'bucketanglewhiledumping') {
+          let angle = item[field];
+          if (angle < -45 || angle > 45) {
+            cycleObj[cycleDataFields[field]] = {
+              value: `${angle}°`,
+              style: { color: 'red' }
+            };
+          } else {
+            cycleObj[cycleDataFields[field]] = {
+              value: `${angle}°`,
+              style: { color: 'green' }
+            };
+          }
+        } else {
+          cycleObj[cycleDataFields[field]] = item[field];
+        }
+      });
+      return { ...cycleObj, "Truck Cycle Count": item.name };
     });
-};
-
+  };
 
 
   return (

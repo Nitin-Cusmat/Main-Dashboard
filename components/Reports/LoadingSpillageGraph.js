@@ -2,6 +2,8 @@ import ReactECharts from "echarts-for-react";
 import React from "react";
 
 const LoadingSpillageGraph = ({ data, labels, maxValue }) => {
+  const safeMaxValue = maxValue || 0;
+
   const option = {
     tooltip: {
       trigger: "axis",
@@ -32,7 +34,7 @@ const LoadingSpillageGraph = ({ data, labels, maxValue }) => {
     xAxis: [
       {
         type: "value",
-        max: maxValue.toFixed(2)
+        max: safeMaxValue.toFixed(2) // Use safeMaxValue instead of maxValue
       }
     ],
     yAxis: [
