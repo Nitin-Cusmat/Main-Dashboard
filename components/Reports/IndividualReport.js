@@ -27,14 +27,7 @@ import AssemblyReport from "./AssemblyReport";
 import GraphReport from "./GraphReport";
 import IdealActualPath from "./IdealActualPath";
 import DrivingModuleReport from "./DrivingModuleReport";
-<<<<<<< Updated upstream
-import KpiReport2 from './KpiReport2';
-=======
-<<<<<<< Updated upstream
-=======
 import KpiReport2 from "./KpiReport2";
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 import {
   formatTimeDay,
   getFormattedTime,
@@ -295,9 +288,10 @@ const IndividualReport = ({
     let vAxisLines = attemptData.vAxisLines ? attemptData.vAxisLines : null;
     let extraPlots = [];
 
-<<<<<<< Updated upstream
-    const noPathData = !attemptData.path || !attemptData.path.actual_path || !attemptData.path.ideal_path;
-
+    const noPathData =
+      !attemptData.path ||
+      !attemptData.path.actual_path ||
+      !attemptData.path.ideal_path;
 
 =======
 <<<<<<< Updated upstream
@@ -642,13 +636,13 @@ const IndividualReport = ({
           {attemptData && attemptData.score && (
             <ScoreRow score={[score]} attemptDuration={[attemptDuration]} />
           )}
-<<<<<<< Updated upstream
-           {attemptData.tableKpis && (
-                  <TableKpis tableKpis={attemptData.tableKpis} />
-                )}
+          {attemptData.tableKpis && (
+            <TableKpis tableKpis={attemptData.tableKpis} />
+          )}
           {attemptData && (
-            <DrivingModuleReport attemptData={attemptData} 
-            organization={organization} // Make sure you pass the organization here
+            <DrivingModuleReport
+              attemptData={attemptData}
+              organization={organization} // Make sure you pass the organization here
             />
 =======
 <<<<<<< Updated upstream
@@ -722,19 +716,6 @@ const IndividualReport = ({
                     />
                   ))} */}
                 {attemptData.kpis && attemptData.kpis.length > 0 && (
-<<<<<<< Updated upstream
-                  <KpiReport kpis1={attemptData.kpis} 
-                  /> // Make sure to pass the organization here/>
-                )}
-
-                {attemptData.loading && attemptData.loading.length > 0 && (
-                  <KpiReport1 kpitask1={attemptData.loading}
-                  organization={organization} // Make sure to pass the organization here
-=======
-<<<<<<< Updated upstream
-                  <KpiReport kpis1={attemptData.kpis} />
-                )}
-=======
                   <KpiReport kpis1={attemptData.kpis} /> // Make sure to pass the organization here/>
                 )}
 
@@ -742,14 +723,13 @@ const IndividualReport = ({
                   <KpiReport1
                     kpitask1={attemptData.loading}
                     organization={organization} // Make sure to pass the organization here
->>>>>>> Stashed changes
                   />
                 )}
 
                 {attemptData.unloading && attemptData.unloading.length > 0 && (
-<<<<<<< Updated upstream
-                  <KpiReport2 kpis3={attemptData.unloading}
-                  organization={organization} // Make sure to pass the organization here
+                  <KpiReport2
+                    kpis3={attemptData.unloading}
+                    organization={organization} // Make sure to pass the organization here
                   />
                 )}
 
@@ -801,63 +781,6 @@ const IndividualReport = ({
                       ) {
                         deviationGraph = true;
                       }
-<<<<<<< Updated upstream
-                      const isApolloOrg = organization.name.toLowerCase() === "apollo";
-                      const isVCTPLOrg = organization.name.toLowerCase() === "vctpl";
-                      const shouldRenderGraph =
-                        !(isApolloOrg && ["pie", "doughnut"].includes(graph.type)) &&
-                        !(isVCTPLOrg && graph.type === "line");
-                      return shouldRenderGraph && (
-=======
-<<<<<<< Updated upstream
-                      return (
->>>>>>> Stashed changes
-                        <div
-                          key={`doughnut_${index}`}
-                          className={`w-full ${
-                            ["pie", "doughnut"].includes(graph.type)
-                              ? total_pies.length > 2
-                                ? ["Time Taken by KPIS"].includes(graph.name)
-                                  ? "md:w-full"
-                                  : "md:w-1/2"
-                                : "lg:w-full"
-                              : ""
-                          }${deviationGraph && "xl:w-1/2 pl-2"}`}
-                        >
-                          <GraphReport
-                            graph={graph}
-                            index={index}
-                            isWinder={isWinder}
-                            isShovel={isShovel}
-                            pieColor={
-                              ["pie", "doughnut"].includes(graph.type) &&
-                              !["Time Taken by KPIS"].includes(graph.name) &&
-                              pieColors[pieIndex]
-                            }
-                            cycleData={
-                              graph.name
-                                .toLowerCase()
-                                .includes("loading and spillage") &&
-                              attemptData.cycleData
-                            }
-                          />
-                          {module == "EOT-Crane" &&
-                            graph.name == "LT & CT Speed vs Time" &&
-                            graph.data && (
-                              <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
-                                {graph.data.map((dataObj, index) => {
-                                  return (
-                                    <span
-                                      className=""
-                                      key={`average_speed_${index}`}
-                                    >
-                                      {dataObj.name} Average:
-                                      <span className="text-primary font-semibold pl-2">
-                                        {(
-                                          getSum(dataObj.data) /
-                                          dataObj.data.length
-                                        ).toFixed(2)}
-=======
                       const isApolloOrg =
                         organization.name.toLowerCase() === "apollo";
                       const isVCTPLOrg =
@@ -918,7 +841,6 @@ const IndividualReport = ({
                                             dataObj.data.length
                                           ).toFixed(2)}
                                         </span>
->>>>>>> Stashed changes
                                       </span>
                                     );
                                   })}
@@ -1064,14 +986,7 @@ const IndividualReport = ({
     </div>
   </div>
 )} */}
-<<<<<<< Updated upstream
-{/* {console.log(attemptData&&attemptData.graphs)} */}
-=======
-<<<<<<< Updated upstream
-=======
               {/* {console.log(attemptData&&attemptData.graphs)} */}
->>>>>>> Stashed changes
->>>>>>> Stashed changes
             </div>
           </div>
         </div>

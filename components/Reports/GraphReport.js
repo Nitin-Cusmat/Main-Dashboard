@@ -70,7 +70,7 @@ const GraphReport = ({
   const [userPerformanceData, setUserPerformanceData] = useState(null);
   const { organization } = useUserProfile();
   const isVCTPL = organization.name.toLowerCase() === "vctpl";
-    console.log(isVCTPL); // Debugging output
+    // console.log(isVCTPL); // Debugging output
 
 =======
 <<<<<<< Updated upstream

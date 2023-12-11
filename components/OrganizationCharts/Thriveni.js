@@ -2157,10 +2157,9 @@ const option2 = {    // option for two lines chart dumping and loading area
 {selectedArea === 'all' ? (
       <>
         {/* Render all charts for 'all' selection */}
-<<<<<<< Updated upstream
-        <ReactECharts
-=======
         {/* <ReactECharts
+          style={{ height: "500px", margin: "30px 0" }}
+          option={option} // Option for the loading area chart
           notMerge={true}
         />
         {compare && (
@@ -2170,21 +2169,13 @@ const option2 = {    // option for two lines chart dumping and loading area
         notMerge={true}
         lazyUpdate={true}
       />
-<<<<<<< Updated upstream
-    )}
-=======
     )} */}
->>>>>>> Stashed changes
         {/* ... similarly, add the other charts using the same 'option' ... */}
       </>
     ) : null}
 
     {/* Conditionally render charts based on the selected area */}
-<<<<<<< Updated upstream
-    {selectedArea === 'loading' && (
-=======
     {/* {selectedArea === 'loading' && (
->>>>>>> Stashed changes
   <>
     <ReactECharts
       style={{ height: "500px", margin: "30px 0" }}
@@ -2238,20 +2229,15 @@ const option2 = {    // option for two lines chart dumping and loading area
       />
     )}
   </>
-<<<<<<< Updated upstream
-)}
-=======
 )} */}
 
+      
       <ReactECharts
         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
         option={optionspeed}
         notMerge={true}
         lazyUpdate={true}
       />
-<<<<<<< Updated upstream
-      <ReactECharts
-=======
         {compare && (
         <ReactECharts
           style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
@@ -2261,7 +2247,6 @@ const option2 = {    // option for two lines chart dumping and loading area
         />
         )}
       {/* <ReactECharts
->>>>>>> Stashed changes
         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
         option={rpmChartOptions}
         notMerge={true}
@@ -2274,30 +2259,8 @@ const option2 = {    // option for two lines chart dumping and loading area
           notMerge={true}
           lazyUpdate={true}
         />
-<<<<<<< Updated upstream
-      )}
-      <div className="filter-container">
-        <label htmlFor="collisionType" className="filter-label">
-          Select Collision Type:
-        </label>
-        <select
-          id="collisionType"
-          className="filter-select"
-          value={selectedCollisionType}
-          onChange={handleCollisionTypeChange}
-        >
-          <option value="all">All</option>
-          <option value="total">Normal Collisions</option>
-          <option value="pedestrial">Pedestrian Collisions</option>
-          <option value="object">Object Collisions</option>
-          <option value="mines">Mines Collisions</option>
-          {/* ... other options ... */}
-        </select>
-      </div>
-=======
       )} */}
      
->>>>>>> Stashed changes
       <Chart
         options={options1}
         series={series1} //gear collosion graph

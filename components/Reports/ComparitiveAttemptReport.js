@@ -392,8 +392,7 @@ const ComparitiveAttemptReport = ({
     <div className="p-1 pt-0">
       {attemptData && (
         <div className="flex flex-col gap-4 w-full ">
-<<<<<<< Updated upstream
-      {(organization.name.toLowerCase() === "vctpl" ||
+          {(organization.name.toLowerCase() === "vctpl" ||
             attemptData.path) && (
 =======
 <<<<<<< Updated upstream
@@ -551,12 +550,6 @@ const ComparitiveAttemptReport = ({
                     organization.name.toLowerCase() === "apollo";
                   const isVCTPLOrg =
                     organization.name.toLowerCase() === "vctpl";
-<<<<<<< Updated upstream
-                  const shouldRenderGraph =
-                    !(
-                      isApolloOrg && ["pie", "doughnut"].includes(graph.type)
-                    ) && !(isVCTPLOrg && graph.type === "line");
-=======
                   const isThriveniOrg =
                     organization.name.toLowerCase() === "thriveni"; // Add this line to define the thriveniOrg condition
 
@@ -564,7 +557,6 @@ const ComparitiveAttemptReport = ({
                     ((isApolloOrg || isThriveniOrg) &&
                       ["pie", "doughnut"].includes(graph.type)) ||
                     (!(isVCTPLOrg || isThriveniOrg) && graph.type !== "line");
->>>>>>> Stashed changes
                   if (shouldRenderGraph) {
                     return (
                       <div key={index} className="w-full">
@@ -652,35 +644,6 @@ const ComparitiveAttemptReport = ({
                 compare
               />
             )}
-<<<<<<< Updated upstream
-            <GearCollisionGraph
-              graphs={attemptData.graphs}
-              graphs2={attemptData2.graphs}
-              actualPath={
-                attemptData && attemptData.path && attemptData.path.actual_path
-                  ? attemptData.path.actual_path
-                  : null
-              }
-              compare
-              actualPath2={
-                attemptData2 &&
-                attemptData2.path &&
-                attemptData2.path.actual_path
-                  ? attemptData2.path.actual_path
-                  : null
-              }
-            />
-<<<<<<< Updated upstream
-=======
-             {attemptData.generalkpis &&
-                  Object.keys(attemptData.generalkpis).length > 0 &&
-                  Object.keys(attemptData.generalkpis).map((gkpis, index) => (
-                    <TableKpis
-                      key={`gkpis_${index}`}
-                      tableKpis={attemptData.generalkpis[gkpis]}
-                      tableKpis2={attemptData2.generalkpis[gkpis]}
-                      compare
-=======
             {!isThriveniOrg1 && (
               <GearCollisionGraph
                 graphs={attemptData.graphs}
@@ -698,7 +661,6 @@ const ComparitiveAttemptReport = ({
                 }
               />
             )}
->>>>>>> Stashed changes
             {attemptData.generalkpis &&
               Object.keys(attemptData.generalkpis).length > 0 &&
               Object.keys(attemptData.generalkpis).map((gkpis, index) => (
