@@ -774,7 +774,7 @@ const IndividualReport = ({
                               graph.name
                                 .toLowerCase()
                                 .includes("loading and spillage") &&
-                              attemptData.material
+                              attemptData.cycleData
                             }
                           />
                           {module == "EOT-Crane" &&
@@ -835,7 +835,7 @@ const IndividualReport = ({
                   />
                 )}
               </div>
-              {organization && organization.name.toLowerCase() === "edwards"}{" "}
+              {/* {organization && organization.name.toLowerCase() === "edwards"}{" "} */}
               {
                 // aresOfImprovement.length === 0 && (
                 //   <div className="hurray-message pl-0 lg:pl-2">

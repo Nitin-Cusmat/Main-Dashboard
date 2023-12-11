@@ -22,39 +22,23 @@ const extractNumericalValue = (valueWithUnit) => {
 const RangeBarChart = ({ rangeData, title, compare, showIdealTime }) => {
   const { screenWidth } = useRecoilValue(deviceState);
 
-  const getData = (rangeData, splitOnBracket) => {
-    const dataWithSplit = [];
-  rangeData.forEach(item => {
-    if (splitOnBracket && item.name.includes("(")) {
-      // Separate the entry before "(" and set up an empty y range for spacing
-      dataWithSplit.push({
-        x: item.name.substring(0, item.name.indexOf("(")).trim(),
-        y: [0, 0], // This creates an empty space in the bar for the table label
-      });
-      // The actual data entry with the bar
-      dataWithSplit.push({
-        x: item.name,
-        y: [0, item.decimalValue],
-      });
-    } else {
-      dataWithSplit.push({
-        x: item.name,
-        y: [0, item.decimalValue],
-      });
-    }
-    // Append goals if applicable
-    if (showIdealTime && item["Ideal time"]) {
-      const lastEntry = dataWithSplit[dataWithSplit.length - 1];
-      lastEntry.goals = [{
-        name: "Ideal Time",
-        value: extractNumericalValue(item["Ideal time"]),
-        strokeColor: "#CD2F2A"
-      }];
-    }
-  });
+  const getData = () => {
+    return rangeData.map(item => {
+      const idealTimeValue = showIdealTime && item["ideal_time"] 
+                             ? extractNumericalValue(item["ideal_time"]) 
+                             : null;
 
-  return dataWithSplit;
-};
+      return {
+        x: item.name,
+        y: [0, item.decimalValue],
+        goals: idealTimeValue ? [{
+          name: "Ideal Time",
+          value: idealTimeValue,
+          strokeColor: "#CD2F2A",
+        }] : [],
+      };
+    });
+  };
   // const data1 = rangeData.map(item => {
   //   return {
   //     x: item.name,
@@ -72,7 +56,7 @@ const RangeBarChart = ({ rangeData, title, compare, showIdealTime }) => {
   const series = rangeData.map((d, index) => {
     return {
       name: compare ? "User " + (index + 1) : "Time (Sec)",
-      data: typeof d === "object" && !Array.isArray(d) ? getData([d]) : getData(d)
+      data: getData()
     };
   });
 
@@ -180,7 +164,7 @@ const RangeBarChart = ({ rangeData, title, compare, showIdealTime }) => {
             : "400px"
         }
         width={
-          screenWidth < 300 ? "200px" : screenWidth < 800 ? "1400px" : "1000px"
+          screenWidth < 300 ? "200px" : screenWidth < 800 ? "1400px" : "900px"
         }
       />
     </div>

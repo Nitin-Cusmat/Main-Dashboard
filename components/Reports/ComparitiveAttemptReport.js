@@ -391,11 +391,12 @@ const ComparitiveAttemptReport = ({
     <div className="p-1 pt-0">
       {attemptData && (
         <div className="flex flex-col gap-4 w-full ">
-          {attemptData.path ?? (
+      {(organization.name.toLowerCase() === "vctpl" ||
+            attemptData.path) && (
             <DrivingModuleReport
               attemptData={attemptData}
               attemptData2={attemptData2}
-              organization={{ name: "vctpl" }}
+              organization={organization}
               compare
             />
           )}

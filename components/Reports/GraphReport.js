@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Chart from "components/Chart/Chart";
 import {
   Chart as ChartJS,
@@ -13,6 +13,7 @@ import {
 import GroupedBarChart from "components/GroupedBarChart";
 import { getFormattedTime } from "utils/utils";
 import EChart from "components/Chart/EChart";
+import useUserProfile from "hooks/useUserProfile";
 import DeviationGraph from "./DeviationGraph";
 import { CHART_COLORS, CHART_TYPES } from "utils/constants";
 import CycleDataVisual from "./CycleDataVisual";
@@ -41,12 +42,35 @@ const GraphReport = ({
   pieColor,
   cycleData
 }) => {
-  const colors = ["#82E0AA", "#622F22", "black", "yellow"];
+  
 
+
+  const colors = ["#82E0AA", "#622F22", "black", "yellow"];
+  const aggregatePieData = data => {
+    const aggregatedData = {};
+
+    data.forEach(item => {
+      if (aggregatedData[item.name]) {
+        aggregatedData[item.name] += parseFloat(item.value);
+      } else {
+        aggregatedData[item.name] = parseFloat(item.value);
+      }
+    });
+
+    return Object.keys(aggregatedData).map(name => ({
+      name: name,
+      value: aggregatedData[name]
+    }));
+  };
   const [value, setValue] = useState([
     graph.data && graph.data[0]?.x,
     graph.data && graph.data[graph.data.length - 1]?.x
   ]);
+  const [userPerformanceData, setUserPerformanceData] = useState(null);
+  const { organization } = useUserProfile();
+  const isVCTPL = organization.name.toLowerCase() === "vctpl";
+    console.log(isVCTPL); // Debugging output
+
   const getGraph = () => {
     if (
       (graph.type == "bar" || graph.type == "stacked_bar") &&
@@ -583,6 +607,41 @@ const GraphReport = ({
       graph.data &&
       graph.data.length > 0
     ) {
+      let pieData;
+
+      if (graph.aggregate) {
+        // Aggregate the data
+        const aggregatedData = {};
+        let lastTimeByLabel = {};
+        let previousLabel = null;
+
+        graph.data.forEach((item, index) => {
+          const label = graph.labels[index];
+          const currentTime = parseFloat(item);
+
+          if (label !== previousLabel && previousLabel !== null) {
+            lastTimeByLabel[previousLabel] = null;
+          }
+
+          if (label in lastTimeByLabel && lastTimeByLabel[label] !== null) {
+            const timeDiff = currentTime - lastTimeByLabel[label];
+            aggregatedData[label] = (aggregatedData[label] || 0) + timeDiff;
+          }
+
+          lastTimeByLabel[label] = currentTime;
+          previousLabel = label;
+        });
+
+        pieData = Object.entries(aggregatedData)
+          .map(([name, value]) => ({ name, value }))
+          .filter(item => item.value > 0);
+      } else {
+        // Use the data as is
+        pieData = graph.data.map((item, index) => ({
+          value: parseFloat(item),
+          name: graph.labels[index]
+        }));
+      }
       return (
         <div key={index} className="border w-full h-full">
           <div
@@ -698,24 +757,63 @@ const GraphReport = ({
                           pieColor && graph.data.length === 1
                             ? pieColor
                             : Object.values(CHART_COLORS),
-                        data:
-                          graph.name === "Total quantity used in assembly"
-                            ? graph.data
-                                .filter(x => x > 0)
-                                .map((item, index) => {
-                                  return {
-                                    value: parseFloat(item),
-                                    name: graph.labels[index]
-                                  };
-                                })
-                            : graph.data
-                                .map((item, index) => {
-                                  return {
-                                    value: parseFloat(item),
-                                    name: graph.labels[index]
-                                  };
-                                })
-                                .filter(item => item.value > 0),
+                        data: (() => {
+                          if (!isVCTPL) {
+                            // Logic for organizations other than 'vctpl'
+                            return graph.name ===
+                              "Total quantity used in assembly"
+                              ? graph.data
+                                  .filter(x => x > 0)
+                                  .map((item, index) => {
+                                    return {
+                                      value: parseFloat(item),
+                                      name: graph.labels[index]
+                                    };
+                                  })
+                              : graph.data
+                                  .map((item, index) => {
+                                    return {
+                                      value: parseFloat(item),
+                                      name: graph.labels[index]
+                                    };
+                                  })
+                                  .filter(item => item.value > 0);
+                          } else {
+                            // Aggregation logic for 'vctpl'
+                            const aggregatedData = {};
+                            let lastTimeByLabel = {};
+                            let previousLabel = null;
+
+                            graph.data.forEach((item, index) => {
+                              const label = graph.labels[index];
+                              const currentTime = parseFloat(item);
+
+                              if (
+                                label !== previousLabel &&
+                                previousLabel !== null
+                              ) {
+                                lastTimeByLabel[previousLabel] = null;
+                              }
+
+                              if (
+                                label in lastTimeByLabel &&
+                                lastTimeByLabel[label] !== null
+                              ) {
+                                const timeDiff =
+                                  currentTime - lastTimeByLabel[label];
+                                aggregatedData[label] =
+                                  (aggregatedData[label] || 0) + timeDiff;
+                              }
+
+                              lastTimeByLabel[label] = currentTime;
+                              previousLabel = label;
+                            });
+
+                            return Object.entries(aggregatedData)
+                              .map(([name, value]) => ({ name, value }))
+                              .filter(item => item.value > 0);
+                          }
+                        })(),
                         emphasis: {
                           itemStyle: {
                             shadowBlur: 10,

@@ -22,6 +22,50 @@ ChartJS.register(
 );
 
 const KpiReport1 = ({ kpitask1, kpitask2, compare, module, organization }) => {
+
+  const pulseAnimation = `@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }`;
+
+  const generateInsights = () => {
+    const insightsHtml = rangeKpis.map(kpi => {
+      const actualTime = extractNumericalValue(kpi.value);
+      const idealTime = extractNumericalValue(kpi.ideal_time);
+      const color = actualTime <= idealTime ? 'green' : 'red';
+      return `<span style="color: ${color};">${kpi.name}: ${actualTime <= idealTime ? 'Completed within the ideal time.' : 'Took longer than the ideal time.'}</span><br/>`;
+    }).join('');
+    return { __html: insightsHtml };
+  }; 
+
+  const [isModalOpen, setModalOpen] = useState(false);
+  const handleOpenModal = () => setModalOpen(true);
+  const handleCloseModal = () => setModalOpen(false);
+
+  const Modal = ({ isOpen, onClose, title, children }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">{title}</h2>
+            <button onClick={onClose} className="text-red-500 hover:text-red-700 text-2xl">
+              &times; {/* Unicode for 'X' symbol */}
+            </button>
+          </div>
+          <div className="modal-body">{children}</div>
+          <div className="mt-4 flex justify-end">
+            <button onClick={onClose} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-110">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const [booleanKpis, setBooleanKpis] = useState([]);
   const [decimalKpis, setDecimalKpis] = useState([]);
   const [stringKpis, setStringKpis] = useState([]);
@@ -256,22 +300,38 @@ const kpiTitle = isApollo ? "Loading KPI" : "KPIS";
     setRangeKpis(rKpis);
   }, [kpitask1, kpitask2]);
 
-  return (
+   return (
     <div className="w-full">
-  <div className="py-3">
-    <div className="bg-gradient-to-r from-green-200 via-blue-100 to-purple-200 rounded-t-lg shadow p-3 border-b-2 border-blue-300">
-      <div className="flex items-center justify-between text-blue-800">
-        <span className="icon text-2xl">📊</span> {/* Replace with an actual icon if possible */}
-        <h2 className="text-xl md:text-2xl font-semibold">
-        {kpiTitle} - Insights and Analytics
-        </h2>
-        <div className="flex items-center">
-          <span className="icon text-xl mr-2">🔍</span> {/* Replace with an actual icon if possible */}
-          <span className="icon text-xl">📈</span> {/* Replace with an actual icon if possible */}
+            <style>{pulseAnimation}</style>
+
+      <div className="py-3">
+        <div className="bg-gradient-to-r from-green-200 via-blue-100 to-purple-200 rounded-t-lg shadow p-3 border-b-2 border-blue-300">
+          <div className="flex items-center justify-between text-blue-800">
+            <span className="icon text-2xl">📊</span>{" "}
+            {/* Replace with an actual icon if possible */}
+            <h2 className="text-xl md:text-2xl font-semibold">
+              {kpiTitle} - Insights and Analytics
+            </h2>
+            <button onClick={handleOpenModal} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center" style={{ animation: 'pulse 2s infinite' }}>
+              <span className="mr-2">🔍</span>
+              Click here for Insights
+            </button>            
+            <div className="flex items-center">
+              <span className="icon text-xl mr-2">🔍</span>{" "}
+              {/* Replace with an actual icon if possible */}
+              <span className="icon text-xl">📈</span>{" "}
+              {/* Replace with an actual icon if possible */}
+            </div>
+          </div>
         </div>
+          {/* The modal component */}
+     {/* The modal component */}
+     {isModalOpen && (
+        <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="KPI Insights">
+          <div dangerouslySetInnerHTML={generateInsights()} />
+        </Modal>
+      )}
       </div>
-    </div>
-    </div>
 
       <div className="">
         <div className="flex flex-col md:flex-row gap-4">

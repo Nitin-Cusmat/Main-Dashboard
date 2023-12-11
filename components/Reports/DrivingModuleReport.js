@@ -50,7 +50,16 @@ const DrivingModuleReport = ({
         text: "Pallet Angle"
       },
       min: -5,
-      max: 5
+      max: 5,
+      labels: {
+        formatter: function(value) {
+          // Hide -5 and 5 only if isApollo is true
+          if (isApollo && (value === -5 || value === 5)) {
+            return '';
+          }
+          return value;
+        }
+      }
     },
     tooltip: {
       enabled: false

@@ -78,6 +78,7 @@ const LoadingSpillageGraph = ({ data, labels, maxValue }) => {
       }
     ]
   };
+  // console.log('maxValue:', maxValue); // Check the actual value and type
 
   return (
     <ReactECharts
