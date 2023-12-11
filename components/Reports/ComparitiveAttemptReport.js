@@ -55,6 +55,7 @@ const ComparitiveAttemptReport = ({
     areasOfImprovement1.length,
     areasOfImprovement2.length
   );
+  const isThriveniOrg1 = organization && organization.name.toLowerCase() === "thriveni";
 
   while (areasOfImprovement1.length < maxLength) {
     areasOfImprovement1.push({ [`Areas of Improvement for User 1`]: "-" });
@@ -391,7 +392,8 @@ const ComparitiveAttemptReport = ({
     <div className="p-1 pt-0">
       {attemptData && (
         <div className="flex flex-col gap-4 w-full ">
-          {attemptData.path ?? (
+          {(organization.name.toLowerCase() === "vctpl" ||
+            attemptData.path) && (
             <DrivingModuleReport
               attemptData={attemptData}
               attemptData2={attemptData2}
@@ -519,10 +521,13 @@ const ComparitiveAttemptReport = ({
                     organization.name.toLowerCase() === "apollo";
                   const isVCTPLOrg =
                     organization.name.toLowerCase() === "vctpl";
+                  const isThriveniOrg =
+                    organization.name.toLowerCase() === "thriveni"; // Add this line to define the thriveniOrg condition
+
                   const shouldRenderGraph =
-                    !(
-                      isApolloOrg && ["pie", "doughnut"].includes(graph.type)
-                    ) && !(isVCTPLOrg && graph.type === "line");
+                    ((isApolloOrg || isThriveniOrg) &&
+                      ["pie", "doughnut"].includes(graph.type)) ||
+                    (!(isVCTPLOrg || isThriveniOrg) && graph.type !== "line");
                   if (shouldRenderGraph) {
                     return (
                       <div key={index} className="w-full">
@@ -568,23 +573,23 @@ const ComparitiveAttemptReport = ({
                 compare
               />
             )}
-            <GearCollisionGraph
-              graphs={attemptData.graphs}
-              graphs2={attemptData2.graphs}
-              actualPath={
-                attemptData && attemptData.path && attemptData.path.actual_path
-                  ? attemptData.path.actual_path
-                  : null
-              }
-              compare
-              actualPath2={
-                attemptData2 &&
-                attemptData2.path &&
-                attemptData2.path.actual_path
-                  ? attemptData2.path.actual_path
-                  : null
-              }
-            />
+            {!isThriveniOrg1 && (
+              <GearCollisionGraph
+                graphs={attemptData.graphs}
+                graphs2={attemptData2.graphs}
+                actualPath={
+                  attemptData?.path?.actual_path
+                    ? attemptData.path.actual_path
+                    : null
+                }
+                compare
+                actualPath2={
+                  attemptData2?.path?.actual_path
+                    ? attemptData2.path.actual_path
+                    : null
+                }
+              />
+            )}
             {attemptData.generalkpis &&
               Object.keys(attemptData.generalkpis).length > 0 &&
               Object.keys(attemptData.generalkpis).map((gkpis, index) => (
