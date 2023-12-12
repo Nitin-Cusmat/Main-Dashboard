@@ -293,16 +293,6 @@ const IndividualReport = ({
       !attemptData.path.actual_path ||
       !attemptData.path.ideal_path;
 
-=======
-<<<<<<< Updated upstream
-=======
-    const noPathData =
-      !attemptData.path ||
-      !attemptData.path.actual_path ||
-      !attemptData.path.ideal_path;
-
->>>>>>> Stashed changes
->>>>>>> Stashed changes
     if (attemptData.boxPickupData) {
       attemptData.boxPickupData.forEach((d, index) => {
         extraPlots.push({
@@ -644,21 +634,16 @@ const IndividualReport = ({
               attemptData={attemptData}
               organization={organization} // Make sure you pass the organization here
             />
-=======
-<<<<<<< Updated upstream
-          {attemptData.path && (
-            <DrivingModuleReport attemptData={attemptData} />
-=======
+          )}
           {attemptData.tableKpis && (
             <TableKpis tableKpis={attemptData.tableKpis} />
           )}
+
           {attemptData && (
             <DrivingModuleReport
               attemptData={attemptData}
               organization={organization} // Make sure you pass the organization here
             />
->>>>>>> Stashed changes
->>>>>>> Stashed changes
           )}
           {attemptData &&
             attemptData.subActivities &&
@@ -733,15 +718,9 @@ const IndividualReport = ({
                   />
                 )}
 
-=======
-                  <KpiReport2
-                    kpis3={attemptData.unloading}
-                    organization={organization} // Make sure to pass the organization here
-                  />
-                )}
+                  
 
->>>>>>> Stashed changes
->>>>>>> Stashed changes
+
                 {attemptData.inspections &&
                   attemptData.inspections.length > 0 && (
                     <CarsomeReport attemptData={attemptData} module={module} />

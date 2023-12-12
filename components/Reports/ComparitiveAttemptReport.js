@@ -392,16 +392,8 @@ const ComparitiveAttemptReport = ({
     <div className="p-1 pt-0">
       {attemptData && (
         <div className="flex flex-col gap-4 w-full ">
-          {(organization.name.toLowerCase() === "vctpl" ||
+      {(organization.name.toLowerCase() === "vctpl" ||
             attemptData.path) && (
-=======
-<<<<<<< Updated upstream
-          {attemptData.path && (
-=======
-          {(organization.name.toLowerCase() === "vctpl" ||
-            attemptData.path) && (
->>>>>>> Stashed changes
->>>>>>> Stashed changes
             <DrivingModuleReport
               attemptData={attemptData}
               attemptData2={attemptData2}
@@ -525,27 +517,7 @@ const ComparitiveAttemptReport = ({
             {attemptData.graphs && attemptData.graphs.length > 0 && (
               <div className="">
                 {attemptData.graphs.map((graph, index) => {
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-                  attemptData.graphs[index];
-                  return (
-                    <div key={index} className="w-full">
-                      <div className="w-full">
-                        <GraphReport
-                       
-                          graph={graph}
-                          graph2={
-                            attemptData2.graphs.filter(
-                              x => x.name == graph.name
-                            )[0]
-                          }
-                          index={index}
-                          users={users}
-                          compare
-                        />
-=======
->>>>>>> Stashed changes
+
                   const isApolloOrg =
                     organization.name.toLowerCase() === "apollo";
                   const isVCTPLOrg =
@@ -565,48 +537,6 @@ const ComparitiveAttemptReport = ({
                             graph={graph}
                             graph2={attemptData2.graphs.find(
                               x => x.name === graph.name
-<<<<<<< Updated upstream
-=======
-                            )}
-                            index={index}
-                            users={users}
-                            compare
-                          />
-                        </div>
-                        {module === "EOT-Crane" &&
-                          graph.name === "LT & CT Speed vs Time" &&
-                          graph.data && (
-                            <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
-                              {getAverageSpeed(graph)}
-                              {/* The next conditional can be adjusted or removed depending on your needs */}
-                              {attemptData.graphs[1]?.name ===
-                                "LT & CT Speed vs Time" &&
-                                attemptData.graphs[1]?.data && (
-                                  <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
-                                    {getAverageSpeed(
-                                      attemptData.graphs[1].data
-                                    )}
-                                  </div>
-                                )}
-                            </div>
-                          )}
->>>>>>> Stashed changes
-                      </div>
-                      {module == "EOT-Crane" && (
-                        <div>
-                          {graph.name == "LT & CT Speed vs Time" &&
-                            graph.data && (
-                              <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
-                                {getAverageSpeed(graph)}
-                              </div>
-                            )}
-                          {attemptData.graphs[1]?.name ==
-                            "LT & CT Speed vs Time" &&
-                            attemptData.graphs[1]?.data && (
-                              <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
-                                {getAverageSpeed(attemptData.graphs[1].data)}
-                              </div>
->>>>>>> Stashed changes
                             )}
                             index={index}
                             users={users}
@@ -672,10 +602,6 @@ const ComparitiveAttemptReport = ({
                 />
               ))}
             {orgChart}
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 
             <div className="flex w-full">
               {areasOfImprovement1.length > 0 && (
