@@ -272,7 +272,7 @@ const PerformanceCharts = ({ data }) => {
                       }}
                     />
                   </div>
-                  <div className="w-full lg:w-1/2">
+                  <div className="w-full h-[300px] lg:w-1/2">
                     <EChart
                       options={{
                         tooltip: {
