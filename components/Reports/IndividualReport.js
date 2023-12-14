@@ -27,7 +27,7 @@ import AssemblyReport from "./AssemblyReport";
 import GraphReport from "./GraphReport";
 import IdealActualPath from "./IdealActualPath";
 import DrivingModuleReport from "./DrivingModuleReport";
-import KpiReport2 from './KpiReport2';
+import KpiReport2 from "./KpiReport2";
 import {
   formatTimeDay,
   getFormattedTime,
@@ -108,6 +108,7 @@ const IndividualReport = ({
     }
     // ... and so on
   };
+  const isThriveniOrg1 = organization && organization.name.toLowerCase() === "thriveni";
 
   // const getRandomRecommendation = () => {
   //   // Assuming levels is an array of all available levels or modules
@@ -287,8 +288,10 @@ const IndividualReport = ({
     let vAxisLines = attemptData.vAxisLines ? attemptData.vAxisLines : null;
     let extraPlots = [];
 
-    const noPathData = !attemptData.path || !attemptData.path.actual_path || !attemptData.path.ideal_path;
-
+    const noPathData =
+      !attemptData.path ||
+      !attemptData.path.actual_path ||
+      !attemptData.path.ideal_path;
 
     if (attemptData.boxPickupData) {
       attemptData.boxPickupData.forEach((d, index) => {
@@ -623,12 +626,23 @@ const IndividualReport = ({
           {attemptData && attemptData.score && (
             <ScoreRow score={[score]} attemptDuration={[attemptDuration]} />
           )}
-           {attemptData.tableKpis && (
-                  <TableKpis tableKpis={attemptData.tableKpis} />
-                )}
+          {attemptData.tableKpis && (
+            <TableKpis tableKpis={attemptData.tableKpis} />
+          )}
           {attemptData && (
-            <DrivingModuleReport attemptData={attemptData} 
-            organization={organization} // Make sure you pass the organization here
+            <DrivingModuleReport
+              attemptData={attemptData}
+              organization={organization} // Make sure you pass the organization here
+            />
+          )}
+          {attemptData.tableKpis && (
+            <TableKpis tableKpis={attemptData.tableKpis} />
+          )}
+
+          {attemptData && (
+            <DrivingModuleReport
+              attemptData={attemptData}
+              organization={organization} // Make sure you pass the organization here
             />
           )}
           {attemptData &&
@@ -687,21 +701,25 @@ const IndividualReport = ({
                     />
                   ))} */}
                 {attemptData.kpis && attemptData.kpis.length > 0 && (
-                  <KpiReport kpis1={attemptData.kpis} 
-                  /> // Make sure to pass the organization here/>
+                  <KpiReport kpis1={attemptData.kpis} /> // Make sure to pass the organization here/>
                 )}
 
                 {attemptData.loading && attemptData.loading.length > 0 && (
-                  <KpiReport1 kpitask1={attemptData.loading}
-                  organization={organization} // Make sure to pass the organization here
+                  <KpiReport1
+                    kpitask1={attemptData.loading}
+                    organization={organization} // Make sure to pass the organization here
                   />
                 )}
 
                 {attemptData.unloading && attemptData.unloading.length > 0 && (
-                  <KpiReport2 kpis3={attemptData.unloading}
-                  organization={organization} // Make sure to pass the organization here
+                  <KpiReport2
+                    kpis3={attemptData.unloading}
+                    organization={organization} // Make sure to pass the organization here
                   />
                 )}
+
+                  
+
 
                 {attemptData.inspections &&
                   attemptData.inspections.length > 0 && (
@@ -742,59 +760,73 @@ const IndividualReport = ({
                       ) {
                         deviationGraph = true;
                       }
+                      const isApolloOrg =
+                        organization.name.toLowerCase() === "apollo";
+                      const isVCTPLOrg =
+                        organization.name.toLowerCase() === "vctpl";
+                      const isThriveniOrg =
+                        organization.name.toLowerCase() === "thriveni";
+
+                        const shouldRenderGraph =
+                        !(isApolloOrg && ["pie", "doughnut"].includes(graph.type)) &&
+                        !(isThriveniOrg && graph.hAxisLines == null && ["line"].includes(graph.type))&&
+                       
+                        !(isVCTPLOrg && graph.hAxisLines == null && ["line"].includes(graph.type));
                       return (
-                        <div
-                          key={`doughnut_${index}`}
-                          className={`w-full ${
-                            ["pie", "doughnut"].includes(graph.type)
-                              ? total_pies.length > 2
-                                ? ["Time Taken by KPIS"].includes(graph.name)
-                                  ? "md:w-full"
-                                  : "md:w-1/2"
-                                : "lg:w-full"
-                              : ""
-                          }${deviationGraph && "xl:w-1/2 pl-2"}`}
-                        >
-                          <GraphReport
-                            graph={graph}
-                            index={index}
-                            isWinder={isWinder}
-                            isShovel={isShovel}
-                            pieColor={
-                              ["pie", "doughnut"].includes(graph.type) &&
-                              !["Time Taken by KPIS"].includes(graph.name) &&
-                              pieColors[pieIndex]
-                            }
-                            cycleData={
-                              graph.name
-                                .toLowerCase()
-                                .includes("loading and spillage") &&
-                              attemptData.material
-                            }
-                          />
-                          {module == "EOT-Crane" &&
-                            graph.name == "LT & CT Speed vs Time" &&
-                            graph.data && (
-                              <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
-                                {graph.data.map((dataObj, index) => {
-                                  return (
-                                    <span
-                                      className=""
-                                      key={`average_speed_${index}`}
-                                    >
-                                      {dataObj.name} Average:
-                                      <span className="text-primary font-semibold pl-2">
-                                        {(
-                                          getSum(dataObj.data) /
-                                          dataObj.data.length
-                                        ).toFixed(2)}
+                        shouldRenderGraph && (
+                          <div
+                            key={`doughnut_${index}`}
+                            className={`w-full ${
+                              ["pie", "doughnut"].includes(graph.type)
+                                ? total_pies.length > 2
+                                  ? ["Time Taken by KPIS"].includes(graph.name)
+                                    ? "md:w-full"
+                                    : "md:w-1/2"
+                                  : "lg:w-full"
+                                : ""
+                            }${deviationGraph && "xl:w-1/2 pl-2"}`}
+                          >
+                            <GraphReport
+                              graph={graph}
+                              index={index}
+                              isWinder={isWinder}
+                              isShovel={isShovel}
+                              pieColor={
+                                ["pie", "doughnut"].includes(graph.type) &&
+                                !["Time Taken by KPIS"].includes(graph.name) &&
+                                pieColors[pieIndex]
+                              }
+                              cycleData={
+                                graph.name
+                                  .toLowerCase()
+                                  .includes("loading and spillage") &&
+                                attemptData.cycleData
+                              }
+                            />
+                            {module == "EOT-Crane" &&
+                              graph.name == "LT & CT Speed vs Time" &&
+                              graph.data && (
+                                <div className="text-dark border text-sm md:text-md w-full flex justify-around gap-4 py-2 mb-4">
+                                  {graph.data.map((dataObj, index) => {
+                                    return (
+                                      <span
+                                        className=""
+                                        key={`average_speed_${index}`}
+                                      >
+                                        {dataObj.name} Average:
+                                        <span className="text-primary font-semibold pl-2">
+                                          {(
+                                            getSum(dataObj.data) /
+                                            dataObj.data.length
+                                          ).toFixed(2)}
+                                        </span>
                                       </span>
-                                    </span>
-                                  );
-                                })}
-                              </div>
-                            )}
-                        </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                          </div>
+                        )
                       );
                     })}
                   </div>
@@ -802,12 +834,14 @@ const IndividualReport = ({
                 {attemptData.cycleData && attemptData.cycleData.length > 0 && (
                   <CycleDataVisual cycleData={attemptData.cycleData} />
                 )}
-                {attemptData.path && attemptData.path.actual_path && (
-                  <GearCollisionGraph
-                    graphs={attemptData.graphs}
-                    actualPath={attemptData.path.actual_path}
-                  />
-                )}
+                {attemptData.path &&
+                  attemptData.path.actual_path &&
+                  !isThriveniOrg1 && ( // Render GearCollisionGraph only if it's not "Thriveni"
+                    <GearCollisionGraph
+                      graphs={attemptData.graphs}
+                      actualPath={attemptData.path.actual_path}
+                    />
+                  )}
                 {attemptData.generalkpis &&
                   Object.keys(attemptData.generalkpis).length > 0 &&
                   Object.keys(attemptData.generalkpis).map((gkpis, index) => (
@@ -830,7 +864,7 @@ const IndividualReport = ({
                   />
                 )}
               </div>
-              {organization && organization.name.toLowerCase() === "edwards"}{" "}
+              {/* {organization && organization.name.toLowerCase() === "edwards"}{" "} */}
               {
                 // aresOfImprovement.length === 0 && (
                 //   <div className="hurray-message pl-0 lg:pl-2">
@@ -931,7 +965,7 @@ const IndividualReport = ({
     </div>
   </div>
 )} */}
-{/* {console.log(attemptData&&attemptData.graphs)} */}
+              {/* {console.log(attemptData&&attemptData.graphs)} */}
             </div>
           </div>
         </div>

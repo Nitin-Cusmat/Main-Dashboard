@@ -1,10 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import ReactECharts from "echarts-for-react";
 import Chart from "react-apexcharts";
-import * as echarts from 'echarts';
+import * as echarts from "echarts";
 
+const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
+  const [selectedCollisionType, setSelectedCollisionType] = useState("total");
+  const [selectedArea, setSelectedArea] = useState('all');
 
-const Thriveni = ({ attemptData }) => {
+  // Initialize other collision types if needed
+
   let brakeData = [];
   let accelerationData = [];
   let timeData = [];
@@ -14,7 +18,8 @@ const Thriveni = ({ attemptData }) => {
   let gearNames = [];
   let modeData = [];
   let speedDataFiltered1 = []; // Declare it here
-
+  let totalCollisions = {}; // Object to store total collisions by gear
+  let additionalSpeedData = {};
 
   let maxSpeedByGear = {};
   let collisionCountByGear = {};
@@ -23,21 +28,16 @@ const Thriveni = ({ attemptData }) => {
   let lastMode = null;
   let lastTime = 0;
 
-
   const modeCount = {};
 
   let kpiNames = [];
   let kpiValues = [];
-  
+
   if (attemptData && attemptData.kpis) {
     kpiNames = attemptData.kpis.map(kpi => kpi.name);
     kpiValues = attemptData.kpis.map(kpi => parseFloat(kpi.value));
-    
   }
-// Step 2: Prepare data for the pie chart
-
-
-
+  // Step 2: Prepare data for the pie chart
 
   const intervals = [];
   const pieces = [];
@@ -51,25 +51,45 @@ const Thriveni = ({ attemptData }) => {
       .map(key => actual_path[key])
       .flat();
 
-      speedDataFiltered = filteredData     // this code is for two line chart where need to see dumping area and loading area
+    speedDataFiltered = filteredData // this code is for two line chart where need to see dumping area and loading area
       .filter(item => item.loadingstatus === "1")
       .map(item => {
         return {
-          value: [item.time, parseFloat(item.rpm)],
-          symbol: 'none' // Optional: to hide individual data point symbols
+          value: [item.time, parseFloat(item.speed)],
+          symbol: "none" // Optional: to hide individual data point symbols
         };
       });
 
-      speedDataFiltered1 = filteredData     // this code is for two line chart where need to see dumping area and loading area
+    speedDataFiltered1 = filteredData // this code is for two line chart where need to see dumping area and loading area
       .filter(item => item.unloadingstatus === "1")
       .map(item => {
         return {
-          value: [item.time, parseFloat(item.rpm)],
-          symbol: 'none' // Optional: to hide individual data point symbols
+          value: [item.time, parseFloat(item.speed)],
+          symbol: "none" // Optional: to hide individual data point symbols
         };
       });
 
-      
+    additionalSpeedData = filteredData // this code is for two line chart where need to see dumping area and loading area
+      .filter(item => item.loadingarea === "1")
+      .map(item => {
+        return {
+          value: [item.time, parseFloat(item.speed)],
+          symbol: "none" // Optional: to hide individual data point symbols
+        };
+      });
+
+    filteredData.forEach(item => {
+      const gear = item.gear;
+      // Initialize the object for each gear if not already done
+      if (!totalCollisions[gear]) {
+        totalCollisions[gear] = 0;
+        // Initialize other collision types here
+      }
+
+      // Update collision counts
+      totalCollisions[gear] += parseInt(item.collisionStatus, 10);
+      // Update other collision types here
+    });
 
     brakeData = filteredData.map(item => item.brake);
     accelerationData = filteredData.map(item => item.acceleration);
@@ -80,15 +100,17 @@ const Thriveni = ({ attemptData }) => {
 
     gearNames = [...new Set(filteredData.map(item => item.gear))];
 
-    filteredData.forEach(item => {       // This is for gear colloision graph from line 62 to line 95
+    filteredData.forEach(item => {
+      // This is for gear colloision graph from line 62 to line 95
       const gear = item.gear;
       const collisionStatus = item.collisionStatus; // This is a string
-    
+
       if (!collisionCountByGear[gear]) {
         collisionCountByGear[gear] = 0;
       }
-    
-      if (collisionStatus === "1") { // Compare as a string
+
+      if (collisionStatus === "1") {
+        // Compare as a string
         collisionCountByGear[gear]++;
       }
     });
@@ -96,12 +118,13 @@ const Thriveni = ({ attemptData }) => {
     filteredData.forEach(item => {
       const gear = item.gear;
       const collisionStatus = parseInt(item.collisionStatus, 10); // Convert to a number
-    
+
       if (!collisionCountByGear[gear]) {
         collisionCountByGear[gear] = 0;
       }
-    
-      if (collisionStatus === 1) { // Now comparing numbers
+
+      if (collisionStatus === 1) {
+        // Now comparing numbers
         collisionCountByGear[gear]++;
       }
     });
@@ -109,14 +132,14 @@ const Thriveni = ({ attemptData }) => {
     filteredData.forEach(item => {
       const gear = item.gear;
       const speed = parseFloat(item.speed); // Convert string to number
-  
+
       if (!maxSpeedByGear[gear] || maxSpeedByGear[gear] < speed) {
         maxSpeedByGear[gear] = speed;
       }
     });
 
-
-    filteredData.forEach(item => {       // this is for pie chart of mode from line 98 to 122
+    filteredData.forEach(item => {
+      // this is for pie chart of mode from line 98 to 122
       const mode = item.mode;
       if (!modeCount[mode]) {
         modeCount[mode] = 0;
@@ -127,18 +150,20 @@ const Thriveni = ({ attemptData }) => {
     filteredData.forEach((item, index) => {
       const currentMode = item.mode;
       const currentTime = parseFloat(item.time);
-    
+
       if (lastMode !== currentMode) {
         if (lastMode !== null) {
           // Calculate duration for the last mode
-          modeDurations[lastMode] = (modeDurations[lastMode] || 0) + (currentTime - lastTime);
+          modeDurations[lastMode] =
+            (modeDurations[lastMode] || 0) + (currentTime - lastTime);
         }
         // Update last mode and time
         lastMode = currentMode;
         lastTime = currentTime;
       } else if (index === filteredData.length - 1) {
         // Calculate duration for the last mode entry
-        modeDurations[currentMode] = (modeDurations[currentMode] || 0) + (currentTime - lastTime);
+        modeDurations[currentMode] =
+          (modeDurations[currentMode] || 0) + (currentTime - lastTime);
       }
     });
 
@@ -175,7 +200,63 @@ const Thriveni = ({ attemptData }) => {
       ]);
     }
   }
-  
+
+  let filteredData = [];
+  if (attemptData && attemptData.path && attemptData.path.actual_path) {
+    filteredData = Object.keys(attemptData.path.actual_path)
+      .map(key => attemptData.path.actual_path[key])
+      .flat();
+  }
+
+  const getCollisionCount = gear => {
+    let count = 0;
+    filteredData.forEach(item => {
+      if (item.gear === gear) {
+        let collisionCount = 0;
+
+        // Check the selectedCollisionType and calculate accordingly
+        switch (selectedCollisionType) {
+          case "pedestrial":
+            collisionCount = parseInt(item.pedestrial_colloision, 10) || 0;
+            break;
+          case "object":
+            collisionCount = parseInt(item.object_colloision, 10) || 0;
+            break;
+          case "mines":
+            collisionCount = parseInt(item.mines_colloision, 10) || 0;
+            break;
+          case "total": // Assuming 'total' is the key for total collisions
+            collisionCount = parseInt(item.collisionStatus, 10) || 0;
+            break;
+          case "all":
+            // Sum all collision types for 'All' option
+            collisionCount += parseInt(item.pedestrial_colloision, 10) || 0;
+            collisionCount += parseInt(item.object_colloision, 10) || 0;
+            collisionCount += parseInt(item.mines_colloision, 10) || 0;
+            collisionCount += parseInt(item.collisionStatus, 10) || 0;
+            break;
+          // Default case if needed
+        }
+
+        count += collisionCount;
+      }
+    });
+    return count;
+  };
+  const getFilteredDataByArea = () => {
+    switch (selectedArea) {
+      case 'loading':
+        return speedDataFiltered;
+      case 'dumping':
+        return speedDataFiltered1;
+      case 'parking':
+        return additionalSpeedData;
+      default:
+        return null; // Return null or an appropriate default value
+    }
+  };
+
+  const filteredChartData = getFilteredDataByArea();
 
   // const speedTimeData = attemptData.map(item => {
   //   return [parseFloat(item.time), parseFloat(item.speed)];
@@ -185,7 +266,7 @@ const Thriveni = ({ attemptData }) => {
   const maxSpeeds = Object.values(maxSpeedByGear);
 
   const gears1 = Object.keys(collisionCountByGear);
-  const totalCollisions = Object.values(collisionCountByGear);
+  // const totalCollisions = Object.values(collisionCountByGear);
 
   const totalTime = kpiValues.reduce((acc, val) => acc + val, 0) / 60; // Convert total to hours
 
@@ -193,32 +274,33 @@ const Thriveni = ({ attemptData }) => {
     return { name: mode, value: modeDurations[mode] };
   });
 
-  const vehicleChartOptions = {       // acc and break graph
+  const vehicleChartOptions = {
+    // acc and break graph
     title: {
       text: "Vehicle Analytics",
       subtext: "Speed vs time graph",
       left: "center"
     },
-   tooltip: {
-    trigger: 'axis',
-    axisPointer: {
-      animation: false
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
+        animation: false
+      },
+      formatter: function (params) {
+        // Assuming the first series in the params array corresponds to the time axis label
+        let timeValue = params[0].axisValueLabel; // Or params[0].axisValue if axisValueLabel is not available
+        let result = `Time: ${timeValue}`; // Prepend 'Time: ' to the axis value (time)
+
+        // Append other series data
+        params.forEach(param => {
+          result += `<br/>${param.marker}${param.seriesName}: ${param.value}`;
+        });
+
+        return result;
+      }
     },
-    formatter: function (params) {
-      // Assuming the first series in the params array corresponds to the time axis label
-      let timeValue = params[0].axisValueLabel; // Or params[0].axisValue if axisValueLabel is not available
-      let result = `Time: ${timeValue}`; // Prepend 'Time: ' to the axis value (time)
-
-      // Append other series data
-      params.forEach((param) => {
-        result += `<br/>${param.marker}${param.seriesName}: ${param.value}`;
-      });
-
-      return result;
-    }
-  },
     legend: {
-      data: ["Acceleration", "Brake"],
+      data: compare ? ["Acceleration - User 1", "Brake - User 1"] : ["Acceleration m/s", "Brake m/s"],
       left: 10
     },
     toolbox: {
@@ -276,30 +358,29 @@ const Thriveni = ({ attemptData }) => {
     ],
     yAxis: [
       {
-        name: "Acceleration",
+        name: "Acceleration m/s",
         type: "value",
         max: 1
       },
       {
         gridIndex: 1,
-      name: "Brake",
-      type: "value",
-      inverse: true,
-      nameLocation: 'middle', // Place the name in the middle of the axis
-      nameGap: 35,
-
+        name: "Brake m/s",
+        type: "value",
+        inverse: true,
+        nameLocation: "middle", // Place the name in the middle of the axis
+        nameGap: 35
       }
     ],
     series: [
       {
-        name: "Acceleration",
+        name: compare ? "Acceleration - User 1" : "Acceleration m/s",
         type: "line",
         symbolSize: 8,
         hoverAnimation: false,
         data: accelerationData
       },
       {
-        name: "Brake",
+        name: compare ? "Brake - User 1" : "Brake m/s",
         type: "line",
         xAxisIndex: 1,
         yAxisIndex: 1,
@@ -309,10 +390,224 @@ const Thriveni = ({ attemptData }) => {
       }
     ]
   };
+  let filteredData21= [];
+  if (attemptData2 && attemptData2.path && attemptData2.path.actual_path) {
+    filteredData21 = Object.keys(attemptData2.path.actual_path)
+      .map(key => attemptData2.path.actual_path[key])
+      .flat();
+  } 
+  // Extracting data for User 2
+  let accelerationData2 = [];
+  let brakeData2 = [];
+  let timeData21 = [];
+  
+  if (filteredData21.length > 0) {
+    accelerationData2 = filteredData21.map(item => item.acceleration);
+    brakeData2 = filteredData21.map(item => item.brake);
+    timeData21 = filteredData21.map(item => item.time);
+  }
+  const vehicleChartOptionscomp = {
+    // acc and break graph
+    title: {
+      text: "Vehicle Analytics",
+      subtext: "Speed vs time graph",
+      left: "center"
+    },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
+        animation: false
+      },
+      formatter: function (params) {
+        // Assuming the first series in the params array corresponds to the time axis label
+        let timeValue = params[0].axisValueLabel; // Or params[0].axisValue if axisValueLabel is not available
+        let result = `Time: ${timeValue}`; // Prepend 'Time: ' to the axis value (time)
+
+        // Append other series data
+        params.forEach(param => {
+          result += `<br/>${param.marker}${param.seriesName}: ${param.value}`;
+        });
+
+        return result;
+      }
+    },
+    legend: {
+      data: ["Acceleration - User 2", "Brake - User 2"],
+      left: 10
+    },
+    toolbox: {
+      feature: {
+        dataZoom: {
+          yAxisIndex: "none"
+        },
+        restore: {},
+        saveAsImage: {}
+      }
+    },
+    axisPointer: {
+      link: { xAxisIndex: "all" }
+    },
+    dataZoom: [
+      {
+        show: true,
+        realtime: true,
+        xAxisIndex: [0, 1]
+      },
+      {
+        type: "inside",
+        realtime: true,
+        xAxisIndex: [0, 1]
+      }
+    ],
+    grid: [
+      {
+        left: 50,
+        right: 50,
+        height: "33%"
+      },
+      {
+        left: 50,
+        right: 50,
+        top: "55%",
+        height: "33%"
+      }
+    ],
+    xAxis: [
+      {
+        type: "category",
+        boundaryGap: false,
+        axisLine: { onZero: true },
+        data: timeData21
+      },
+      {
+        gridIndex: 1,
+        type: "category",
+        boundaryGap: false,
+        axisLine: { onZero: true },
+        data: timeData21,
+        position: "top"
+      }
+    ],
+    yAxis: [
+      {
+        name: "Acceleration",
+        type: "value",
+        max: 1
+      },
+      {
+        gridIndex: 1,
+        name: "Brake",
+        type: "value",
+        inverse: true,
+        nameLocation: "middle", // Place the name in the middle of the axis
+        nameGap: 35
+      }
+    ],
+    series: [
+      {
+        name: "Acceleration - User 2",
+        type: "line",
+        symbolSize: 8,
+        hoverAnimation: false,
+        data: accelerationData2
+      },
+      {
+        name: "Brake - User 2",
+        type: "line",
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        symbolSize: 8,
+        hoverAnimation: false,
+        data: brakeData2
+      }
+    ]
+  };
 
   const rpmChartOptions = {
     title: {
-      text: "Rpm Vs Time During Loading"
+      text: compare ? ["Rpm Vs Time During Loading - user-1"] : ["Rpm Vs Time During Loading"],
+    },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
+        type: "cross"
+      }
+    },
+    toolbox: {
+      show: true,
+      feature: {
+        saveAsImage: {}
+      }
+    },
+    legend: {
+      data: ['Ideal RPM at Time of Loading'], // Labels for the legend
+      orient: 'vertical', // Vertical layout
+      right: '10', // Adjust the right value as needed
+      top: '30', // Adjust the top value as needed
+    },
+    xAxis: {
+      type: "category",
+      boundaryGap: false,
+      data: timeData,
+      axisLabel: {
+        formatter: function (value) {
+          return value; // Assuming timeData is already in the desired format
+        }
+      },
+      name: 'Time', // Label for the x-axis
+      nameLocation: 'middle',
+      nameGap: 30 // Adjust as needed for layout
+    },
+    yAxis: {
+      type: "value",
+      axisLabel: {
+        formatter: "{value} rpm" // Display RPM on the y-axis
+      },
+      axisPointer: {
+        snap: true
+      },
+      name: 'RPM', // Label for the y-axis
+      nameLocation: 'middle',
+      nameRotate: 90, // Rotate the label to be vertical
+      nameGap: 50 // Adjust as needed for layout
+    },
+    visualMap: {
+      show: false,
+      dimension: 0,
+      pieces: pieces
+    },
+    series: [
+      {
+        name: 'Ideal RPM at Time of Loading',
+        type: 'line',
+        data: Array.from({ length: timeData.length }, () => 900),
+        lineStyle: {
+          normal: {
+            color: 'blue', // Change the color as needed
+            width: 2, // Line width
+          },
+        },
+        showSymbol: false, // Hide data points for the ideal line
+      },
+      {
+        
+        name: "Rpm Vs Time During Loading",
+        type: "line",
+        smooth: true,
+        data: rpmData,
+        markArea: {
+          itemStyle: {
+            color: "rgba(255, 173, 177, 0.4)"
+          },
+          data: intervals
+        }
+      }
+    ]
+};
+
+  const rpmChartOptions1 = {
+    title: {
+      text: "Rpm Vs Time During Loading - user-2"
     },
     tooltip: {
       trigger: "axis",
@@ -352,7 +647,7 @@ const Thriveni = ({ attemptData }) => {
     },
     series: [
       {
-        name: "Rpm Vs Time During Loading",
+        name: "Rpm Vs Time During Loading - user-2",
         type: "line",
         smooth: true,
         data: rpmData,
@@ -365,171 +660,55 @@ const Thriveni = ({ attemptData }) => {
       }
     ]
   };
-  
-  const option = {    // option for two lines chart dumping and loading area
-
-      // Make gradient line here
-      visualMap: [{
-          show: false,
-          type: 'continuous',
-          seriesIndex: 0,
-          min: 0,
-          max: 400
-      }, {
-          show: false,
-          type: 'continuous',
-          seriesIndex: 1,
-          dimension: 0,
-          min: 0,
-          max: timeData.length - 1
-      }],
-
-
-      title: [{
-          left: 'center',
-          text: 'Loading Area (speed should be below 5)'
-      }, {
-          top: '55%',
-          left: 'center',
-          text: 'Dumping Area (Speed should be below 5)'
-      }],
-      tooltip: {
-        trigger: 'axis',
-        formatter: function (params) {
-          let result = `Time: ${params[0].axisValue}<br/>`;
-    
-          params.forEach(param => {
-            const color = param.data[1] > 5 ? '#FF0000' : '#00FF00'; // The same logic as your line color
-            result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
-            result += `Speed: ${param.data[1]} m/s<br/>`; // Replace 'Speed' with your desired label
-          });
-    
-          return result;
-        }
-      },
-      xAxis: [{
-        type: 'category',
-        boundaryGap: false,
-        data: timeData,
-        name: 'Time (sec)', // Label for the X-axis
-        nameLocation: 'middle', // Location of the label
-        nameGap: 30, // Gap b
-      }, {
-        type: 'category',
-        boundaryGap: false,
-        data: timeData,
-        name: 'Time (sec)', // Label for the X-axis
-        nameLocation: 'middle', // Location of the label
-        nameGap: 30, // Gap b
-          gridIndex: 1
-      }],
-      yAxis: [{
-        type: 'value',
-        name: 'Speed (m/s)', // Label for the Y-axis
-        nameLocation: 'middle', // Location of the label
-        nameGap: 50, // 
-          splitLine: {show: false}
-      }, {
-        type: 'value',
-        name: 'Speed (m/s)', // Label for the Y-axis
-        nameLocation: 'middle', // Location of the label
-        nameGap: 50, // 
-          splitLine: {show: false},
-          gridIndex: 1
-      }],
-      grid: [{
-          bottom: '60%'
-      }, {
-          top: '60%'
-      }],
-      series: [{
-          type: 'line',
-          symbol: 'none', // This hides the data point markers
-          data: speedDataFiltered1,
-          markLine: {
-            data: [
-              {
-                name: 'Ideal Speed',
-                yAxis: 5
-              }
-            ],
-            label: {
-              formatter: 'Ideal Speed'
-            },
-            lineStyle: {
-              type: 'dashed',
-              color: '#f00' // You can choose the color
-            }},
-            lineStyle: {
-              normal: {
-                color: function (params) {
-                  // Check if the current segment is not null and above the threshold
-                  if (params.value[1] !== null) {
-                    return params.value[1] > 5 ? '#FF0000' : '#00FF00'; // Red if above 5, green otherwise
-                  } else {
-                    return '#00FF00'; // Default color for null segments
-                  }
-                }
-              }
-            },
-            itemStyle: {
-              normal: {
-                color: function (params) {
-                  // Apply the same logic to individual points
-                  return params.value[1] !== null && params.value[1] > 5 ? '#FF0000' : '#00FF00';
-                }
-              }
-            },
-            showSymbol: true,
-            symbolSize: 4,
-          
-        
-          
-      }, {
-          type: 'line',
-          showSymbol: false,
-          data: speedDataFiltered,
-          markLine: {
-            data: [
-              {
-                name: 'Ideal Speed',
-                yAxis: 5
-              }
-            ],
-            label: {
-              formatter: 'Ideal Speed'
-            },
-            lineStyle: {
-              type: 'dashed',
-              color: '#f00' // You can choose the color
-            }},
-          xAxisIndex: 1,
-          yAxisIndex: 1
-      },
-     ]
+  const handleCollisionTypeChange = event => {
+    setSelectedCollisionType(event.target.value);
+  };
+  const handleAreaChange = (event) => {
+    setSelectedArea(event.target.value);
   };
 
-  const series1 = [{    // gear colloision graph
-    name: 'Max Speed',
-    type: 'column',
-    data: maxSpeeds
-  }, {
-    name: 'Total Collisions',
-    type: 'line',
-    data: totalCollisions
-  }];
-  const options1= {
+  const getGearChartData = () => {
+    switch (selectedCollisionType) {
+      case "pedestrial":
+        // return data for pedestrian collisions
+        break;
+      case "object":
+        // return data for object collisions
+        break;
+      // ... handle other cases
+      default:
+        return totalCollisions;
+    }
+  };
+
+  const series1 = [
+    {
+      // gear colloision graph
+      name: compare ? "Max Speed - User 1" : "Max Speed",
+      type: "column",
+      data: maxSpeeds
+    },
+    {
+      name: compare ? "Total Collisions - User 1" : "Total Collisions",
+      type: "line",
+      data: gears1.map(gear => getCollisionCount(gear))
+    }
+  ];
+  const options1 = {
     chart: {
       height: 350,
-      type: 'line',
+      type: "line"
     },
     tooltip: {
       x: {
         show: true,
-        formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+        formatter: function (
+          value,
+          { series, seriesIndex, dataPointIndex, w }
+        ) {
           // Fetch the gear name using dataPointIndex
           const gearName = gears1[dataPointIndex];
-          return 'Gear: ' + gearName; // Displays "Gear: N" for the first bar, "Gear: D" for the second, etc.
+          return "Gear: " + gearName; // Displays "Gear: N" for the first bar, "Gear: D" for the second, etc.
         }
       }
     },
@@ -537,66 +716,172 @@ const Thriveni = ({ attemptData }) => {
       width: [0, 4]
     },
     title: {
-      text: 'Gear Collision Graph'
+      text: compare ? "Gear Collision Graph - User 1" : "Gear Collision Graph",
     },
     dataLabels: {
       enabled: true,
       enabledOnSeries: [1]
     },
     labels: gears1,
-   xaxis: {
-    type: 'category',
-    categories: gears1, // gear names for the x-axis labels
-    title: {
-      text: 'Gears', // Title for the x-axis
-      style: {
-        fontFamily: 'Helvetica, Arial, sans-serif',
-        fontWeight: 600,
-        // other style properties as needed
+    xaxis: {
+      type: "category",
+      categories: gears1, // gear names for the x-axis labels
+      title: {
+        text: "Gears", // Title for the x-axis
+        style: {
+          fontFamily: "Helvetica, Arial, sans-serif",
+          fontWeight: 600
+          // other style properties as needed
+        }
       }
-    }
-  },
+    },
 
-    yaxis: [{
-      title: {
-        text: 'Speed',
+    yaxis: [
+      {
+        title: {
+          text: "Speed"
+        }
       },
-    
-    }, {
-      opposite: true,
-      title: {
-        text: 'Total Colloision'
+      {
+        opposite: true,
+        title: {
+          text: "Total Colloision"
+        }
       }
-    }]
+    ]
+  };
+  let maxSpeedByGear2 = {};
+  let collisionCountByGear2 = {};
+
+  // ... (existing code for processing attemptData)
+
+  // Process attemptData2
+  let filteredData2gear = [];
+  if (attemptData2 && attemptData2.path && attemptData2.path.actual_path) {
+    filteredData2gear = Object.keys(attemptData2.path.actual_path)
+      .map(key => attemptData2.path.actual_path[key])
+      .flat();
+
+      filteredData2gear.forEach(item => {
+      const gear = item.gear;
+      const speed = parseFloat(item.speed); // Convert string to number
+      const collisionStatus = parseInt(item.collisionStatus, 10); // Convert to a number
+
+      // Calculate max speed by gear for attemptData2
+      if (!maxSpeedByGear2[gear] || maxSpeedByGear2[gear] < speed) {
+        maxSpeedByGear2[gear] = speed;
+      }
+
+      // Initialize and calculate collision count by gear for attemptData2
+      if (!collisionCountByGear2[gear]) {
+        collisionCountByGear2[gear] = 0;
+      }
+      collisionCountByGear2[gear] += collisionStatus;
+    });
   }
+
+  // ... (rest of the existing code)
+
+  const getCollisionCount2 = gear => {
+    return collisionCountByGear2[gear] || 0;
+  };
+  const series2 = [
+    {
+      // gear colloision graph
+      name: "Max Speed - User 2",
+      type: "column",
+      data: Object.values(maxSpeedByGear2) // Replace with your method of calculating max speed for each gear from attemptData2
+    },
+    {
+      name: "Total Collisions - User 2",
+      type: "line",
+      data: Object.keys(collisionCountByGear2).map(gear => getCollisionCount2(gear))
+    }
+  ];
+  const options2 = {
+    chart: {
+      height: 350,
+      type: "line"
+    },
+    tooltip: {
+      x: {
+        show: true,
+        formatter: function (
+          value,
+          { series, seriesIndex, dataPointIndex, w }
+        ) {
+          // Fetch the gear name using dataPointIndex
+          const gearName = gears1[dataPointIndex];
+          return "Gear: " + gearName; // Displays "Gear: N" for the first bar, "Gear: D" for the second, etc.
+        }
+      }
+    },
+    stroke: {
+      width: [0, 4]
+    },
+    title: {
+      text: "Gear Collision Graph-User-2"
+    },
+    dataLabels: {
+      enabled: true,
+      enabledOnSeries: [1]
+    },
+    labels: gears1,
+    xaxis: {
+      type: "category",
+      categories: gears1, // gear names for the x-axis labels
+      title: {
+        text: "Gears", // Title for the x-axis
+        style: {
+          fontFamily: "Helvetica, Arial, sans-serif",
+          fontWeight: 600
+          // other style properties as needed
+        }
+      }
+    },
+
+    yaxis: [
+      {
+        title: {
+          text: "Speed"
+        }
+      },
+      {
+        opposite: true,
+        title: {
+          text: "Total Colloision"
+        }
+      }
+    ]
+  };
 
   const optionspeed = {
     title: {
-      text: 'Speed vs Time',
-      subtext: 'Vehicle Speed Analysis',
-      left: 'center'
+      text: compare ? "Speed vs Time - User 1" : "Speed vs Time",
+      subtext: "Vehicle Speed Analysis",
+      left: "center"
     },
     tooltip: {
-      trigger: 'axis',
+      trigger: "axis",
       axisPointer: {
-        type: 'cross'
+        type: "cross"
       },
       formatter: function (params) {
-        return `Time: ${params[0].axisValue}<br/>Speed: ${params[0].data[1]} units`;
+        return `Time: ${params[0].axisValue} sec <br/>Speed: ${params[0].data[1]} m/s`;
       }
     },
     legend: {
-      data: ['Speed'],
-      left: '10%'
+      data: compare ? ["Speed - User 1"] : ["Speed"],
+      left: "10%"
     },
     grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '10%', // Increase this value to move the chart up
+      left: "3%",
+      right: "4%",
+      bottom: "10%", // Increase this value to move the chart up
       containLabel: true
     },
     xAxis: {
-      type: 'category',
+      type: "category",
       boundaryGap: false,
       data: timeData,
       axisLabel: {
@@ -606,50 +891,58 @@ const Thriveni = ({ attemptData }) => {
       }
     },
     yAxis: {
-      type: 'value',
+      type: "value",
       axisLabel: {
-        formatter: '{value} km/h'
+        formatter: "{value} m/s"
       }
     },
-    series: [{
-      name: 'Speed',
-      type: 'line',
-      smooth: true,
-      lineStyle: {
-        color: '#007bff',
-        width: 2
-      },
-      itemStyle: {
-        color: '#007bff'
-      },
-      areaStyle: {
-        normal: {
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-            offset: 0,
-            color: 'rgba(0, 123, 255, 0.5)' // top color
-          }, {
-            offset: 1,
-            color: 'rgba(0, 123, 255, 0)' // bottom color, more transparent
-          }]),
-        }
-      },
-      data: speedData.map((speed, index) => [timeData[index], parseFloat(speed)])
-    }],
+    series: [
+      {
+        name: compare ? "Speed - User 1" : "Speed",
+        type: "line",
+        smooth: true,
+        lineStyle: {
+          color: "#007bff",
+          width: 2
+        },
+        itemStyle: {
+          color: "#007bff"
+        },
+        areaStyle: {
+          normal: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              {
+                offset: 0,
+                color: "rgba(0, 123, 255, 0.5)" // top color
+              },
+              {
+                offset: 1,
+                color: "rgba(0, 123, 255, 0)" // bottom color, more transparent
+              }
+            ])
+          }
+        },
+        data: speedData.map((speed, index) => [
+          timeData[index],
+          parseFloat(speed)
+        ])
+      }
+    ],
     dataZoom: [
       {
-        type: 'inside',
+        type: "inside",
         start: 0,
         end: 100
       },
       {
         start: 0,
         end: 10,
-        handleIcon: 'M8.2,13.6V4H11v9.6L15.5,18H20v3H0v-3h4.5L8.2,13.6z',
-        handleSize: '80%',
+        handleIcon: "M8.2,13.6V4H11v9.6L15.5,18H20v3H0v-3h4.5L8.2,13.6z",
+        handleSize: "80%",
         handleStyle: {
-          color: '#fff',
+          color: "#fff",
           shadowBlur: 3,
-          shadowColor: 'rgba(0, 0, 0, 0.6)',
+          shadowColor: "rgba(0, 0, 0, 0.6)",
           shadowOffsetX: 2,
           shadowOffsetY: 2
         }
@@ -657,7 +950,117 @@ const Thriveni = ({ attemptData }) => {
     ],
     animation: {
       duration: 1000,
-      easing: 'cubicInOut'
+      easing: "cubicInOut"
+    }
+  };
+  let filteredData2 = [];
+if (attemptData2 && attemptData2.path && attemptData2.path.actual_path) {
+  filteredData2 = Object.keys(attemptData2.path.actual_path)
+    .map(key => attemptData2.path.actual_path[key])
+    .flat();
+}
+  let timeData2 = [];
+let speedData2 = [];
+let chartData2 = [];
+
+if (filteredData2.length > 0) {
+  timeData2 = filteredData2.map(item => item.time);
+  speedData2 = filteredData2.map(item => parseFloat(item.speed));
+  chartData2 = speedData2.map((speed, index) => [timeData2[index], speed]);
+}
+  const optionspeedcomp = {
+    title: {
+      text: "Speed vs Time - User 2",
+      subtext: "Vehicle Speed Analysis",
+      left: "center"
+    },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
+        type: "cross"
+      },
+      formatter: function (params) {
+        return `Time: ${params[0].axisValue} sec <br/>Speed: ${params[0].data[1]} m/s`;
+      }
+    },
+    legend: {
+      data: ["Speed - User 2"],
+      left: "10%"
+    },
+    grid: {
+      left: "3%",
+      right: "4%",
+      bottom: "10%", // Increase this value to move the chart up
+      containLabel: true
+    },
+    xAxis: {
+      type: "category",
+      boundaryGap: false,
+      data: timeData2,
+      axisLabel: {
+        formatter: function (value) {
+          return `${value} s`;
+        }
+      }
+    },
+    yAxis: {
+      type: "value",
+      axisLabel: {
+        formatter: "{value} km/h"
+      }
+    },
+    series: [
+      {
+        name: "Speed - User 2",
+        type: "line",
+        smooth: true,
+        lineStyle: {
+          color: "#007bff",
+          width: 2
+        },
+        itemStyle: {
+          color: "#007bff"
+        },
+        areaStyle: {
+          normal: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              {
+                offset: 0,
+                color: "rgba(0, 123, 255, 0.5)" // top color
+              },
+              {
+                offset: 1,
+                color: "rgba(0, 123, 255, 0)" // bottom color, more transparent
+              }
+            ])
+          }
+        },
+        data: chartData2   
+      }
+    ],
+    dataZoom: [
+      {
+        type: "inside",
+        start: 0,
+        end: 100
+      },
+      {
+        start: 0,
+        end: 10,
+        handleIcon: "M8.2,13.6V4H11v9.6L15.5,18H20v3H0v-3h4.5L8.2,13.6z",
+        handleSize: "80%",
+        handleStyle: {
+          color: "#fff",
+          shadowBlur: 3,
+          shadowColor: "rgba(0, 0, 0, 0.6)",
+          shadowOffsetX: 2,
+          shadowOffsetY: 2
+        }
+      }
+    ],
+    animation: {
+      duration: 1000,
+      easing: "cubicInOut"
     }
   };
 
@@ -666,10 +1069,10 @@ const Thriveni = ({ attemptData }) => {
     options: {
       chart: {
         width: 380,
-        type: 'donut',
+        type: "donut",
         dropShadow: {
           enabled: true,
-          color: '#111',
+          color: "#111",
           top: -1,
           left: 3,
           blur: 3,
@@ -677,21 +1080,21 @@ const Thriveni = ({ attemptData }) => {
         }
       },
       stroke: {
-        width: 0,
+        width: 0
       },
       plotOptions: {
         pie: {
           donut: {
             labels: {
               show: true,
-              total: {
-                showAlways: true,
-                show: true,
-                label: 'Total Hours',
-                formatter: function () {
-                  return totalTime.toFixed(2) + ' hrs';
-                }
-              }
+              // total: {
+              //   showAlways: true,
+              //   show: true,
+              //   label: "Total Hours",
+              //   formatter: function () {
+              //     return totalTime.toFixed(2) + " hrs";
+              //   }
+              // }
             }
           }
         }
@@ -704,20 +1107,26 @@ const Thriveni = ({ attemptData }) => {
         }
       },
       fill: {
-        type: 'pattern',
+        type: "pattern",
         opacity: 1,
         pattern: {
           enabled: true,
-          style: ['verticalLines', 'squares', 'horizontalLines', 'circles', 'slantedLines'],
+          style: [
+            "verticalLines",
+            "squares",
+            "horizontalLines",
+            "circles",
+            "slantedLines"
+          ]
         }
       },
       states: {
         hover: {
-          filter: 'none'
+          filter: "none"
         }
       },
       theme: {
-        palette: 'palette2'
+        palette: "palette2"
       },
       // title: {
       //   text: "Different Task Time KPI",
@@ -734,16 +1143,17 @@ const Thriveni = ({ attemptData }) => {
       // },
       legend: {
         show: true,
-        position: 'top', // Set this property to false to hide the legend
-      },
+        position: "top" // Set this property to false to hide the legend
+      }
       // ... other configurations if necessary
     }
   };
-
-  const option1 = {  // pie chart of different mode
+  
+  const option1 = {
+    // pie chart of different mode
     tooltip: {
-      trigger: 'item',
-      formatter: function(params) {
+      trigger: "item",
+      formatter: function (params) {
         // params.value[0] for category name, params.value[1] for value
         let name = params.name;
         let value = params.value;
@@ -752,155 +1162,1028 @@ const Thriveni = ({ attemptData }) => {
       }
     },
     legend: {
-      orient: 'vertical',
+      orient: "vertical",
       left: 10,
       data: pieChartData.map(item => item.name)
     },
     series: [
-        
-        {
-            name: 'Time (sec)',
-            type: 'pie',
-            radius: ['40%', '55%'],
-            label: {
-                formatter: '{a|{a}}{abg|}\n{hr|}\n  {b|{b}：}{c}  {per|{d}%}  ',
-                backgroundColor: '#eee',
-                borderColor: '#aaa',
-                borderWidth: 1,
-                borderRadius: 4,
-                // shadowBlur:3,
-                // shadowOffsetX: 2,
-                // shadowOffsetY: 2,
-                // shadowColor: '#999',
-                // padding: [0, 7],
-                rich: {
-                    a: {
-                        color: '#999',
-                        lineHeight: 22,
-                        align: 'center'
-                    },
-                    // abg: {
-                    //     backgroundColor: '#333',
-                    //     width: '100%',
-                    //     align: 'right',
-                    //     height: 22,
-                    //     borderRadius: [4, 4, 0, 0]
-                    // },
-                    hr: {
-                        borderColor: '#aaa',
-                        width: '100%',
-                        borderWidth: 0.5,
-                        height: 0
-                    },
-                    b: {
-                        fontSize: 16,
-                        lineHeight: 33
-                    },
-                    per: {
-                        color: '#eee',
-                        backgroundColor: '#334455',
-                        padding: [2, 4],
-                        borderRadius: 2
-                    }
-                }
+      {
+        name: "Time (sec)",
+        type: "pie",
+        radius: ["40%", "55%"],
+        label: {
+          formatter: "{a|{a}}{abg|}\n{hr|}\n  {b|{b}：}{c}  {per|{d}%}  ",
+          backgroundColor: "#eee",
+          borderColor: "#aaa",
+          borderWidth: 1,
+          borderRadius: 4,
+          // shadowBlur:3,
+          // shadowOffsetX: 2,
+          // shadowOffsetY: 2,
+          // shadowColor: '#999',
+          // padding: [0, 7],
+          rich: {
+            a: {
+              color: "#999",
+              lineHeight: 22,
+              align: "center"
             },
-            data: pieChartData.map(item => ({
-              name: item.name,
-              value: parseFloat(item.value.toFixed(2)) // Round the value to 2 decimal places
-            }))
-
-        }
+            // abg: {
+            //     backgroundColor: '#333',
+            //     width: '100%',
+            //     align: 'right',
+            //     height: 22,
+            //     borderRadius: [4, 4, 0, 0]
+            // },
+            hr: {
+              borderColor: "#aaa",
+              width: "100%",
+              borderWidth: 0.5,
+              height: 0
+            },
+            b: {
+              fontSize: 16,
+              lineHeight: 33
+            },
+            per: {
+              color: "#eee",
+              backgroundColor: "#334455",
+              padding: [2, 4],
+              borderRadius: 2
+            }
+          }
+        },
+        data: pieChartData.map(item => ({
+          name: item.name,
+          value: parseFloat(item.value.toFixed(2)) // Round the value to 2 decimal places
+        }))
+      }
     ]
+  };
+
+  const getLoadingAreaOption = () => {
+    return {
+      title: {
+        text: 'Loading Area (Speed should be below 5)',
+        left: 'center',
+        textStyle: { fontSize: 14 }
+      },
+      tooltip: {
+        trigger: 'axis',
+        formatter: params => {
+          let result = `Time: ${params[0].axisValue} sec<br/>`;
+          params.forEach(param => {
+            const speedValue = param.data.value[1];
+            const color = speedValue > 5 ? '#FF0000' : '#00FF00'; // Red if speed > 5, green otherwise
+            result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
+            result += `Speed: ${speedValue} m/s<br/>`;
+          });
+          return result;
+        }
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: timeData,
+        name: 'Time (sec)',
+        nameLocation: 'middle',
+        nameGap: 30
+      },
+      yAxis: {
+        type: 'value',
+        name: 'Speed (m/s)',
+        nameLocation: 'middle',
+        nameGap: 50,
+        splitLine: { show: false }
+      },
+      series: [{
+        type: 'line',
+        symbol: 'none',
+        data: speedDataFiltered,
+        markLine: {
+          data: [{ name: 'Ideal Speed', yAxis: 5 }],
+          label: { formatter: 'Ideal Speed' },
+          lineStyle: { type: 'dashed', color: '#f00' }
+        },
+        lineStyle: {
+          normal: { color: params => params.value[1] > 5 ? '#FF0000' : '#00FF00' }
+        },
+        itemStyle: {
+          normal: { color: params => params.value[1] > 5 ? '#FF0000' : '#00FF00' }
+        },
+        showSymbol: true,
+        symbolSize: 4
+      }],
+      grid:  {
+        left: '10%',
+        right: '10%',
+        top: '5%', // Reduced to minimal to make the chart closer to the top
+        height: '20%', // Minimal height to ensure more charts fit vertically
+      },  };
+  };
+
+  const getLoadingAreaOption2 = () => {
+    return {
+      title: {
+        text: 'Loading Area (Speed should be below 5)',
+        left: 'center',
+        textStyle: { fontSize: 14 }
+      },
+      tooltip: {
+        trigger: 'axis',
+        formatter: params => {
+          let result = `Time: ${params[0].axisValue} sec<br/>`;
+          params.forEach(param => {
+            const speedValue = param.data.value[1];
+            const color = speedValue > 5 ? '#FF0000' : '#00FF00'; // Red if speed > 5, green otherwise
+            result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
+            result += `Speed: ${speedValue} m/s<br/>`;
+          });
+          return result;
+        }
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: timeData,
+        name: 'Time (sec)',
+        nameLocation: 'middle',
+        nameGap: 30
+      },
+      yAxis: {
+        type: 'value',
+        name: 'Speed (m/s)',
+        nameLocation: 'middle',
+        nameGap: 50,
+        splitLine: { show: false }
+      },
+      series: [{
+        type: 'line',
+        symbol: 'none',
+        data: speedDataFiltered,
+        markLine: {
+          data: [{ name: 'Ideal Speed', yAxis: 5 }],
+          label: { formatter: 'Ideal Speed' },
+          lineStyle: { type: 'dashed', color: '#f00' }
+        },
+        lineStyle: {
+          normal: { color: params => params.value[1] > 5 ? '#FF0000' : '#00FF00' }
+        },
+        itemStyle: {
+          normal: { color: params => params.value[1] > 5 ? '#FF0000' : '#00FF00' }
+        },
+        showSymbol: true,
+        symbolSize: 4
+      }],
+      grid:  {
+        left: '10%',
+        right: '10%',
+        top: '5%', // Reduced to minimal to make the chart closer to the top
+        height: '20%', // Minimal height to ensure more charts fit vertically
+      },  };
+  };
+  const getDumpingAreaOption = () => {
+    return {
+      title: {
+        text: 'Dumping Area (Speed should be below 5)',
+        left: 'center',
+        top: '3%', // Reduce this percentage to move the title up
+
+        textStyle: { fontSize: 14 }
+      },
+      tooltip: {
+        trigger: 'axis',
+        formatter: params => {
+          let result = `Time: ${params[0].axisValue} sec<br/>`;
+          params.forEach(param => {
+            const speedValue = param.data.value[1];
+            const color = speedValue > 5 ? '#FF0000' : '#00FF00'; // Red if speed > 5, green otherwise
+            result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
+            result += `Speed: ${speedValue} m/s<br/>`;
+          });
+          return result;
+        }
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: timeData,
+        name: 'Time (sec)',
+        nameLocation: 'middle',
+        nameGap: 30
+      },
+      yAxis:{
+        type: 'value',
+        name: 'Speed (m/s)',
+        nameLocation: 'middle',
+        nameGap: 50,
+        splitLine: { show: false },
+        // You might want to adjust the max setting to ensure the peaks are not clipped
+        max: function (value) {
+          return value.max + 1; // Add some padding to the top of the yAxis
+        }
+      },
+      series: [{
+        type: 'line',
+        symbol: 'none',
+        data: speedDataFiltered1,
+        markLine: {
+          data: [{ name: 'Ideal Speed', yAxis: 5 }],
+          label: { formatter: 'Ideal Speed' },
+          lineStyle: { type: 'dashed', color: '#f00' }
+        },
+        lineStyle: {
+          normal: { color: params => params.value[1] > 5 ? '#FF0000' : '#00FF00' }
+        },
+        itemStyle: {
+          normal: { color: params => params.value[1] > 5 ? '#FF0000' : '#00FF00' }
+        },
+        showSymbol: true,
+        symbolSize: 4
+      }],
+      grid:  // Adjustments for the Dumping Area grid
+      {
+        left: '10%',
+        right: '10%',
+        top: '30%', // Reduced top margin to bring the chart closer to the Loading Area chart
+        height: '20%', // Same height as the first chart
+        gridIndex: 1
+      },  };
+  };
+  const getDumpingAreaOption2 = () => {
+    return {
+      title: {
+        text: 'Dumping Area (Speed should be below 5)',
+        left: 'center',
+        top: '3%', // Reduce this percentage to move the title up
+
+        textStyle: { fontSize: 14 }
+      },
+      tooltip: {
+        trigger: 'axis',
+        formatter: params => {
+          let result = `Time: ${params[0].axisValue} sec<br/>`;
+          params.forEach(param => {
+            const speedValue = param.data.value[1];
+            const color = speedValue > 5 ? '#FF0000' : '#00FF00'; // Red if speed > 5, green otherwise
+            result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
+            result += `Speed: ${speedValue} m/s<br/>`;
+          });
+          return result;
+        }
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: timeData,
+        name: 'Time (sec)',
+        nameLocation: 'middle',
+        nameGap: 30
+      },
+      yAxis:{
+        type: 'value',
+        name: 'Speed (m/s)',
+        nameLocation: 'middle',
+        nameGap: 50,
+        splitLine: { show: false },
+        // You might want to adjust the max setting to ensure the peaks are not clipped
+        max: function (value) {
+          return value.max + 1; // Add some padding to the top of the yAxis
+        }
+      },
+      series: [{
+        type: 'line',
+        symbol: 'none',
+        data: speedDataFiltered1,
+        markLine: {
+          data: [{ name: 'Ideal Speed', yAxis: 5 }],
+          label: { formatter: 'Ideal Speed' },
+          lineStyle: { type: 'dashed', color: '#f00' }
+        },
+        lineStyle: {
+          normal: { color: params => params.value[1] > 5 ? '#FF0000' : '#00FF00' }
+        },
+        itemStyle: {
+          normal: { color: params => params.value[1] > 5 ? '#FF0000' : '#00FF00' }
+        },
+        showSymbol: true,
+        symbolSize: 4
+      }],
+      grid:  // Adjustments for the Dumping Area grid
+      {
+        left: '10%',
+        right: '10%',
+        top: '30%', // Reduced top margin to bring the chart closer to the Loading Area chart
+        height: '20%', // Same height as the first chart
+        gridIndex: 1
+      },  };
+  };
+  const getParkingAreaOption = () => {
+    return {
+      title: {
+        text: 'Parking Area (Speed details)',
+        left: 'center',
+        top: '37%', // Adjusted to move the title higher
+
+        textStyle: { fontSize: 14 }
+      },
+      tooltip: {
+        trigger: 'axis',
+        formatter: params => {
+          let result = `Time: ${params[0].axisValue} sec<br/>`;
+          params.forEach(param => {
+            const speedValue = param.data.value[1];
+            const color = '#007bff'; // You can choose a color for parking area
+            result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
+            result += `Speed: ${speedValue} m/s<br/>`;
+          });
+          return result;
+        }
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: timeData,
+        name: 'Time (sec)',
+        nameLocation: 'middle',
+        nameGap: 30
+      },
+      yAxis: {
+        type: 'value',
+        name: 'Speed (m/s)',
+        nameLocation: 'middle',
+        nameGap: 50,
+        splitLine: { show: false }
+      },
+      series: [{
+        type: 'line',
+        symbol: 'circle',
+        symbolSize: 5,
+        data: additionalSpeedData,
+        lineStyle: {
+          normal: {
+            color: '#FFA500',
+            width: 2
+          }
+        },
+        itemStyle: {
+          normal: { color: '#FFA500' }
+        },
+      }],
+      grid:  {
+        left: '10%',
+        right: '10%',
+        top: '55%', // Further reduced top margin to bring this chart closer to the Dumping Area chart
+        height: '20%', // Same height as the other charts
+        gridIndex: 2
+      }   };
+  };
+  const getParkingAreaOption2 = () => {
+    return {
+      title: {
+        text: 'Parking Area (Speed details)',
+        left: 'center',
+        top: '37%', // Adjusted to move the title higher
+
+        textStyle: { fontSize: 14 }
+      },
+      tooltip: {
+        trigger: 'axis',
+        formatter: params => {
+          let result = `Time: ${params[0].axisValue} sec<br/>`;
+          params.forEach(param => {
+            const speedValue = param.data.value[1];
+            const color = '#007bff'; // You can choose a color for parking area
+            result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
+            result += `Speed: ${speedValue} m/s<br/>`;
+          });
+          return result;
+        }
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: timeData,
+        name: 'Time (sec)',
+        nameLocation: 'middle',
+        nameGap: 30
+      },
+      yAxis: {
+        type: 'value',
+        name: 'Speed (m/s)',
+        nameLocation: 'middle',
+        nameGap: 50,
+        splitLine: { show: false }
+      },
+      series: [{
+        type: 'line',
+        symbol: 'circle',
+        symbolSize: 5,
+        data: additionalSpeedData,
+        lineStyle: {
+          normal: {
+            color: '#FFA500',
+            width: 2
+          }
+        },
+        itemStyle: {
+          normal: { color: '#FFA500' }
+        },
+      }],
+      grid:  {
+        left: '10%',
+        right: '10%',
+        top: '55%', // Further reduced top margin to bring this chart closer to the Dumping Area chart
+        height: '20%', // Same height as the other charts
+        gridIndex: 2
+      }   };
+  };
+  
+  const option = {    // option for two lines chart dumping and loading area
+
+    // Make gradient line here
+    // visualMap: [{
+    //     show: false,
+    //     type: 'continuous',
+    //     seriesIndex: 0,
+    //     min: 0,
+    //     max: 400
+    // }, {
+    //     show: false,
+    //     type: 'continuous',
+    //     seriesIndex: 1,
+    //     dimension: 0,
+    //     min: 0,
+    //     max: timeData.length - 1
+    // }],
+
+
+    title: [{
+      text: 'Loading Area (speed should be below 5)',
+      left: 'center',
+      top: '2%', // Adjust based on your layout
+      textStyle: {
+        fontSize: 14 // Adjust font size if necessary
+      }
+    },{
+      text: 'Dumping Area (Speed should be below 5)',
+      left: 'center',
+      top: '38%', // Adjust so it's below the first chart
+      textStyle: {
+        fontSize: 14
+      }
+    }, {
+      text: 'Parking Area (Speed details)',
+      left: 'center',
+      top: '72%', // Adjust so it's below the second chart
+      textStyle: {
+        fontSize: 14
+      }
+    }],
+    tooltip: {
+      trigger: 'axis',
+      formatter: function (params) {
+        let result = `Time: ${params[0].axisValue} sec<br/>`;
+    
+        params.forEach(param => {
+          // Assuming each param corresponds to one of the line series
+          if (param.data && param.data.value && param.data.value.length === 2) {
+            const timeValue = param.data.value[0];
+            const speedValue = param.data.value[1];
+            const color = speedValue > 5 ? '#FF0000' : '#00FF00'; // Red if speed > 5, green otherwise
+            result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
+            result += `Speed: ${speedValue} m/s<br/>`;
+          } else {
+            result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:#FF0000;"></span>`;
+            result += `Speed: Data Not Available<br/>`;
+          }
+        });
+    
+        return result;
+      }
+    },
+    xAxis: [{
+      type: 'category',
+      boundaryGap: false,
+      data: timeData,
+      name: 'Time (sec)', // Label for the X-axis
+      nameLocation: 'middle', // Location of the label
+      nameGap: 30, // Gap b
+    }, {
+      type: 'category',
+      boundaryGap: false,
+      data: timeData,
+      name: 'Time (sec)', // Label for the X-axis
+      nameLocation: 'middle', // Location of the label
+      nameGap: 30, // Gap b
+        gridIndex: 1
+    },
+    {
+      type: 'category',
+      boundaryGap: false,
+      data: timeData,
+      name: 'Time (sec)', // Label for the X-axis
+      nameLocation: 'middle', // Location of the label
+      nameGap: 30, // Gap b
+        gridIndex: 2
+    }],
+    yAxis: [{
+      type: 'value',
+      name: 'Speed (m/s)', // Label for the Y-axis
+      nameLocation: 'middle', // Location of the label
+      nameGap: 50, // 
+        splitLine: {show: false}
+    }, {
+      type: 'value',
+      name: 'Speed (m/s)', // Label for the Y-axis
+      nameLocation: 'middle', // Location of the label
+      nameGap: 50, // 
+        splitLine: {show: false},
+        gridIndex: 1
+    },
+    {
+      type: 'value',
+      name: 'Speed (m/s)', // Label for the Y-axis
+      nameLocation: 'middle', // Location of the label
+      nameGap: 50, // 
+        splitLine: {show: false},
+        gridIndex: 2
+    }],
+    grid: [
+      // First Chart (Loading Area)
+      {
+        left: '10%',
+        right: '10%',
+        top: '10%', // Adjust based on title size
+        height: '20%', // Set the height of the chart
+      },
+      // Second Chart (Dumping Area)
+      {
+        left: '10%',
+        right: '10%',
+        top: '44%', // Start below the title of the second chart
+        height: '20%',
+      },
+      // Third Chart (Parking Area)
+      {
+        left: '10%',
+        right: '10%',
+        top: '76%', // Start below the title of the third chart
+        height: '20%',
+      }
+    ],
+    series: [{
+        type: 'line',
+        symbol: 'none', // This hides the data point markers
+        data: speedDataFiltered1,
+        markLine: {
+          data: [
+            {
+              name: 'Ideal Speed',
+              yAxis: 5
+            }
+          ],
+          label: {
+            formatter: 'Ideal Speed'
+          },
+          lineStyle: {
+            type: 'dashed',
+            color: '#f00' // You can choose the color
+          }},
+          lineStyle: {
+            normal: {
+              color: function (params) {
+                // Check if the current segment is above the threshold
+                return params.value[1] > 5 ? '#00FF00' : '#00FF00';
+              }
+            }
+          },
+          itemStyle: {
+            normal: {
+              color: function (params) {
+                // Apply the same logic to individual points
+                return params.value[1] > 5 ? '#00FF00' : '#00FF00';
+              }
+            }
+          },
+          showSymbol: true,
+          symbolSize: 4,
+        }, {
+        type: 'line',
+        showSymbol: false,
+        data: speedDataFiltered,
+        markLine: {
+          data: [
+            {
+              name: 'Ideal Speed',
+              yAxis: 5
+            }
+          ],
+          label: {
+            formatter: 'Ideal Speed'
+          },
+          lineStyle: {
+            type: 'dashed',
+            color: '#f00' // You can choose the color
+          }},
+        xAxisIndex: 1,
+        yAxisIndex: 1
+    },
+    {
+      name: 'Additional Speed Data', // Give a meaningful name
+      type: 'line',
+      data: additionalSpeedData,
+      markLine: {
+        data: [
+          {
+            name: 'Ideal Speed',
+            yAxis: 5
+          }
+        ],
+        label: {
+          formatter: 'Ideal Speed'
+        },
+        lineStyle: {
+          type: 'dashed',
+          color: '#f00' // You can choose the color
+        }},
+      symbol: 'circle', // or any other symbol you prefer
+      symbolSize: 5,
+      lineStyle: {
+        normal: {
+          color: '#FFA500', // A distinct color for this line
+          width: 2, // Line width
+        }
+      },
+      itemStyle: {
+        normal: {
+          color: '#FFA500', // Same as line color for consistency
+        }
+      },
+      xAxisIndex: 2,
+      yAxisIndex: 2
+    }
+  ]
 };
 
+const option2 = {    // option for two lines chart dumping and loading area
 
+  // Make gradient line here
+  // visualMap: [{
+  //     show: false,
+  //     type: 'continuous',
+  //     seriesIndex: 0,
+  //     min: 0,
+  //     max: 400
+  // }, {
+  //     show: false,
+  //     type: 'continuous',
+  //     seriesIndex: 1,
+  //     dimension: 0,
+  //     min: 0,
+  //     max: timeData.length - 1
+  // }],
+
+
+  title: [{
+    text: 'Loading Area (speed should be below 5)',
+    left: 'center',
+    top: '2%', // Adjust based on your layout
+    textStyle: {
+      fontSize: 14 // Adjust font size if necessary
+    }
+  },{
+    text: 'Dumping Area (Speed should be below 5)',
+    left: 'center',
+    top: '38%', // Adjust so it's below the first chart
+    textStyle: {
+      fontSize: 14
+    }
+  }, {
+    text: 'Parking Area (Speed details)',
+    left: 'center',
+    top: '72%', // Adjust so it's below the second chart
+    textStyle: {
+      fontSize: 14
+    }
+  }],
+  tooltip: {
+    trigger: 'axis',
+    formatter: function (params) {
+      let result = `Time: ${params[0].axisValue} sec<br/>`;
+  
+      params.forEach(param => {
+        // Assuming each param corresponds to one of the line series
+        if (param.data && param.data.value && param.data.value.length === 2) {
+          const timeValue = param.data.value[0];
+          const speedValue = param.data.value[1];
+          const color = speedValue > 5 ? '#FF0000' : '#00FF00'; // Red if speed > 5, green otherwise
+          result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
+          result += `Speed: ${speedValue} m/s<br/>`;
+        } else {
+          result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:#FF0000;"></span>`;
+          result += `Speed: Data Not Available<br/>`;
+        }
+      });
+  
+      return result;
+    }
+  },
+  xAxis: [{
+    type: 'category',
+    boundaryGap: false,
+    data: timeData,
+    name: 'Time (sec)', // Label for the X-axis
+    nameLocation: 'middle', // Location of the label
+    nameGap: 30, // Gap b
+  }, {
+    type: 'category',
+    boundaryGap: false,
+    data: timeData,
+    name: 'Time (sec)', // Label for the X-axis
+    nameLocation: 'middle', // Location of the label
+    nameGap: 30, // Gap b
+      gridIndex: 1
+  },
+  {
+    type: 'category',
+    boundaryGap: false,
+    data: timeData,
+    name: 'Time (sec)', // Label for the X-axis
+    nameLocation: 'middle', // Location of the label
+    nameGap: 30, // Gap b
+      gridIndex: 2
+  }],
+  yAxis: [{
+    type: 'value',
+    name: 'Speed (m/s)', // Label for the Y-axis
+    nameLocation: 'middle', // Location of the label
+    nameGap: 50, // 
+      splitLine: {show: false}
+  }, {
+    type: 'value',
+    name: 'Speed (m/s)', // Label for the Y-axis
+    nameLocation: 'middle', // Location of the label
+    nameGap: 50, // 
+      splitLine: {show: false},
+      gridIndex: 1
+  },
+  {
+    type: 'value',
+    name: 'Speed (m/s)', // Label for the Y-axis
+    nameLocation: 'middle', // Location of the label
+    nameGap: 50, // 
+      splitLine: {show: false},
+      gridIndex: 2
+  }],
+  grid: [
+    // First Chart (Loading Area)
+    {
+      left: '10%',
+      right: '10%',
+      top: '10%', // Adjust based on title size
+      height: '20%', // Set the height of the chart
+    },
+    // Second Chart (Dumping Area)
+    {
+      left: '10%',
+      right: '10%',
+      top: '44%', // Start below the title of the second chart
+      height: '20%',
+    },
+    // Third Chart (Parking Area)
+    {
+      left: '10%',
+      right: '10%',
+      top: '76%', // Start below the title of the third chart
+      height: '20%',
+    }
+  ],
+  series: [{
+      type: 'line',
+      symbol: 'none', // This hides the data point markers
+      data: speedDataFiltered1,
+      markLine: {
+        data: [
+          {
+            name: 'Ideal Speed',
+            yAxis: 5
+          }
+        ],
+        label: {
+          formatter: 'Ideal Speed'
+        },
+        lineStyle: {
+          type: 'dashed',
+          color: '#f00' // You can choose the color
+        }},
+        lineStyle: {
+          normal: {
+            color: function (params) {
+              // Check if the current segment is above the threshold
+              return params.value[1] > 5 ? '#00FF00' : '#00FF00';
+            }
+          }
+        },
+        itemStyle: {
+          normal: {
+            color: function (params) {
+              // Apply the same logic to individual points
+              return params.value[1] > 5 ? '#00FF00' : '#00FF00';
+            }
+          }
+        },
+        showSymbol: true,
+        symbolSize: 4,
+      }, {
+      type: 'line',
+      showSymbol: false,
+      data: speedDataFiltered,
+      markLine: {
+        data: [
+          {
+            name: 'Ideal Speed',
+            yAxis: 5
+          }
+        ],
+        label: {
+          formatter: 'Ideal Speed'
+        },
+        lineStyle: {
+          type: 'dashed',
+          color: '#f00' // You can choose the color
+        }},
+      xAxisIndex: 1,
+      yAxisIndex: 1
+  },
+  {
+    name: 'Additional Speed Data', // Give a meaningful name
+    type: 'line',
+    data: additionalSpeedData,
+    markLine: {
+      data: [
+        {
+          name: 'Ideal Speed',
+          yAxis: 5
+        }
+      ],
+      label: {
+        formatter: 'Ideal Speed'
+      },
+      lineStyle: {
+        type: 'dashed',
+        color: '#f00' // You can choose the color
+      }},
+    symbol: 'circle', // or any other symbol you prefer
+    symbolSize: 5,
+    lineStyle: {
+      normal: {
+        color: '#FFA500', // A distinct color for this line
+        width: 2, // Line width
+      }
+    },
+    itemStyle: {
+      normal: {
+        color: '#FFA500', // Same as line color for consistency
+      }
+    },
+    xAxisIndex: 2,
+    yAxisIndex: 2
+  }
+]
+};
   return (
     <>
-    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-      <div style={{
-        display: 'inline-block',
-        padding: '10px',
-        borderRadius: '5px',
-        background: 'linear-gradient(to right, #bdc3c7, #2c3e50)',
-        color: '#fff',
-        fontFamily: 'Arial, Helvetica, sans-serif',
-        fontSize: '20px',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
-      }}>
-        Different Task Time KPI
+      {/* <div style={{ textAlign: "center", marginBottom: "20px" }}>
+        <div
+          style={{
+            display: "inline-block",
+            padding: "10px",
+            borderRadius: "5px",
+            background: "linear-gradient(to right, #bdc3c7, #2c3e50)",
+            color: "#fff",
+            fontFamily: "Arial, Helvetica, sans-serif",
+            fontSize: "20px",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
+          }}
+        >
+          Different Task Time KPI
+        </div>
+      </div> */}
+      {/* <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center"
+        }}
+      >
+        <Chart
+          options={chartConfig.options}
+          series={chartConfig.series}
+          type="donut"
+          width={870} // Adjust width if needed
+          height={350}
+        />
+      </div> */}
+      <div
+        style={{ textAlign: "center", marginTop: "30px", marginBottom: "0px" }}
+      >
+        <div
+          style={{
+            display: "inline-block",
+            padding: "10px",
+            borderRadius: "5px",
+            background: "linear-gradient(to right, #bdc3c7, #2c3e50)",
+            color: "#fff",
+            fontFamily: "Arial, Helvetica, sans-serif",
+            fontSize: "20px",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
+          }}
+        >
+          Different Modes Time
+        </div>
       </div>
-    </div>
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <Chart
-        options={chartConfig.options}
-        series={chartConfig.series}
-        type="donut"
-        width={870} // Adjust width if needed
-        height={350}
-      />
-    </div>
-
-
-
-    <div style={{ textAlign: 'center', marginTop: '30px', marginBottom: '0px' }}>
-    <div style={{
-      display: 'inline-block',
-      padding: '10px',
-      borderRadius: '5px',
-      background: 'linear-gradient(to right, #bdc3c7, #2c3e50)',
-      color: '#fff',
-      fontFamily: 'Arial, Helvetica, sans-serif',
-      fontSize: '20px',
-      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
-    }}>
-      Different Modes Time
-    </div>
-  </div>
-
-
-
-
-     <ReactECharts
-      style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
-      option={option1}
+      /<ReactECharts
+        style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
+        option={option1}
         notMerge={true}
         lazyUpdate={true}
       />
-
       <ReactECharts
-         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
-
+        style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
         option={vehicleChartOptions}
         notMerge={true}
         lazyUpdate={true}
       />
-
+      {compare && (
+        <ReactECharts
+          style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
+          option={vehicleChartOptionscomp}
+          notMerge={true}
+          lazyUpdate={true}
+        />
+      )}
+      
+    {/* Area filter dropdown */}
+   
+      
       <ReactECharts
-      style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
-      option={option}
+        style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
+        option={optionspeed}
         notMerge={true}
         lazyUpdate={true}
       />
-
-     
-
+        {compare && (
+        <ReactECharts
+          style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
+          option={optionspeedcomp}
+          notMerge={true}
+          lazyUpdate={true}
+        />
+        )}
       <ReactECharts
-      style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
-      option={optionspeed}
-        notMerge={true}
-        lazyUpdate={true}
-      />
-
-      <ReactECharts
-         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
-
+        style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
         option={rpmChartOptions}
         notMerge={true}
         lazyUpdate={true}
       />
-      <Chart options={options1} series={series1} //gear collosion graph
-      />;   
-
+      {compare && (
+        <ReactECharts
+          style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
+          option={rpmChartOptions1}
+          notMerge={true}
+          lazyUpdate={true}
+        />
+      )}
+<div className="filter-container">
+        <label htmlFor="collisionType" className="filter-label">
+          Select Collision Type:
+        </label>
+        <select style={{backgroundColor:"#bd3b3b"}}
+          id="collisionType"
+          className="filter-select"
+          value={selectedCollisionType}
+          onChange={handleCollisionTypeChange}
+        >
+          <option value="all">All</option>
+          <option value="total">Normal Collisions</option>
+          <option value="pedestrial">Pedestrian Collisions</option>
+          <option value="object">Object Collisions</option>
+          <option value="mines">Mines Collisions</option>
+          {/* ... other options ... */}
+        </select>
+      </div>     
+      <Chart
+        options={options1}
+        series={series1} //gear collosion graph
+      />
+      {compare && (
+    <Chart
+      options={options2}
+      series={series2} // Gear collision graph for User 2
+    />
+  )}
+      ;
     </>
   );
 };

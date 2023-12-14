@@ -50,7 +50,16 @@ const DrivingModuleReport = ({
         text: "Pallet Angle"
       },
       min: -5,
-      max: 5
+      max: 5,
+      labels: {
+        formatter: function(value) {
+          // Hide -5 and 5 only if isApollo is true
+          if (isApollo && (value === -5 || value === 5)) {
+            return '';
+          }
+          return value;
+        }
+      }
     },
     tooltip: {
       enabled: false
@@ -298,7 +307,7 @@ const DrivingModuleReport = ({
                   : null
               }
             />
-             <IdealActualTimeBar2
+             {/* <IdealActualTimeBar2
                 idealTime={attemptData?.path?.ideal_time}
                 actualPath={attemptData.path.actual_path}
                 compare={compare}
@@ -310,7 +319,7 @@ const DrivingModuleReport = ({
                     ? attemptData2.path.actual_path
                     : null
                 }
-              />
+              /> */}
           </div>
           {path.ideal_time &&
             path.ideal_time.length > 0 &&

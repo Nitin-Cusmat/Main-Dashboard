@@ -341,6 +341,7 @@ export const Compartitive = ({ userIds, module }) => {
                 module={module}
                 score={scores}
                 attemptDuration={durations}
+                organization={organization}
               />
             )}
           </Disclosure>

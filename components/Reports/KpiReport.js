@@ -91,7 +91,6 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
   }
 
 
-
       
   if (compare && kpis2 && kpis2.length > index && kpis2[index].value && kpis2[index].ideal_time !== undefined) {
     const user2Value = extractNumericalValue(kpis2[index].value);
