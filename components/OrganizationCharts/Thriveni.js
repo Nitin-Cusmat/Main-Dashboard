@@ -300,7 +300,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
       }
     },
     legend: {
-      data: compare ? ["Acceleration - User 1", "Brake - User 1"] : ["Acceleration", "Brake"],
+      data: compare ? ["Acceleration - User 1", "Brake - User 1"] : ["Acceleration m/s", "Brake m/s"],
       left: 10
     },
     toolbox: {
@@ -358,13 +358,13 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
     ],
     yAxis: [
       {
-        name: "Acceleration",
+        name: "Acceleration m/s",
         type: "value",
         max: 1
       },
       {
         gridIndex: 1,
-        name: "Brake",
+        name: "Brake m/s",
         type: "value",
         inverse: true,
         nameLocation: "middle", // Place the name in the middle of the axis
@@ -373,14 +373,14 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
     ],
     series: [
       {
-        name: compare ? "Acceleration - User 1" : "Acceleration",
+        name: compare ? "Acceleration - User 1" : "Acceleration m/s",
         type: "line",
         symbolSize: 8,
         hoverAnimation: false,
         data: accelerationData
       },
       {
-        name: compare ? "Brake - User 1" : "Brake",
+        name: compare ? "Brake - User 1" : "Brake m/s",
         type: "line",
         xAxisIndex: 1,
         yAxisIndex: 1,
@@ -539,24 +539,37 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
         saveAsImage: {}
       }
     },
+    legend: {
+      data: ['Ideal RPM at Time of Loading'], // Labels for the legend
+      orient: 'vertical', // Vertical layout
+      right: '10', // Adjust the right value as needed
+      top: '30', // Adjust the top value as needed
+    },
     xAxis: {
       type: "category",
       boundaryGap: false,
       data: timeData,
       axisLabel: {
         formatter: function (value) {
-          return parseInt(value);
+          return value; // Assuming timeData is already in the desired format
         }
-      }
+      },
+      name: 'Time', // Label for the x-axis
+      nameLocation: 'middle',
+      nameGap: 30 // Adjust as needed for layout
     },
     yAxis: {
       type: "value",
       axisLabel: {
-        formatter: "{value} "
+        formatter: "{value} rpm" // Display RPM on the y-axis
       },
       axisPointer: {
         snap: true
-      }
+      },
+      name: 'RPM', // Label for the y-axis
+      nameLocation: 'middle',
+      nameRotate: 90, // Rotate the label to be vertical
+      nameGap: 50 // Adjust as needed for layout
     },
     visualMap: {
       show: false,
@@ -565,6 +578,19 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
     },
     series: [
       {
+        name: 'Ideal RPM at Time of Loading',
+        type: 'line',
+        data: Array.from({ length: timeData.length }, () => 900),
+        lineStyle: {
+          normal: {
+            color: 'blue', // Change the color as needed
+            width: 2, // Line width
+          },
+        },
+        showSymbol: false, // Hide data points for the ideal line
+      },
+      {
+        
         name: "Rpm Vs Time During Loading",
         type: "line",
         smooth: true,
@@ -577,7 +603,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
         }
       }
     ]
-  };
+};
 
   const rpmChartOptions1 = {
     title: {
@@ -867,7 +893,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
     yAxis: {
       type: "value",
       axisLabel: {
-        formatter: "{value} km/h"
+        formatter: "{value} m/s"
       }
     },
     series: [
@@ -1061,14 +1087,14 @@ if (filteredData2.length > 0) {
           donut: {
             labels: {
               show: true,
-              total: {
-                showAlways: true,
-                show: true,
-                label: "Total Hours",
-                formatter: function () {
-                  return totalTime.toFixed(2) + " hrs";
-                }
-              }
+              // total: {
+              //   showAlways: true,
+              //   show: true,
+              //   label: "Total Hours",
+              //   formatter: function () {
+              //     return totalTime.toFixed(2) + " hrs";
+              //   }
+              // }
             }
           }
         }
@@ -2043,8 +2069,8 @@ const option2 = {    // option for two lines chart dumping and loading area
         >
           Different Task Time KPI
         </div>
-      </div>
-      <div
+      </div> */}
+      {/* <div
         style={{
           display: "flex",
           justifyContent: "center",
@@ -2058,7 +2084,7 @@ const option2 = {    // option for two lines chart dumping and loading area
           width={870} // Adjust width if needed
           height={350}
         />
-      </div>
+      </div> */}
       <div
         style={{ textAlign: "center", marginTop: "30px", marginBottom: "0px" }}
       >
@@ -2076,13 +2102,13 @@ const option2 = {    // option for two lines chart dumping and loading area
         >
           Different Modes Time
         </div>
-      </div> */}
-      {/* <ReactECharts
+      </div>
+      /<ReactECharts
         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
         option={option1}
         notMerge={true}
         lazyUpdate={true}
-      /> */}
+      />
       <ReactECharts
         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
         option={vehicleChartOptions}
@@ -2099,138 +2125,7 @@ const option2 = {    // option for two lines chart dumping and loading area
       )}
       
     {/* Area filter dropdown */}
-    {/* <div 
-  className="area-filter-container" 
-  style={{ 
-    display: "flex", 
-    justifyContent: "center", 
-    alignItems: "center", 
-    marginTop: "30px", 
-    marginBottom: "20px"
-  }}
->
-  <div 
-    style={{ 
-      padding: "10px 20px", 
-      borderRadius: "10px", 
-      background: "linear-gradient(to right, #8e9eab, #eef2f3)", // Gradient background
-      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "10px"
-    }}
-  >
-    <label 
-      htmlFor="areaFilter" 
-      style={{
-        fontWeight: "bold",
-        fontSize: "18px",
-        color: "#2c3e50",
-        fontFamily: "Arial, Helvetica, sans-serif"
-      }}
-    >
-      Select Area:
-    </label>
-    <select 
-      id="areaFilter" 
-      value={selectedArea} 
-      onChange={handleAreaChange}
-      style={{
-        padding: "5px 15px",
-        borderRadius: "5px",
-        border: "1px solid #ddd",
-        fontSize: "16px",
-        color: "#333",
-        background: "white",
-        cursor: "pointer",
-        outline: "none"
-      }}
-    >
-      <option value="all">All Areas</option>
-      <option value="loading">Loading Area</option>
-      <option value="dumping">Dumping Area</option>
-      <option value="parking">Parking Area</option>
-    </select>
-  </div>
-</div> */}
-
-{selectedArea === 'all' ? (
-      <>
-        {/* Render all charts for 'all' selection */}
-        {/* <ReactECharts
-          style={{ height: "500px", margin: "30px 0" }}
-          option={option} // Option for the loading area chart
-          notMerge={true}
-        />
-        {compare && (
-      <ReactECharts
-        style={{ height: "500px", margin: "30px 0" }}
-        option={option2} // Chart for User 2
-        notMerge={true}
-        lazyUpdate={true}
-      />
-    )} */}
-        {/* ... similarly, add the other charts using the same 'option' ... */}
-      </>
-    ) : null}
-
-    {/* Conditionally render charts based on the selected area */}
-    {/* {selectedArea === 'loading' && (
-  <>
-    <ReactECharts
-      style={{ height: "500px", margin: "30px 0" }}
-      option={getLoadingAreaOption()} // Chart for User 1
-      notMerge={true}
-      lazyUpdate={true}
-    />
-    {compare && (
-      <ReactECharts
-        style={{ height: "500px", margin: "30px 0" }}
-        option={getLoadingAreaOption2()} // Chart for User 2
-        notMerge={true}
-        lazyUpdate={true}
-      />
-    )}
-  </>
-)}
-
-{selectedArea === 'dumping' && (
-  <>
-    <ReactECharts
-      style={{ height: "500px", margin: "30px 0" }}
-      option={getDumpingAreaOption()} // Chart for User 1
-      notMerge={true}
-      lazyUpdate={true}
-    />
-    {compare && (
-      <ReactECharts
-        style={{ height: "500px", margin: "30px 0" }}
-        option={getDumpingAreaOption2()} // Chart for User 2
-        notMerge={true}
-        lazyUpdate={true}
-      />
-    )}
-  </>
-)}
- {selectedArea === 'parking' && (
-  <>
-    <ReactECharts
-      style={{ height: "500px", margin: "30px 0" }}
-      option={getParkingAreaOption()} // Chart for User 1
-      notMerge={true}
-      lazyUpdate={true}
-    />
-    {compare && (
-      <ReactECharts
-        style={{ height: "500px", margin: "30px 0" }}
-        option={getParkingAreaOption2()} // Chart for User 2
-        notMerge={true}
-        lazyUpdate={true}
-      />
-    )}
-  </>
-)} */}
-
+   
       
       <ReactECharts
         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
@@ -2246,7 +2141,7 @@ const option2 = {    // option for two lines chart dumping and loading area
           lazyUpdate={true}
         />
         )}
-      {/* <ReactECharts
+      <ReactECharts
         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
         option={rpmChartOptions}
         notMerge={true}
@@ -2259,8 +2154,25 @@ const option2 = {    // option for two lines chart dumping and loading area
           notMerge={true}
           lazyUpdate={true}
         />
-      )} */}
-     
+      )}
+<div className="filter-container">
+        <label htmlFor="collisionType" className="filter-label">
+          Select Collision Type:
+        </label>
+        <select style={{backgroundColor:"#bd3b3b"}}
+          id="collisionType"
+          className="filter-select"
+          value={selectedCollisionType}
+          onChange={handleCollisionTypeChange}
+        >
+          <option value="all">All</option>
+          <option value="total">Normal Collisions</option>
+          <option value="pedestrial">Pedestrian Collisions</option>
+          <option value="object">Object Collisions</option>
+          <option value="mines">Mines Collisions</option>
+          {/* ... other options ... */}
+        </select>
+      </div>     
       <Chart
         options={options1}
         series={series1} //gear collosion graph
