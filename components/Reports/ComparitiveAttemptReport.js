@@ -199,7 +199,7 @@ const ComparitiveAttemptReport = ({
       ideal1 = attemptData.path.ideal_path[paths1[i]];
       ideal2 =
         i == paths1.length - 1 ||
-        attemptData.path.ideal_path[paths1[i + 1]] === undefined
+          attemptData.path.ideal_path[paths1[i + 1]] === undefined
           ? []
           : attemptData.path.ideal_path[paths1[i + 1]];
 
@@ -219,19 +219,19 @@ const ComparitiveAttemptReport = ({
             ideal1 && ideal2
               ? [...ideal1, ...ideal2]
               : ideal1
-              ? [...ideal1]
-              : ideal2
-              ? [...ideal2]
-              : []
+                ? [...ideal1]
+                : ideal2
+                  ? [...ideal2]
+                  : []
           }
           actual={
             actual1 && actual2
               ? [...actual1, ...actual2]
               : actual1
-              ? [...actual1]
-              : actual2
-              ? [...actual2]
-              : []
+                ? [...actual1]
+                : actual2
+                  ? [...actual2]
+                  : []
           }
           title={
             isReachTruck
@@ -239,8 +239,8 @@ const ComparitiveAttemptReport = ({
                 ? "Box1 by User 1"
                 : "Box2 by User 1"
               : i == paths1.length - 1
-              ? `${paths1[i]} by User 1`
-              : `${paths1[i]} , ${paths1[i + 1]} by User 1`
+                ? `${paths1[i]} by User 1`
+                : `${paths1[i]} , ${paths1[i + 1]} by User 1`
           }
           titleSuffix={pathCount % 2 !== 0 ? "Pickup" : "Droping"}
           isReachTruck={isReachTruck}
@@ -260,7 +260,7 @@ const ComparitiveAttemptReport = ({
       ideal1 = attemptData2.path.ideal_path[paths2[i]];
       ideal2 =
         i == paths2.length - 1 ||
-        attemptData.path.ideal_path[paths2[i + 1]] === undefined
+          attemptData.path.ideal_path[paths2[i + 1]] === undefined
           ? []
           : attemptData.path.ideal_path[paths2[i + 1]];
       pathNames =
@@ -272,19 +272,19 @@ const ComparitiveAttemptReport = ({
             ideal1 && ideal2
               ? [...ideal1, ...ideal2]
               : ideal1
-              ? [...ideal1]
-              : ideal2
-              ? [...ideal2]
-              : []
+                ? [...ideal1]
+                : ideal2
+                  ? [...ideal2]
+                  : []
           }
           actual={
             actual1 && actual2
               ? [...actual1, ...actual2]
               : actual1
-              ? [...actual1]
-              : actual2
-              ? [...actual2]
-              : []
+                ? [...actual1]
+                : actual2
+                  ? [...actual2]
+                  : []
           }
           title={
             isReachTruck
@@ -292,8 +292,8 @@ const ComparitiveAttemptReport = ({
                 ? "Box1 by User 2"
                 : "Box2 by User 2"
               : i == paths2.length - 1
-              ? `${paths2[i]} by User 2`
-              : `${paths2[i]} , ${paths2[i + 1]} by User 2`
+                ? `${paths2[i]} by User 2`
+                : `${paths2[i]} , ${paths2[i + 1]} by User 2`
           }
           titleSuffix={pathCount % 2 !== 0 ? "Pickup" : "Droping"}
           isReachTruck={isReachTruck}
@@ -394,13 +394,13 @@ const ComparitiveAttemptReport = ({
         <div className="flex flex-col gap-4 w-full ">
           {(organization.name.toLowerCase() === "vctpl" ||
             attemptData.path) && (
-            <DrivingModuleReport
-              attemptData={attemptData}
-              attemptData2={attemptData2}
-              organization={{ name: "vctpl" }}
-              compare
-            />
-          )}
+              <DrivingModuleReport
+                attemptData={attemptData}
+                attemptData2={attemptData2}
+                organization={{ name: "vctpl" }}
+                compare
+              />
+            )}
           <div className="w-full ">
             {attemptData.path &&
               attemptData2.path &&
@@ -517,17 +517,19 @@ const ComparitiveAttemptReport = ({
             {attemptData.graphs && attemptData.graphs.length > 0 && (
               <div className="">
                 {attemptData.graphs.map((graph, index) => {
+
                   const isApolloOrg =
                     organization.name.toLowerCase() === "apollo";
                   const isVCTPLOrg =
                     organization.name.toLowerCase() === "vctpl";
                   const isThriveniOrg =
-                    organization.name.toLowerCase() === "thriveni"; // Add this line to define the thriveniOrg condition
+                    organization.name.toLowerCase() === "thriveni";
 
                   const shouldRenderGraph =
-                    ((isApolloOrg || isThriveniOrg) &&
-                      ["pie", "doughnut"].includes(graph.type)) ||
-                    (!(isVCTPLOrg || isThriveniOrg) && graph.type !== "line");
+                    !(isApolloOrg && ["pie", "doughnut"].includes(graph.type)) &&
+                    !(isThriveniOrg && graph.hAxisLines == null && ["line"].includes(graph.type)) &&
+
+                    !(isVCTPLOrg && graph.hAxisLines == null && ["line"].includes(graph.type));
                   if (shouldRenderGraph) {
                     return (
                       <div key={index} className="w-full">

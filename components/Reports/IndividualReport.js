@@ -754,11 +754,11 @@ const IndividualReport = ({
                       const isThriveniOrg =
                         organization.name.toLowerCase() === "thriveni";
 
-                      const shouldRenderGraph =
-                        ((isApolloOrg || isThriveniOrg) &&
-                          ["pie", "doughnut"].includes(graph.type)) ||
-                        (!(isVCTPLOrg || isThriveniOrg) &&
-                          graph.type !== "line");
+                        const shouldRenderGraph =
+                        !(isApolloOrg && ["pie", "doughnut"].includes(graph.type)) &&
+                        !(isThriveniOrg && graph.hAxisLines == null && ["line"].includes(graph.type))&&
+                       
+                        !(isVCTPLOrg && graph.hAxisLines == null && ["line"].includes(graph.type));
                       return (
                         shouldRenderGraph && (
                           <div
