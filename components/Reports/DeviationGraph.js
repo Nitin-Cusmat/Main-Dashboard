@@ -35,21 +35,21 @@ const DeviationGraph = ({ graph }) => {
           }
           chart.scales.y.max = ticks[ticks.length - 1].value;
         }
-        if (min < 0) {
-          const negativeStepSize =
-            negativeTicks[negativeTicks.length - 2].value -
-            negativeTicks[negativeTicks.length - 1].value;
-          let negativeTicksLength = negativeTicks.length;
-          for (let i = min, idx = 0; i < 0; i = i - negativeStepSize) {
-            ticks[idx] = {
-              value: negativeStepSize * negativeTicksLength,
-              label: negativeStepSize * negativeTicksLength.toString()
-            };
-            idx = idx + 1;
-            negativeTicksLength = negativeTicksLength - 1;
-          }
-          chart.scales.y.min = ticks[0].value;
-        }
+        // if (min < 0) {
+        //   const negativeStepSize =
+        //     negativeTicks[negativeTicks.length - 2].value -
+        //     negativeTicks[negativeTicks.length - 1].value;
+        //   let negativeTicksLength = negativeTicks.length;
+        //   for (let i = min, idx = 0; i < 0; i = i - negativeStepSize) {
+        //     ticks[idx] = {
+        //       value: negativeStepSize * negativeTicksLength,
+        //       label: negativeStepSize * negativeTicksLength.toString()
+        //     };
+        //     idx = idx + 1;
+        //     negativeTicksLength = negativeTicksLength - 1;
+        //   }
+        //   chart.scales.y.min = ticks[0].value;
+        // }
 
         return;
       },
