@@ -19,11 +19,13 @@ const DeviationGraph = ({ graph }) => {
         let ticks = chart.scales.y.ticks;
         let positiveTicks = ticks.filter(item => item.value > 0);
         let negativeTicks = ticks.filter(item => item.value < 0);
-        const stepSize = positiveTicks.length > 1 ? positiveTicks[1].value - positiveTicks[0].value : 0;        
+        const stepSize =
+          positiveTicks.length > 1 &&
+          positiveTicks[1].value - positiveTicks[0].value;
         const lastValue = ticks[ticks.length - 1].value;
 
         chart.scales.y.ticks = ticks;
-        if (max < graph.hAxisLines.max) {
+        if (max < graph.hAxisLines.max && stepSize) {
           for (
             let i = lastValue + stepSize;
             i <= graph.hAxisLines.max;
@@ -149,20 +151,19 @@ const DeviationGraph = ({ graph }) => {
     },
     elements: {
       point: {
-        
-    radius: 6, // Set the marker radius to your desired size
-    backgroundColor: "#a7b0f2", // Marker fill color
-    borderWidth:1, // Marker border width
-    borderColor: "white", // Marker border color
-    hoverRadius: 8, // Marker radius on hover
-    hoverBackgroundColor: "red", // Marker fill color on hover
-    hoverBorderWidth:1, // Marker border width on hover
-    hoverBorderColor: "white", // Marker border color on hover
+        radius: 6, // Set the marker radius to your desired size
+        backgroundColor: "#a7b0f2", // Marker fill color
+        borderWidth: 1, // Marker border width
+        borderColor: "white", // Marker border color
+        hoverRadius: 8, // Marker radius on hover
+        hoverBackgroundColor: "red", // Marker fill color on hover
+        hoverBorderWidth: 1, // Marker border width on hover
+        hoverBorderColor: "white" // Marker border color on hover
       }
     },
     animation: {
       duration: 10000, // Animation duration in milliseconds
-      easing: "easeInOutQuad", // Easing function for the animation (you can change this)
+      easing: "easeInOutQuad" // Easing function for the animation (you can change this)
     },
 
     scaleShowLabels: false,
@@ -223,4 +224,3 @@ const DeviationGraph = ({ graph }) => {
 };
 
 export default DeviationGraph;
-
