@@ -139,7 +139,7 @@ const KpiReport2 = ({ kpis3, kpis4, compare, module, organization }) => {
     return answer.replace(/right/gi, "✅").replace(/wrong/gi, "❌");
   };
   const isApollo = organization && organization.name.toLowerCase() === "vctpl";
-  const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
+  const kpiTitle = isApollo ? "Loading KPI" : "KPIS";
 
   useEffect(() => {
     let bKpis = [];

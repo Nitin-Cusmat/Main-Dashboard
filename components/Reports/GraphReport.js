@@ -610,6 +610,7 @@ let transformedDataset = [];
       graph.data.length > 0
     ) {
       let pieData;
+      
 
       if (graph.aggregate) {
         // Aggregate the data
@@ -643,6 +644,7 @@ let transformedDataset = [];
           value: parseFloat(item),
           name: graph.labels[index]
         }));
+        
       }
       return (
         <div key={index} className="border w-full h-full">
@@ -814,6 +816,27 @@ let transformedDataset = [];
                             return Object.entries(aggregatedData)
                               .map(([name, value]) => ({ name, value }))
                               .filter(item => item.value > 0);
+                          }
+                        })(),
+                        emphasis: {
+                          itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: "rgba(0, 0, 0, 0.5)"
+                          }
+                        },
+                        labelLine: {
+                          show: false
+                        }
+                      },  compare && {
+                        type: "pie",
+                        radius: ["30%", "50%"],
+                        color: pieColor && graph2.data.length === 1 ? pieColor : Object.values(CHART_COLORS),
+                        data: (() => {
+                          if (!isVCTPL) {
+                            return aggregatePieData(graph2.data, graph2.labels);
+                          } else {
+                            return aggregatePieDataVCTPL(graph2.data, graph2.labels);
                           }
                         })(),
                         emphasis: {
