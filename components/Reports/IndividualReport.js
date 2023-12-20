@@ -108,7 +108,8 @@ const IndividualReport = ({
     }
     // ... and so on
   };
-  const isThriveniOrg1 = organization && organization.name.toLowerCase() === "thriveni";
+  const isThriveniOrg1 =
+    organization && organization.name.toLowerCase() === "thriveni";
 
   // const getRandomRecommendation = () => {
   //   // Assuming levels is an array of all available levels or modules
@@ -624,7 +625,11 @@ const IndividualReport = ({
       >
         <div className="pt-4">
           {attemptData && attemptData.score && (
-            <ScoreRow score={[score]} attemptDuration={[attemptDuration]} />
+            <ScoreRow
+              score={[score]}
+              attemptDuration={[attemptDuration]}
+              mistakeScores={attemptData.mistakesScore}
+            />
           )}
           {attemptData.tableKpis && (
             <TableKpis tableKpis={attemptData.tableKpis} />
@@ -718,9 +723,6 @@ const IndividualReport = ({
                   />
                 )}
 
-                  
-
-
                 {attemptData.inspections &&
                   attemptData.inspections.length > 0 && (
                     <CarsomeReport attemptData={attemptData} module={module} />
@@ -767,11 +769,21 @@ const IndividualReport = ({
                       const isThriveniOrg =
                         organization.name.toLowerCase() === "thriveni";
 
-                        const shouldRenderGraph =
-                        !(isApolloOrg && ["pie", "doughnut"].includes(graph.type)) &&
-                        !(isThriveniOrg && graph.hAxisLines == null && ["line"].includes(graph.type))&&
-                       
-                        !(isVCTPLOrg && graph.hAxisLines == null && ["line"].includes(graph.type));
+                      const shouldRenderGraph =
+                        !(
+                          isApolloOrg &&
+                          ["pie", "doughnut"].includes(graph.type)
+                        ) &&
+                        !(
+                          isThriveniOrg &&
+                          graph.hAxisLines == null &&
+                          ["line"].includes(graph.type)
+                        ) &&
+                        !(
+                          isVCTPLOrg &&
+                          graph.hAxisLines == null &&
+                          ["line"].includes(graph.type)
+                        );
                       return (
                         shouldRenderGraph && (
                           <div
