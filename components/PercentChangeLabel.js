@@ -7,7 +7,8 @@ const PercentChangeLabel = ({ value = "", msg = "", isPositive = true }) => {
         <>
           <span
             className={`${
-              isPositive || value.charAt(0) === "+"
+              isPositive ||
+              (typeof value === "string" && value.charAt(0) === "+")
                 ? "bg-[#dde2d3] text-[#75A314]"
                 : "bg-[#fd625e2e] text-[#fd625e]"
             } rounded px-1`}
