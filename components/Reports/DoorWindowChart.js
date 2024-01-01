@@ -1,7 +1,7 @@
 import React from "react";
 import { Stage, Layer, Rect, Text, Line } from "react-konva";
 
-const WallObject = ({ wall }) => {
+const WallObject = ({ wall, userType, data, index }) => {
   return (
     <div className="mt-4 items-center justify-between">
       <h2 className="text-lg font-bold text-left mb-2">
@@ -32,7 +32,18 @@ const WallObject = ({ wall }) => {
                   y={yPos}
                   width={obj.widthOfObject}
                   height={obj.heightOfObject}
-                  stroke="red"
+                  stroke={
+                    userType === "user"
+                      ? data.idealWalls[index]["nonPaintables"][objIndex][
+                          "widthOfObject"
+                        ] === obj.widthOfObject &&
+                        data.idealWalls[index]["nonPaintables"][objIndex][
+                          "heightOfObject"
+                        ] === obj.heightOfObject
+                        ? "green"
+                        : "red"
+                      : "green"
+                  }
                   strokeWidth={1}
                 />
 
@@ -58,7 +69,15 @@ const WallObject = ({ wall }) => {
                     obj.leftDistance + obj.widthOfObject / 2,
                     wall.wallHeight
                   ]}
-                  stroke="green"
+                  stroke={
+                    userType === "user"
+                      ? data.idealWalls[index]["nonPaintables"][objIndex][
+                          "bottonDistance"
+                        ] === obj.bottonDistance
+                        ? "green"
+                        : "red"
+                      : "green"
+                  }
                   strokeWidth={1}
                   dash={[4, 2]}
                 />
@@ -67,7 +86,15 @@ const WallObject = ({ wall }) => {
                   y={yPos + obj.heightOfObject + obj.bottonDistance / 2}
                   text={obj.bottonDistance.toString()}
                   fontSize={10}
-                  fill="green"
+                  fill={
+                    userType === "user"
+                      ? data.idealWalls[index]["nonPaintables"][objIndex][
+                          "bottonDistance"
+                        ] === obj.bottonDistance
+                        ? "green"
+                        : "red"
+                      : "green"
+                  }
                   align="center"
                 />
 
@@ -79,7 +106,15 @@ const WallObject = ({ wall }) => {
                     0,
                     yPos + obj.heightOfObject / 2
                   ]}
-                  stroke="green"
+                  stroke={
+                    userType === "user"
+                      ? data.idealWalls[index]["nonPaintables"][objIndex][
+                          "leftDistance"
+                        ] === obj.leftDistance
+                        ? "green"
+                        : "red"
+                      : "green"
+                  }
                   strokeWidth={1}
                   dash={[4, 2]}
                 />
@@ -88,7 +123,15 @@ const WallObject = ({ wall }) => {
                   y={yPos + obj.heightOfObject / 2}
                   text={obj.leftDistance.toString()}
                   fontSize={10}
-                  fill="green"
+                  fill={
+                    userType === "user"
+                      ? data.idealWalls[index]["nonPaintables"][objIndex][
+                          "leftDistance"
+                        ] === obj.leftDistance
+                        ? "green"
+                        : "red"
+                      : "green"
+                  }
                   align="center"
                   verticalAlign="middle"
                 />
@@ -107,14 +150,26 @@ const DoorWindowChart = ({ data }) => {
       <div className="container xl:w-1/2">
         <p> IDEAL </p>
         {data.idealWalls.map((wall, index) => (
-          <WallObject key={index} wall={wall} userType="IDEAL" />
+          <WallObject
+            key={index}
+            wall={wall}
+            userType={"ideal"}
+            data={data}
+            index={index}
+          />
         ))}
       </div>
 
       <div className="container md:w-1/2">
         <p> USER </p>
         {data.userWalls.map((wall, index) => (
-          <WallObject key={index} wall={wall} userType="USER" />
+          <WallObject
+            key={index}
+            wall={wall}
+            userType={"user"}
+            data={data}
+            index={index}
+          />
         ))}
       </div>
     </div>
