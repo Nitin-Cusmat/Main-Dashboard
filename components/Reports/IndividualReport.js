@@ -45,6 +45,11 @@ import { Newtable } from "./newtable";
 import { Pathtable } from "./pathtable";
 import KpiReport1 from "./KpiReport1";
 import dynamic from "next/dynamic";
+// import DoorWindowChart from "./DoorWindowChart";
+
+const DoorWindowChart = dynamic(() => import("./DoorWindowChart"), {
+  ssr: false
+});
 
 // function getRandomInt(min, max) {
 //   min = Math.ceil(min);
@@ -453,6 +458,113 @@ const IndividualReport = ({
     }
   }
 
+  const data = {
+    idealWalls: [
+      {
+        wallNumber: 1,
+        isPainted: false,
+        hasRightCorner: false,
+        hasLeftCorner: false,
+        wallHeight: 250,
+        wallWidth: 300,
+        wallSkirt: 0,
+        nonPaintables: [
+          {
+            leftDistance: 90,
+            bottonDistance: 90,
+            heightOfObject: 90,
+            widthOfObject: 90
+          }
+        ]
+      },
+      {
+        wallNumber: 2,
+        isPainted: false,
+        hasRightCorner: false,
+        hasLeftCorner: false,
+        wallHeight: 250,
+        wallWidth: 400,
+        wallSkirt: 0,
+        nonPaintables: []
+      },
+      {
+        wallNumber: 3,
+        isPainted: false,
+        hasRightCorner: false,
+        hasLeftCorner: false,
+        wallHeight: 250,
+        wallWidth: 550,
+        wallSkirt: 0,
+        nonPaintables: [
+          {
+            leftDistance: 80,
+            bottonDistance: 80,
+            heightOfObject: 100,
+            widthOfObject: 100
+          },
+          {
+            leftDistance: 10,
+            bottonDistance: 80,
+            heightOfObject: 40,
+            widthOfObject: 40
+          }
+        ]
+      }
+    ],
+    userWalls: [
+      {
+        wallNumber: 1,
+        isPainted: false,
+        hasRightCorner: false,
+        hasLeftCorner: false,
+        wallHeight: 250,
+        wallWidth: 300,
+        wallSkirt: 0,
+        nonPaintables: [
+          {
+            leftDistance: 90,
+            bottonDistance: 90,
+            heightOfObject: 90,
+            widthOfObject: 90
+          }
+        ]
+      },
+      {
+        wallNumber: 2,
+        isPainted: false,
+        hasRightCorner: false,
+        hasLeftCorner: false,
+        wallHeight: 250,
+        wallWidth: 430,
+        wallSkirt: 0,
+        nonPaintables: []
+      },
+      {
+        wallNumber: 3,
+        isPainted: false,
+        hasRightCorner: false,
+        hasLeftCorner: false,
+        wallHeight: 260,
+        wallWidth: 500,
+        wallSkirt: 0,
+        nonPaintables: [
+          {
+            leftDistance: 80,
+            bottonDistance: 90,
+            heightOfObject: 100,
+            widthOfObject: 120
+          },
+          {
+            leftDistance: 10,
+            bottonDistance: 80,
+            heightOfObject: 40,
+            widthOfObject: 40
+          }
+        ]
+      }
+    ]
+  };
+
   return (
     <div className="px-2 md:px-4">
       {userPerformanceData && !loading && (
@@ -623,6 +735,16 @@ const IndividualReport = ({
           !["Attempt", ""].includes(attempt)
         }
       >
+        {/* <DoorWindowChart
+          doorPosition={{ x: 10, y: 10 }}
+          doorSize={{ width: 30, height: 80 }}
+          windowPosition={{ x: 50, y: 20 }}
+          windowSize={{ width: 60, height: 30 }}
+        /> */}
+        <div className="mt-10">
+          <DoorWindowChart data={data} />
+        </div>
+
         <div className="pt-4">
           {attemptData && attemptData.score && (
             <ScoreRow

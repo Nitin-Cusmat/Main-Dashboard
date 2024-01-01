@@ -41,6 +41,7 @@
     "react-google-charts": "^4.0.0",
     "react-hook-form": "^7.43.0",
     "react-icons": "^4.7.1",
+    "react-konva": "^18.2.10",
     "react-loading": "^2.0.3",
     "react-promise-tracker": "^2.1.1",
     "react-range-slider-input": "^3.0.7",
