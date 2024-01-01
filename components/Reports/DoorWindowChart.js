@@ -32,7 +32,17 @@ const WallObject = ({ wall, userType, data, index }) => {
                   y={yPos}
                   width={obj.widthOfObject}
                   height={obj.heightOfObject}
-                  stroke={
+                  stroke={"green"}
+                  strokeWidth={1}
+                />
+
+                {/* Dimension label */}
+                <Text
+                  x={obj.leftDistance}
+                  y={yPos}
+                  text={`${obj.widthOfObject}x${obj.heightOfObject}`}
+                  fontSize={12}
+                  fill={
                     userType === "user"
                       ? data.idealWalls[index]["nonPaintables"][objIndex][
                           "widthOfObject"
@@ -44,16 +54,6 @@ const WallObject = ({ wall, userType, data, index }) => {
                         : "red"
                       : "green"
                   }
-                  strokeWidth={1}
-                />
-
-                {/* Dimension label */}
-                <Text
-                  x={obj.leftDistance}
-                  y={yPos}
-                  text={`${obj.widthOfObject}x${obj.heightOfObject}`}
-                  fontSize={12}
-                  fill="black"
                   width={obj.widthOfObject}
                   height={obj.heightOfObject}
                   align="center"
