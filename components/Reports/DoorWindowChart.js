@@ -3,7 +3,7 @@ import { Stage, Layer, Rect, Text, Line } from "react-konva";
 
 const WallObject = ({ wall }) => {
   return (
-    <div className="mt-4">
+    <div className="mt-4 items-center justify-between">
       <h2 className="text-lg font-bold text-left mb-2">
         Wall {wall.wallNumber} (Dimensions: {wall.wallWidth}x{wall.wallHeight})
       </h2>
@@ -64,7 +64,7 @@ const WallObject = ({ wall }) => {
                 />
                 <Text
                   x={obj.leftDistance + obj.widthOfObject / 2}
-                  y={wall.wallHeight + 10}
+                  y={yPos + obj.heightOfObject + obj.bottonDistance / 2}
                   text={obj.bottonDistance.toString()}
                   fontSize={10}
                   fill="green"
@@ -103,15 +103,15 @@ const WallObject = ({ wall }) => {
 
 const DoorWindowChart = ({ data }) => {
   return (
-    <div className="flex">
-      <div className="container">
+    <div className="flex flex-col xl:flex-row">
+      <div className="container xl:w-1/2">
         <p> IDEAL </p>
         {data.idealWalls.map((wall, index) => (
           <WallObject key={index} wall={wall} userType="IDEAL" />
         ))}
       </div>
 
-      <div className="container">
+      <div className="container md:w-1/2">
         <p> USER </p>
         {data.userWalls.map((wall, index) => (
           <WallObject key={index} wall={wall} userType="USER" />
