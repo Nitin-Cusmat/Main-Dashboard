@@ -636,11 +636,18 @@ const MyChart = ({
   }
   return (
     <div className="rounded  text-slate-500">
-      <div className="mb-4">
+      <div className="mb-4"
+        style={{
+          color: "white",
+          background:"#2b93bb",
+          borderRadius:"10px",
+          padding:"10px",
+          width:"355px"
+        }}>
         <label htmlFor="eventType" className="mr-2">
           Select Event Type:
         </label>
-        <select
+        <select style={{color:"#2b93bb"}}
           id="eventType"
           value={selectedEventType}
           onChange={e => {
