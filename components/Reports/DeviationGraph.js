@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Line } from "react-chartjs-2";
-
+import useUserProfile from "hooks/useUserProfile";
 const DeviationGraph = ({ graph }) => {
   let max = graph.data[0].y;
   let min = Infinity;
@@ -91,6 +91,8 @@ const DeviationGraph = ({ graph }) => {
     }
   ];
 
+  const { organization } = useUserProfile();
+
   const options = {
     responsive: true,
     plugins: {
@@ -136,7 +138,7 @@ const DeviationGraph = ({ graph }) => {
             });
 
             labels.push({
-              text: `Ideal ${graph.name.split(" ")[0]}`,
+              text: `Ideal ${graph.name.split(" ")[0]} (${graph.hAxisLines.min} to ${graph.hAxisLines.max})`,
               fontColor: "black",
               fillStyle: "#cdffcd",
               strokeStyle: "#cdffcd",
@@ -199,7 +201,9 @@ const DeviationGraph = ({ graph }) => {
         ticks: {
           display: true,
           color: "#565B6B"
-        }
+        },
+        min : organization.name.toLowerCase()==="apollo" ? -1 : min,
+        max : organization.name.toLowerCase()==="apollo" ? 1 : max,
       }
     }
   };

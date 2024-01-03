@@ -6,12 +6,14 @@ import * as echarts from "echarts";
 const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
   const [selectedCollisionType, setSelectedCollisionType] = useState("total");
   const [selectedArea, setSelectedArea] = useState('all');
+  const [isModalOpen, setModalOpen] = React.useState(false);
+  const [insightText, setInsightText] = React.useState("");
+
 
   // Initialize other collision types if needed
 
   let brakeData = [];
   let accelerationData = [];
-  let timeData = [];
   let rpmData = [];
   let speedData = [];
   let speedDataFiltered = []; // Declare it here
@@ -23,7 +25,14 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
 
   let maxSpeedByGear = {};
   let collisionCountByGear = {};
-
+  let actualPathData = []; // This should come from your "actual_path" data
+  let speedVsTimeData = actualPathData.map(item => [parseFloat(item.time), parseFloat(item.speed)]);
+  
+  // Sort by time to ensure continuity
+  speedVsTimeData.sort((a, b) => a[0] - b[0]);
+  
+  // Extract time data for xAxis
+  let timeData = speedVsTimeData.map(item => item[0]);  
   const modeDurations = {};
   let lastMode = null;
   let lastTime = 0;
@@ -33,6 +42,116 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
   let kpiNames = [];
   let kpiValues = [];
 
+  const InsightButton = ({ onClick }) => (
+    <button className="pulseBtn"
+      style={{
+        // position: "absolute",
+        top: "20px",
+        right: "20px",
+        zIndex: 10,
+        backgroundColor: " rgb(59 130 246)", // Light blue background
+        color: "white", // White text
+        border: "none",
+        borderRadius: "5px", // Rounded corners
+        padding: "10px 15px",
+        cursor: "pointer",
+        boxShadow: "0 4px 8px rgba(0,0,0,0.2)", // More pronounced shadow for depth
+        fontSize: "15px", // Slightly larger font size
+        fontWeight: "bold", // Bold font weight
+        display: "flex", // Flex display to align icon and text
+        alignItems: "center", // Center items vertically
+        justifyContent: "center", // Center items horizontally
+        transition: "background-color 0.3s ease", // Smooth transition for hover effect
+        margin: "5px 5px"
+      }}
+      onClick={onClick}
+      onMouseOver={e => (e.target.style.backgroundColor = " rgb(59 130 246)")} // Darker green on hover
+      onMouseOut={e => (e.target.style.backgroundColor = " rgb(59 130 246)")} // Back to light green
+    >
+      More info
+    </button>
+  );
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const Modal = ({ onClose, children }) => (
+    <div className="fixed inset-0 bg-grey bg-opacity-10 flex justify-center items-center z-50">
+      <div className="bg-white p-8 rounded-lg shadow-xl max-w-lg w-full">
+        <div className="modal-header flex justify-between items-center mb-4">
+          <h2 className="font-semibold text-gray-800">
+            Graph Insights
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-600 hover:text-gray-800 text-2xl"
+          >
+            &times; {/* Unicode for 'X' symbol */}
+          </button>
+        </div>
+        <div className="modal-body" style={{ color: "black" }} >{children}</div>
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={onClose}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // message for graph insights
+  const SpeedTimeInsight = () => {
+    setInsightText(
+      "This graph shows speed over the duration of test"
+    );
+    setModalOpen(true);
+  };
+
+  const LevelTimeTaken = () => {
+    setInsightText(
+      "This graph shows how much time user took to complete vairous levels"
+    );
+    setModalOpen(true);
+  };
+
+  const PowerTime = () => {
+    setInsightText(
+      "This graph shows power used for the level"
+    );
+    setModalOpen(true);
+  };
+
+  const VehSpeedTimeInsight = () => {
+    setInsightText(
+      "This graph can be used to check for jerky driving"
+    );
+    setModalOpen(true);
+  };
+
+  const LoadDumpParkInsight = () => {
+    setInsightText(
+      "This graph can be used to check if driver kept the vehicle speed under or upto the ideal speed."
+    );
+    setModalOpen(true);
+  };
+
+  const CollisionInsight = () => {
+    setInsightText(
+      "This graph can be used to count the occurence of different types of collisions during this test."
+    );
+    setModalOpen(true);
+  };
+
+  const RpmLoading = () => {
+    setInsightText(
+      "This graph can be used to check the RPM during the loading, whether the RPM was kept upto or under ideal RPM.Since RPM above ideal limit can lead to extra fuel consumption and decrease efficiency."
+    );
+    setModalOpen(true);
+  };
   if (attemptData && attemptData.kpis) {
     kpiNames = attemptData.kpis.map(kpi => kpi.name);
     kpiValues = attemptData.kpis.map(kpi => parseFloat(kpi.value));
@@ -114,7 +233,23 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
         collisionCountByGear[gear]++;
       }
     });
-
+    for (let pathKey in actualPathData) {
+      let path = actualPathData[pathKey];
+  
+      // Loop through each data point in the path
+      for (let dataPoint of path) {
+          // Convert speed and time from string to float
+          let speed = parseFloat(dataPoint.speed);
+          let time = parseFloat(dataPoint.time) + lastTime; // Ensure continuous time
+  
+          // Add to your data arrays
+          speedData.push(speed);
+          timeData.push(time);
+      }
+  
+      // Update lastTime for the next path
+      lastTime = timeData[timeData.length - 1];
+  }
     filteredData.forEach(item => {
       const gear = item.gear;
       const collisionStatus = parseInt(item.collisionStatus, 10); // Convert to a number
@@ -146,6 +281,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
       }
       modeCount[mode]++;
     });
+
 
     filteredData.forEach((item, index) => {
       const currentMode = item.mode;
@@ -207,6 +343,17 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
       .map(key => attemptData.path.actual_path[key])
       .flat();
   }
+
+  // pathless data variables
+
+  const PathlessData = filteredData.map(({ path, ...item }) => item);
+
+  const sortedPathlessData = PathlessData.sort((a, b) => (parseFloat(a.time) > parseFloat(b.time)) ? 1: -1);
+
+  const PathlessTimeData = sortedPathlessData.map(item => item.time);
+  const PathlessSpeedData = filteredData.map(item => item.speed);
+  const PathlessAccelerationData = sortedPathlessData.map(item => item.acceleration);
+  const PathlessBreakData = sortedPathlessData.map(item => item.brake);
 
   const getCollisionCount = gear => {
     let count = 0;
@@ -345,14 +492,14 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
         type: "category",
         boundaryGap: false,
         axisLine: { onZero: true },
-        data: timeData
+        data: PathlessTimeData
       },
       {
         gridIndex: 1,
         type: "category",
         boundaryGap: false,
         axisLine: { onZero: true },
-        data: timeData,
+        data: PathlessTimeData,
         position: "top"
       }
     ],
@@ -377,7 +524,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
         type: "line",
         symbolSize: 8,
         hoverAnimation: false,
-        data: accelerationData
+        data: PathlessAccelerationData
       },
       {
         name: compare ? "Brake - User 1" : "Brake",
@@ -386,25 +533,28 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
         yAxisIndex: 1,
         symbolSize: 8,
         hoverAnimation: false,
-        data: brakeData
+        data: PathlessBreakData
       }
     ]
   };
-  let filteredData21= [];
-  if (attemptData2 && attemptData2.path && attemptData2.path.actual_path) {
-    filteredData21 = Object.keys(attemptData2.path.actual_path)
-      .map(key => attemptData2.path.actual_path[key])
-      .flat();
-  } 
+ 
   // Extracting data for User 2
-  let accelerationData2 = [];
-  let brakeData2 = [];
-  let timeData21 = [];
+  let pathlessTimeData2 = [];
+  let pathlessAccelerationData2 = [];
+  let pathlessBrakeData2 = [];
+  let PathlessSpeedData2 = [];
   
-  if (filteredData21.length > 0) {
-    accelerationData2 = filteredData21.map(item => item.acceleration);
-    brakeData2 = filteredData21.map(item => item.brake);
-    timeData21 = filteredData21.map(item => item.time);
+  if (attemptData2 && attemptData2.path && attemptData2.path.actual_path) {
+    const pathlessData2 = Object.keys(attemptData2.path.actual_path)
+      .map(key => attemptData2.path.actual_path[key])
+      .flat()
+      .map(({ path, ...item }) => item) // Remove 'path' property and extract the rest
+      .sort((a, b) => parseFloat(a.time) - parseFloat(b.time)); // Sort based on time
+  
+    pathlessTimeData2 = pathlessData2.map(item => item.time);
+    pathlessAccelerationData2 = pathlessData2.map(item => item.acceleration);
+    pathlessBrakeData2 = pathlessData2.map(item => item.brake);
+    PathlessSpeedData2 = pathlessData2.map(item => item.speed);
   }
   const vehicleChartOptionscomp = {
     // acc and break graph
@@ -477,14 +627,14 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
         type: "category",
         boundaryGap: false,
         axisLine: { onZero: true },
-        data: timeData21
+        data: pathlessTimeData2
       },
       {
         gridIndex: 1,
         type: "category",
         boundaryGap: false,
         axisLine: { onZero: true },
-        data: timeData21,
+        data: pathlessTimeData2,
         position: "top"
       }
     ],
@@ -509,7 +659,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
         type: "line",
         symbolSize: 8,
         hoverAnimation: false,
-        data: accelerationData2
+        data: pathlessAccelerationData2.map((acc, index) => [pathlessTimeData2[index], acc]),
       },
       {
         name: "Brake - User 2",
@@ -518,7 +668,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
         yAxisIndex: 1,
         symbolSize: 8,
         hoverAnimation: false,
-        data: brakeData2
+        data: pathlessBrakeData2.map((acc, index) => [pathlessTimeData2[index], acc]),
       }
     ]
   };
@@ -542,7 +692,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
     xAxis: {
       type: "category",
       boundaryGap: false,
-      data: timeData,
+      data: PathlessTimeData,
       axisLabel: {
         formatter: function (value) {
           return parseInt(value);
@@ -598,7 +748,7 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
     xAxis: {
       type: "category",
       boundaryGap: false,
-      data: timeData,
+      data: pathlessTimeData2,
       axisLabel: {
         formatter: function (value) {
           return parseInt(value);
@@ -857,18 +1007,23 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
     xAxis: {
       type: "category",
       boundaryGap: false,
-      data: timeData,
+      data: PathlessTimeData,
       axisLabel: {
         formatter: function (value) {
           return `${value} s`;
         }
-      }
+      },
+      scale: true 
+
     },
+
     yAxis: {
       type: "value",
       axisLabel: {
         formatter: "{value} km/h"
-      }
+      },
+      scale: true 
+
     },
     series: [
       {
@@ -896,10 +1051,8 @@ const Thriveni = ({ attemptData, attemptData2, compare = false }) => {
             ])
           }
         },
-        data: speedData.map((speed, index) => [
-          timeData[index],
-          parseFloat(speed)
-        ])
+        data: PathlessSpeedData
+
       }
     ],
     dataZoom: [
@@ -942,6 +1095,7 @@ if (filteredData2.length > 0) {
   speedData2 = filteredData2.map(item => parseFloat(item.speed));
   chartData2 = speedData2.map((speed, index) => [timeData2[index], speed]);
 }
+
   const optionspeedcomp = {
     title: {
       text: "Speed vs Time - User 2",
@@ -970,7 +1124,7 @@ if (filteredData2.length > 0) {
     xAxis: {
       type: "category",
       boundaryGap: false,
-      data: timeData2,
+      data: pathlessTimeData2,
       axisLabel: {
         formatter: function (value) {
           return `${value} s`;
@@ -1009,7 +1163,7 @@ if (filteredData2.length > 0) {
             ])
           }
         },
-        data: chartData2   
+        data: PathlessSpeedData2   
       }
     ],
     dataZoom: [
@@ -2083,12 +2237,23 @@ const option2 = {    // option for two lines chart dumping and loading area
         notMerge={true}
         lazyUpdate={true}
       /> */}
-      <ReactECharts
-        style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
-        option={vehicleChartOptions}
-        notMerge={true}
-        lazyUpdate={true}
-      />
+         <div>
+        <div style={{ float: "right", margin: "5px" }}>
+          <InsightButton onClick={VehSpeedTimeInsight} />
+        </div>
+        {isModalOpen && (
+          <Modal onClose={handleCloseModal}>
+            <h2></h2>
+            <p>{insightText}</p>
+          </Modal>
+        )}
+        <ReactECharts
+          style={{ height: "500px", margin: "60px 0" }} // Adds vertical margin
+          option={vehicleChartOptions}
+          notMerge={true}
+          lazyUpdate={true}
+        />
+      </div>
       {compare && (
         <ReactECharts
           style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
@@ -2231,7 +2396,16 @@ const option2 = {    // option for two lines chart dumping and loading area
     )}
   </>
 )} */}
-
+<div>
+        <div style={{ float: "right" }}>
+          <InsightButton onClick={SpeedTimeInsight} />
+        </div>
+        {isModalOpen && (
+          <Modal onClose={handleCloseModal}>
+            <h2></h2>
+            <p>{insightText}</p>
+          </Modal>
+        )}
       
       <ReactECharts
         style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
@@ -2239,6 +2413,7 @@ const option2 = {    // option for two lines chart dumping and loading area
         notMerge={true}
         lazyUpdate={true}
       />
+       </div>
         {compare && (
         <ReactECharts
           style={{ height: "500px", margin: "30px 0" }} // Adds vertical margin
@@ -2261,7 +2436,8 @@ const option2 = {    // option for two lines chart dumping and loading area
           lazyUpdate={true}
         />
       )} */}
-     
+{console.log("Original Data: ", attemptData)}
+{/* console.log("Speed data length: ", speedData.length); */}
       <Chart
         options={options1}
         series={series1} //gear collosion graph

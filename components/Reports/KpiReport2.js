@@ -21,7 +21,96 @@ ChartJS.register(
   Legend
 );
 
-const KpiReport2 = ({ kpis3, kpis4, compare, module, organization }) => {  
+const KpiReport2 = ({ kpis3, kpis4, compare, module, organization }) => {
+
+  const pulseAnimation = `@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }`;
+
+  const generateInsights = () => {
+    const insightsHtml = rangeKpis.map(kpi => {
+      const actualTime = extractNumericalValue(kpi.value);
+      const idealTime = extractNumericalValue(kpi.ideal_time);
+      const color = actualTime <= idealTime ? 'green' : 'red';
+      return `<span style="color: ${color};">${kpi.name}: ${actualTime <= idealTime ? 'Completed within the ideal time.' : 'Took longer than the ideal time.'}</span><br/>`;
+    }).join('');
+    return { __html: insightsHtml };
+  }; 
+
+  const [isModalOpen, setModalOpen] = useState(false);
+  const handleOpenModal = () => setModalOpen(true);
+  const handleCloseModal = () => setModalOpen(false);
+
+  const Modal = ({ isOpen, onClose, title, children }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">{title}</h2>
+            <button onClick={onClose} className="text-red-500 hover:text-red-700 text-2xl">
+              &times; {/* Unicode for 'X' symbol */}
+            </button>
+          </div>
+          <div className="modal-body">{children}</div>
+          <div className="mt-4 flex justify-end">
+            <button onClick={onClose} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-110">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  
+
+  
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundColor: "rgba(0,0,0,0.5)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 1000
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: "#fff",
+            padding: "20px",
+            borderRadius: "4px",
+            maxWidth: "500px",
+            width: "100%"
+          }}
+        >
+          <h2>{title}</h2>
+          {children}
+          <button onClick={onClose} style={{ marginTop: "10px" }}>
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // const [isModalOpen, setModalOpen] = useState(false);
+
+  // const handleInsightClick = () => {
+  //   setModalOpen(true);
+  // };
+
+  // const handleCloseModal = () => {
+  //   setModalOpen(false);
+  // };
+
   const [booleanKpis, setBooleanKpis] = useState([]);
   const [decimalKpis, setDecimalKpis] = useState([]);
   const [stringKpis, setStringKpis] = useState([]);
@@ -29,27 +118,28 @@ const KpiReport2 = ({ kpis3, kpis4, compare, module, organization }) => {
 
   const hasIdealTime = kpis3.some(kpi => kpi.ideal_time !== undefined);
   const hasSpeed = kpis3.some(kpi => kpi.speed !== undefined);
-  const extractNumericalValue = (valueWithUnit) => {
-    if (typeof valueWithUnit === 'number') return valueWithUnit;
-    if (typeof valueWithUnit === 'string' && !isNaN(valueWithUnit)) return parseFloat(valueWithUnit);
-    if (typeof valueWithUnit === 'string') {
+  const extractNumericalValue = valueWithUnit => {
+    if (typeof valueWithUnit === "number") return valueWithUnit;
+    if (typeof valueWithUnit === "string" && !isNaN(valueWithUnit))
+      return parseFloat(valueWithUnit);
+    if (typeof valueWithUnit === "string") {
       const matchedValue = valueWithUnit.match(/\d+(\.\d+)?/);
       return matchedValue ? parseFloat(matchedValue[0]) : 0;
     }
-    
+
     return 0;
   };
-  const replaceRightWithIcon = (answer) => {
+  const replaceRightWithIcon = answer => {
     if (typeof answer !== "string") {
-        // Handle the unexpected case where the answer is not a string.
-        // This could be a console log, a default value, or some other handling.
-        // console.warn("Unexpected non-string value:", answer);
-        return answer;  // Return the original value, or you can set a default value.
+      // Handle the unexpected case where the answer is not a string.
+      // This could be a console log, a default value, or some other handling.
+      // console.warn("Unexpected non-string value:", answer);
+      return answer; // Return the original value, or you can set a default value.
     }
-    return answer.replace(/right/gi, '✅').replace(/wrong/gi, '❌'); 
-};
-const isApollo = organization && organization.name.toLowerCase() === "vctpl";
-const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
+    return answer.replace(/right/gi, "✅").replace(/wrong/gi, "❌");
+  };
+  const isApollo = organization && organization.name.toLowerCase() === "vctpl";
+  const kpiTitle = isApollo ? "Loading KPI" : "KPIS";
 
   useEffect(() => {
     let bKpis = [];
@@ -58,50 +148,54 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
     let rKpis = [];
     kpis3.forEach((kpi, index) => {
       const idealTimeNumerical = extractNumericalValue(kpi.ideal_time);
-  const user1Value = extractNumericalValue(kpi.value);
-  let timeDifferenceFormatted, timeDifferenceColor;
-  let timeDifference2Formatted = "";  // Initialize with default value
-  let timeDifference2Color = "";    
+      const user1Value = extractNumericalValue(kpi.value);
+      let timeDifferenceFormatted, timeDifferenceColor;
+      let timeDifference2Formatted = ""; // Initialize with default value
+      let timeDifference2Color = "";
 
-  let idealTimeFormatted = kpi.ideal_time; // Assume kpi.ideal_time is a string like "120 sec"
-  if (kpi.ideal_time !== undefined) {
-    const idealTimeInSeconds = extractNumericalValue(kpi.ideal_time);
-    if (idealTimeInSeconds >= 60) {
-      const minutes = Math.floor(idealTimeInSeconds / 60);
-      const seconds = idealTimeInSeconds % 60;
-      idealTimeFormatted = `${minutes} min${seconds > 0 ? ` ${seconds.toFixed(2)} sec` : ''}`;
-    }
-  }
-  
-
-  if (kpi.ideal_time !== undefined) {
-    const timeDifference = user1Value - idealTimeNumerical;
-
-    if (timeDifference > 0) {
-      timeDifferenceColor = 'red';
-      timeDifferenceFormatted = "+" + getFormattedTime(timeDifference);
-    } else {
-      timeDifferenceColor = 'green';
-      timeDifferenceFormatted = getFormattedTime(timeDifference);
-    }
-  }
-
-
-
-      
-  if (compare && kpis4 && kpis4.length > index && kpis4[index].value && kpis4[index].ideal_time !== undefined) {
-    const user2Value = extractNumericalValue(kpis4[index].value);
-        const timeDifference2 = user2Value - idealTimeNumerical;
-    
-        if (timeDifference2 > 0) {
-            timeDifference2Color = 'red';
-            timeDifference2Formatted = "+" + getFormattedTime(timeDifference2);
-        } else {
-            timeDifference2Color = 'green';
-            timeDifference2Formatted = getFormattedTime(timeDifference2);
+      let idealTimeFormatted = kpi.ideal_time; // Assume kpi.ideal_time is a string like "120 sec"
+      if (kpi.ideal_time !== undefined) {
+        const idealTimeInSeconds = extractNumericalValue(kpi.ideal_time);
+        if (idealTimeInSeconds >= 60) {
+          const minutes = Math.floor(idealTimeInSeconds / 60);
+          const seconds = idealTimeInSeconds % 60;
+          idealTimeFormatted = `${minutes} min${
+            seconds > 0 ? ` ${seconds.toFixed(2)} sec` : ""
+          }`;
         }
-    }
-      
+      }
+
+      if (kpi.ideal_time !== undefined) {
+        const timeDifference = user1Value - idealTimeNumerical;
+
+        if (timeDifference > 0) {
+          timeDifferenceColor = "red";
+          timeDifferenceFormatted = "+" + getFormattedTime(timeDifference);
+        } else {
+          timeDifferenceColor = "green";
+          timeDifferenceFormatted = getFormattedTime(timeDifference);
+        }
+      }
+
+      if (
+        compare &&
+        kpis4 &&
+        kpis4.length > index &&
+        kpis4[index].value &&
+        kpis4[index].ideal_time !== undefined
+      ) {
+        const user2Value = extractNumericalValue(kpis4[index].value);
+        const timeDifference2 = user2Value - idealTimeNumerical;
+
+        if (timeDifference2 > 0) {
+          timeDifference2Color = "red";
+          timeDifference2Formatted = "+" + getFormattedTime(timeDifference2);
+        } else {
+          timeDifference2Color = "green";
+          timeDifference2Formatted = getFormattedTime(timeDifference2);
+        }
+      }
+
       switch (kpi.type) {
         case "number":
           if (kpi.range) {
@@ -109,9 +203,6 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
             let max = kpi.range.max;
             max = Math.ceil(max);
 
-            
-
-            
             // const timeDifferenceFormatted = getFormattedTime(timeDifference); // This will give the time difference in the desired format
 
             // const idealTimeValue1 = extractNumericalValue(kpi.ideal_time);
@@ -125,7 +216,6 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
             // const user1Value = extractNumericalValue(kpi.value);
             // const timeDifference1 = idealTimeNumerical - user1Value;
             // const timeDifferenceColor = timeDifference >= 0 ? 'green' : 'red';
-            
 
             rKpis.push(
               compare
@@ -136,8 +226,9 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
                     "Ideal time": idealTimeFormatted,
                     "Spotting attempts by user 1": kpi.Spotting_attempts, // Add this line
                     "Collision by user 1": kpi.collision, // And this line
-                    "Spotting attempts by user 2": kpis4[index].Spotting_attempts, // Add this line
-                    "Collision by user 2": kpis4[index].collision,// And this line
+                    "Spotting attempts by user 2":
+                      kpis4[index].Spotting_attempts, // Add this line
+                    "Collision by user 2": kpis4[index].collision, // And this line
                     "ideal range": kpi.range.min + "-" + kpi.range.max,
                     "Time taken by user 1":
                       getFormattedTime(kpi.value) +
@@ -146,11 +237,10 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
                       getFormattedTime(kpis4[index].value) +
                       " " +
                       (kpis4[index].unit ? " " + kpis4[index].unit : ""),
-                      time_difference_user1: timeDifferenceFormatted,
-                      time_difference_color_user1: timeDifferenceColor,
-                      time_difference_user2: timeDifference2Formatted,
-                      time_difference_color_user2: timeDifference2Color
-      
+                    time_difference_user1: timeDifferenceFormatted,
+                    time_difference_color_user1: timeDifferenceColor,
+                    time_difference_user2: timeDifference2Formatted,
+                    time_difference_color_user2: timeDifference2Color
                   }
                 : {
                     ...kpi,
@@ -166,50 +256,53 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
                     "ideal range": kpi.range.min + "-" + kpi.range.max,
                     time_difference: timeDifferenceFormatted, // Added this field
 
-                    time_difference_color: timeDifferenceColor,
-                    
-
+                    time_difference_color: timeDifferenceColor
                   }
             );
           } else {
             const numericalIdealTime = extractNumericalValue(kpi.ideal_time);
             const timeDifference = numericalIdealTime - kpi.value;
             const formattedTimeDifference = getFormattedTime(timeDifference);
-            const timeDifferenceColor = timeDifference >= 0 ? 'green' : 'red';
-
+            const timeDifferenceColor = timeDifference >= 0 ? "green" : "red";
 
             dKpis.push(
               compare
                 ? {
-                 
                     ...kpi,
-                    "Assessment Question with correct checklist": kpi.question,  // Assuming the data is in kpi.question
-                    "Answer user1": replaceRightWithIcon(kpi.answer),  // Assuming the answer data is in kpi.answer for user1
+                    "Assessment Question with correct checklist": kpi.question, // Assuming the data is in kpi.question
+                    "Answer user1": replaceRightWithIcon(kpi.answer), // Assuming the answer data is in kpi.answer for user1
                     "Answer user2": replaceRightWithIcon(kpis4[index].answer),
-                    "checklist selected by user1": replaceRightWithIcon(kpi.checklist),  // Use replaceWithEmojis for checklist
-                    "checklist selected by user2": replaceRightWithIcon(kpis4[index].checklist),  // And here for user2's checklist
+                    "checklist selected by user1": replaceRightWithIcon(
+                      kpi.checklist
+                    ), // Use replaceWithEmojis for checklist
+                    "checklist selected by user2": replaceRightWithIcon(
+                      kpis4[index].checklist
+                    ), // And here for user2's checklist
                     "Time taken by user 1": `${getFormattedTime(kpi.value)}`,
-                    "Time taken by user 2": `${getFormattedTime(kpis4[index].value)}`,
+                    "Time taken by user 2": `${getFormattedTime(
+                      kpis4[index].value
+                    )}`,
 
                     "value user2": `${getFormattedTime(
                       kpis4[index]?.value !== undefined ? kpis4[index].value : 0
                     )}`,
                     ideal_time: kpi?.ideal_time,
                     time_difference_user1: timeDifferenceFormatted,
-                      time_difference_color_user1: timeDifferenceColor,
-                      time_difference_user2: timeDifference2Formatted,
-                      time_difference_color_user2: timeDifference2Color
+                    time_difference_color_user1: timeDifferenceColor,
+                    time_difference_user2: timeDifference2Formatted,
+                    time_difference_color_user2: timeDifference2Color
                   }
                 : {
                     ...kpi,
-                    "Assessment Question with correct checklist": kpi.question,  // Assuming the data is in kpi.question
-                    "Answer": replaceRightWithIcon(kpi.answer),  // Assuming the answer data is in kpi.answer
-                    "checklist selected by user": replaceRightWithIcon(kpi.checklist), // Assuming the checklist data is in kpi.checklist
+                    "Assessment Question with correct checklist": kpi.question, // Assuming the data is in kpi.question
+                    Answer: replaceRightWithIcon(kpi.answer), // Assuming the answer data is in kpi.answer
+                    "checklist selected by user": replaceRightWithIcon(
+                      kpi.checklist
+                    ), // Assuming the checklist data is in kpi.checklist
                     ideal_time: kpi?.ideal_time,
                     "Time taken by user": `${getFormattedTime(kpi.value)}`,
                     time_difference: timeDifferenceFormatted,
-                    time_difference_color: timeDifferenceColor,
-
+                    time_difference_color: timeDifferenceColor
                   }
             );
           }
@@ -254,141 +347,205 @@ const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
   }, [kpis3, kpis4]);
 
   return (
-<div className="w-full">
-  <div className="py-3">
-    <div className="bg-gradient-to-r from-green-200 via-blue-100 to-purple-200 rounded-t-lg shadow p-3 border-b-2 border-blue-300">
-      <div className="flex items-center justify-between text-blue-800">
-        <span className="icon text-2xl">📊</span> {/* Replace with an actual icon if possible */}
-        <h2 className="text-xl md:text-2xl font-semibold">
-        {kpiTitle} - Insights and Analytics
-        </h2>
-        <div className="flex items-center">
-          <span className="icon text-xl mr-2">🔍</span> {/* Replace with an actual icon if possible */}
-          <span className="icon text-xl">📈</span> {/* Replace with an actual icon if possible */}
-        </div>
-      </div>
-    </div>
- 
-  </div>
+    <div className="w-full">
+            <style>{pulseAnimation}</style>
 
-        <div className="">
+      <div className="py-3">
+        <div className="bg-gradient-to-r from-green-200 via-blue-100 to-purple-200 rounded-t-lg shadow p-3 border-b-2 border-blue-300">
+          <div className="flex items-center justify-between text-blue-800">
+            <span className="icon text-2xl">📊</span>{" "}
+            {/* Replace with an actual icon if possible */}
+            <h2 className="text-xl md:text-2xl font-semibold">
+              {kpiTitle} - Insights and Analytics
+            </h2>
+            <button onClick={handleOpenModal} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center" style={{ animation: 'pulse 2s infinite' }}>
+              <span className="mr-2">🔍</span>
+              Click here for Insights
+            </button>            
+            <div className="flex items-center">
+              <span className="icon text-xl mr-2">🔍</span>{" "}
+              {/* Replace with an actual icon if possible */}
+              <span className="icon text-xl">📈</span>{" "}
+              {/* Replace with an actual icon if possible */}
+            </div>
+          </div>
+        </div>
+          {/* The modal component */}
+     {/* The modal component */}
+     {isModalOpen && (
+        <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="KPI Insights">
+          <div dangerouslySetInnerHTML={generateInsights()} />
+        </Modal>
+      )}
+      </div>
+
+      <div className="">
         <div className="flex flex-col md:flex-row gap-4">
           {booleanKpis && booleanKpis.length > 0 && (
-
             <CustomTable
               columns={
                 compare && kpis4
                   ? ["name", "value user1", "value user2"]
                   : ["name", "value"]
               }
-              rows={booleanKpis.map(row => ({ ...row, className: "table-row-hover" }))}
-
+              rows={booleanKpis.map(row => ({
+                ...row,
+                className: "table-row-hover"
+              }))}
               columnsma
             />
-
           )}
           {stringKpis && stringKpis.length > 0 && (
-
             <CustomTable
               columns={
                 compare && kpis4
                   ? ["name", "value user1", "value user2"]
                   : ["name", "value"]
               }
-              rows={stringKpis.map(row => ({ ...row, className: "table-row-hover" }))}
-              colorField="time_difference_color"  // Specify the color field here
-
-              />
+              rows={stringKpis.map(row => ({
+                ...row,
+                className: "table-row-hover"
+              }))}
+              colorField="time_difference_color" // Specify the color field here
+            />
           )}
         </div>
 
         <div className="w-full flex flex-col gap-4">
           {/* Decimal valued kpis */}
           {decimalKpis.length > 0 && (
-
             <div>
               <CustomTable
-               columns={
+                columns={
+                  compare && kpis4
+                    ? [
+                        kpis3.some(kpi => kpi.question)
+                          ? "Assessment Question with correct checklist"
+                          : null,
+                        kpis3.some(kpi => kpi.answer) ? "Answer user1" : null,
+                        kpis4.some(kpi => kpi.answer) ? "Answer user2" : null,
+                        kpis3.some(kpi => kpi.checklist)
+                          ? "checklist selected by user1"
+                          : null,
+                        kpis4.some(kpi => kpi.checklist)
+                          ? "checklist selected by user2"
+                          : null,
+                        kpis3.some(kpi => kpi.name) ? "name" : null,
+                        kpis3.some(kpi => kpi.value)
+                          ? "Time taken by user 1"
+                          : null,
+                        kpis4.some(kpi => kpi.value)
+                          ? "Time taken by user 2"
+                          : null,
+                        kpis3.some(kpi => kpi.Spotting_attempts)
+                          ? "Spotting attempts by user 1"
+                          : null,
+                        kpis4.some(kpi => kpi.Spotting_attempts)
+                          ? "Spotting attempts by user 2"
+                          : null,
+                        kpis3.some(kpi => kpi.collision)
+                          ? "Collision by user 1"
+                          : null,
+                        kpis4.some(kpi => kpi.collision)
+                          ? "Collision by user 2"
+                          : null,
+                        hasIdealTime ? "time_difference_user1" : null,
+                        hasIdealTime ? "time_difference_user2" : null,
+                        hasIdealTime ? "Ideal time" : null,
+                        hasSpeed ? "speed" : null
+                      ].filter(Boolean)
+                    : [
+                        kpis3.some(kpi => kpi.question)
+                          ? "Assessment Question with correct checklist"
+                          : null,
+                        kpis3.some(kpi => kpi.answer) ? "Answer" : null,
+                        kpis3.some(kpi => kpi.checklist)
+                          ? "checklist selected by user"
+                          : null,
+                        kpis3.some(kpi => kpi.name) ? "name" : null,
+                        kpis3.some(kpi => kpi.value)
+                          ? "Time taken by user"
+                          : null,
+                        kpis3.some(kpi => kpi.Spotting_attempts)
+                          ? "Spotting attempts by user"
+                          : null,
+                        kpis3.some(kpi => kpi.collision)
+                          ? "Collision by user"
+                          : null,
+                        hasIdealTime ? "time_difference" : null,
+                        hasIdealTime ? "Ideal time" : null,
+                        hasSpeed ? "speed" : null
+                      ].filter(Boolean)
+                }
+                rows={decimalKpis.map(row => ({
+                  ...row,
+                  className: "table-row-hover"
+                }))}
+                colorField="time_difference_color" // Pass the color field to CustomTable
+              />
+            </div>
+          )}
+          {rangeKpis.length > 0 && (
+            <CustomTable
+              columns={
                 compare && kpis4
                   ? [
-                      kpis3.some(kpi => kpi.question) ? "Assessment Question with correct checklist" : null,
-                      kpis3.some(kpi => kpi.answer) ? "Answer user1" : null,
-                      kpis4.some(kpi => kpi.answer) ? "Answer user2" : null,
-                      kpis3.some(kpi => kpi.checklist) ? "checklist selected by user1" : null,
-                      kpis4.some(kpi => kpi.checklist) ? "checklist selected by user2" : null,
-                      kpis3.some(kpi => kpi.name) ? "name" : null,
-                      kpis3.some(kpi => kpi.value) ? "Time taken by user 1" : null,
-                      kpis4.some(kpi => kpi.value) ? "Time taken by user 2" : null,
-                      kpis3.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user 1" : null,
-                      kpis4.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user 2" : null,
-                      kpis3.some(kpi => kpi.collision) ? "Collision by user 1" : null,
-                      kpis4.some(kpi => kpi.collision) ? "Collision by user 2" : null,
+                      "name",
+                      "Time taken by user 1",
+                      "Time taken by user 2",
                       hasIdealTime ? "time_difference_user1" : null,
                       hasIdealTime ? "time_difference_user2" : null,
                       hasIdealTime ? "Ideal time" : null,
+                      kpis3.some(kpi => kpi.Spotting_attempts)
+                        ? "Spotting attempts by user 1"
+                        : null,
+                      kpis4.some(kpi => kpi.Spotting_attempts)
+                        ? "Spotting attempts by user 2"
+                        : null,
+                      kpis3.some(kpi => kpi.collision)
+                        ? "Collision by user 1"
+                        : null,
+                      kpis4.some(kpi => kpi.collision)
+                        ? "Collision by user 2"
+                        : null,
                       hasSpeed ? "speed" : null
                     ].filter(Boolean)
                   : [
-                      kpis3.some(kpi => kpi.question) ? "Assessment Question with correct checklist" : null,
-                      kpis3.some(kpi => kpi.answer) ? "Answer" : null,
-                      kpis3.some(kpi => kpi.checklist) ? "checklist selected by user" : null,
-                      kpis3.some(kpi => kpi.name) ? "name" : null,
-                      kpis3.some(kpi => kpi.value) ? "Time taken by user" : null,
-                      kpis3.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user" : null,
-                      kpis3.some(kpi => kpi.collision) ? "Collision by user" : null,
+                      "name",
+                      "Time taken by user",
                       hasIdealTime ? "time_difference" : null,
                       hasIdealTime ? "Ideal time" : null,
+                      kpis3.some(kpi => kpi.Spotting_attempts)
+                        ? "Spotting attempts by user"
+                        : null,
+                      kpis3.some(kpi => kpi.collision)
+                        ? "Collision by user"
+                        : null,
                       hasSpeed ? "speed" : null
                     ].filter(Boolean)
               }
-                rows={decimalKpis.map(row => ({ ...row, className: "table-row-hover" }))}
-                colorField="time_difference_color" // Pass the color field to CustomTable
-                
-
-              />
-              </div>
-              
-          )}
-          {rangeKpis.length > 0 && (
-
-
-            <CustomTable
-            columns={
-              compare && kpis4
-                ? ["name", "Time taken by user 1", "Time taken by user 2", hasIdealTime ? "time_difference_user1" : null, hasIdealTime ? "time_difference_user2" : null, hasIdealTime ? "Ideal time" : null, kpis3.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user 1" : null,
-                kpis4.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user 2" : null,kpis3.some(kpi => kpi.collision) ? "Collision by user 1" : null,
-                kpis4.some(kpi => kpi.collision) ? "Collision by user 2" : null,hasSpeed ? "speed" : null].filter(Boolean)
-
-                
-                : ["name", "Time taken by user", hasIdealTime ? "time_difference" : null, hasIdealTime ? "Ideal time" : null,kpis3.some(kpi => kpi.Spotting_attempts) ? "Spotting attempts by user" : null,
-                kpis3.some(kpi => kpi.collision) ? "Collision by user" : null , hasSpeed ? "speed" : null].filter(Boolean)
-            }
-            rows={rangeKpis.map(row => ({ ...row, className: "table-row-hover" }))}
-            colorField="time_difference_color"  // Specify the color field here
-            
-
+              rows={rangeKpis.map(row => ({
+                ...row,
+                className: "table-row-hover"
+              }))}
+              colorField="time_difference_color" // Specify the color field here
             />
           )}
-
-          
         </div>
         {rangeKpis.length > 0 && (
           <div className="border">
-           <RangeBarChart
-            rangeData={rangeKpis}
-            compare={compare}
-            showIdealTime={hasIdealTime}
-            title="KPI with respect to its values and its ideal range"
-            extractNumericalValue={extractNumericalValue}
-
-          />
+            <RangeBarChart
+              rangeData={rangeKpis}
+              compare={compare}
+              showIdealTime={hasIdealTime}
+              title="KPI with respect to its values and its ideal range"
+              extractNumericalValue={extractNumericalValue}
+            />
           </div>
         )}
       </div>
     </div>
   );
 };
-
-
 
 export default KpiReport2;
