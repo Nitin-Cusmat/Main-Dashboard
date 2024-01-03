@@ -300,8 +300,6 @@ td {
     font-size: 18px;  /* Adjust this value to change the font size *
        /* Add any other styles you want for this heading */
   }
-
-
   @keyframes pulse {
     0% {
       transform: scale(1);
@@ -361,3 +359,4 @@ td {
 .filter-select:focus {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+  

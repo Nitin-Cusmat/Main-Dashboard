@@ -762,16 +762,6 @@ const IndividualReport = ({
               organization={organization} // Make sure you pass the organization here
             />
           )}
-          {attemptData.tableKpis && (
-            <TableKpis tableKpis={attemptData.tableKpis} />
-          )}
-
-          {attemptData && (
-            <DrivingModuleReport
-              attemptData={attemptData}
-              organization={organization} // Make sure you pass the organization here
-            />
-          )}
           {attemptData &&
             attemptData.subActivities &&
             attemptData.subActivities.length > 0 && (

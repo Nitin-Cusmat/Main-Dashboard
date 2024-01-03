@@ -265,7 +265,8 @@ const ORG_MAPPING = {
   Thriveni: "Thriveni",
   // DhlIndia: "DHL India",
   Apollo: "Apollo",
-  VCTPL: "VCTPL"
+  VCTPL: "VCTPL",
+  Reliance:"Reliance"
 };
 export {
   SIDENAV_ITEMS,

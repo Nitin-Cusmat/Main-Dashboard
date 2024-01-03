@@ -94,7 +94,7 @@ const KpiReport1 = ({ kpitask1, kpitask2, compare, module, organization }) => {
 };
 
 const isApollo = organization && organization.name.toLowerCase() === "vctpl";
-const kpiTitle = isApollo ? "Loading KPI" : "KPIS";
+const kpiTitle = isApollo ? "Stacking KPI" : "KPIS";
 
 
 

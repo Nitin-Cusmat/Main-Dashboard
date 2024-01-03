@@ -4,7 +4,8 @@ import { MdCancel } from "react-icons/md";
 import { FaCheck, FaTimes } from "react-icons/fa"; // New imports for correct and wrong icons\
 import useUserProfile from 'hooks/useUserProfile';
 import { Disclosure } from "components/Disclosure";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+
 
 const ComparativeTable = ({
   columns,
@@ -26,6 +27,9 @@ const ComparativeTable = ({
   const { organization } = useUserProfile();
   const [attemptData, setAttemptdata] = useState({});
   const [attemptDuration, setAttemptDuration] = useState("");
+
+  let oldHeading = useRef(null);
+
 
   const alignmentCss = compare ? "text-center" : valueCss;
   const remainingRows =
@@ -180,7 +184,15 @@ const rowContainsSpecificString = (row) => {
                 ) : (
                   <div style={{ color: "red" }}>{row[col]}</div>
                 )
-              ) : typeof row[col] === "boolean" ? (
+              ) : col === "steps_taken_by_user_to_stop_dumper" ||
+              col === "steps_taken_by_user_to_start_dumper" ? (
+              row[col] === row["ideal_process_steps_to_stop_dumper"] ||
+                row[col] === row["ideal_process_steps_to_start_dumper"] ? (
+                <div style={{ color: "green" }}>{row[col]}</div>
+              ) : (
+                <div style={{ color: "red" }}>{row[col]}</div>
+              )
+            ): typeof row[col] === "boolean" ? (
                 row[col] ? (
                   <BsFillCheckCircleFill size="20" color="green" />
                 ) : (
@@ -345,6 +357,8 @@ const rowContainsSpecificString = (row) => {
         
               // Extract the heading text from the parentheses
               const headingText = findTextInParentheses(row) || "Default Heading";
+
+              if (oldHeading !== headingText) {
               elements.push(
                 <tr>
                   <td colSpan={columns.length + (addIndex ? 1 : 0)} className="text-center p-2">
@@ -360,6 +374,9 @@ const rowContainsSpecificString = (row) => {
               );
               elements.push(renderColumnHeaders());
             }
+
+            oldHeading = headingText;
+          }
             // Always add the current row record
             elements.push(getRecords(row, rowIndex, rows.length));
             
