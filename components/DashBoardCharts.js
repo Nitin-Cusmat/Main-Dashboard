@@ -340,7 +340,12 @@ const DashBoardCharts = ({ data }) => {
                     },
                     yaxis: {
                       max: 100,
-                      tickAmount: 5
+                      tickAmount: 5,
+                      labels: {
+                        formatter: function (val) {
+                          return parseInt(val);
+                        }
+                      }
                     }
                   }}
                 />
