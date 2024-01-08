@@ -4,6 +4,7 @@ import { CHART_COLORS, CHART_TYPES } from "utils/constants";
 import { Disclosure } from "components/Disclosure";
 import { timeConverter } from "utils/utils";
 import EChart from "components/Chart/EChart";
+import { object } from "prop-types";
 
 const PerformanceCharts = ({ data }) => {
   const calculateSums = series => {
@@ -20,6 +21,30 @@ const PerformanceCharts = ({ data }) => {
 
     return sums;
   };
+
+  const calculateLevelResults = results => {
+    const levelResults = {};
+
+    results.forEach(result => {
+      const levels = result.level_wise_result;
+
+      Object.keys(levels).forEach(level => {
+        if (!levelResults[level]) {
+          levelResults[level] = {
+            name: level,
+            data: [0, 0, 0]
+          };
+        }
+
+        levelResults[level].data[0] += levels[level].excellent;
+        levelResults[level].data[1] += levels[level].good;
+        levelResults[level].data[2] += levels[level].average;
+      });
+    });
+
+    return Object.values(levelResults);
+  };
+
   return (
     <div>
       {Object.entries(data).map(([name, series], index) => (
@@ -60,7 +85,12 @@ const PerformanceCharts = ({ data }) => {
                         yaxis: {
                           max: 100,
                           min: 0,
-                          tickAmount: 5
+                          tickAmount: 5,
+                          labels: {
+                            formatter: function (value) {
+                              return parseInt(value);
+                            }
+                          }
                         },
                         legend: {
                           position: "top",
@@ -144,6 +174,13 @@ const PerformanceCharts = ({ data }) => {
                         xaxis: {
                           title: {
                             text: "Mistakes Rate"
+                          }
+                        },
+                        yaxis: {
+                          labels: {
+                            formatter: function (value) {
+                              return parseInt(value);
+                            }
                           }
                         },
                         legend: {
@@ -243,6 +280,16 @@ const PerformanceCharts = ({ data }) => {
                             text: "Average Module Completion Time"
                           }
                         },
+                        yaxis: {
+                          title: {
+                            text: "Total Attempts"
+                          },
+                          labels: {
+                            formatter: function (value) {
+                              return parseInt(value);
+                            }
+                          }
+                        },
                         tooltip: {
                           enabled: true,
                           shared: false,
@@ -320,12 +367,13 @@ const PerformanceCharts = ({ data }) => {
                             },
                             data: [
                               {
-                                value:
+                                value: (
                                   (calculateSums(series).totalResult[
                                     "excellent"
                                   ] /
                                     calculateSums(series).totalAttempts) *
-                                  100,
+                                  100
+                                ).toFixed(2),
                                 name: "Excellent",
                                 title: {
                                   offsetCenter: ["0%", "-40%"]
@@ -335,10 +383,11 @@ const PerformanceCharts = ({ data }) => {
                                 }
                               },
                               {
-                                value:
+                                value: (
                                   (calculateSums(series).totalResult["good"] /
                                     calculateSums(series).totalAttempts) *
-                                  100,
+                                  100
+                                ).toFixed(2),
                                 name: "Good",
                                 title: {
                                   offsetCenter: ["0%", "-8%"]
@@ -348,12 +397,13 @@ const PerformanceCharts = ({ data }) => {
                                 }
                               },
                               {
-                                value:
+                                value: (
                                   (calculateSums(series).totalResult[
                                     "average"
                                   ] /
                                     calculateSums(series).totalAttempts) *
-                                  100,
+                                  100
+                                ).toFixed(2),
                                 name: "Average",
                                 title: {
                                   offsetCenter: ["0%", "25%"]
@@ -380,6 +430,78 @@ const PerformanceCharts = ({ data }) => {
                       }}
                     />
                   </div>
+                  {!calculateLevelResults(series).every(item =>
+                    item.data.every(value => value === 0)
+                  ) && (
+                    <div className="w-full">
+                      <Chart
+                        type={CHART_TYPES.BAR}
+                        height={350}
+                        series={[
+                          {
+                            name: "Excellent",
+                            data: calculateLevelResults(series).map(
+                              item => item.data[0]
+                            )
+                          },
+                          {
+                            name: "Good",
+                            data: calculateLevelResults(series).map(
+                              item => item.data[1]
+                            )
+                          },
+                          {
+                            name: "Average",
+                            data: calculateLevelResults(series).map(
+                              item => item.data[2]
+                            )
+                          }
+                        ]}
+                        options={{
+                          chart: {
+                            stacked: true,
+                            stackType: "100%"
+                          },
+                          responsive: [
+                            {
+                              breakpoint: 480,
+                              options: {
+                                legend: {
+                                  position: "bottom",
+                                  offsetX: -10,
+                                  offsetY: 0
+                                }
+                              }
+                            }
+                          ],
+                          xaxis: {
+                            labels: {
+                              style: {
+                                fontSize: "8px"
+                              }
+                            },
+                            categories: calculateLevelResults(series).map(
+                              x => x.name
+                            )
+                          },
+                          fill: {
+                            opacity: 1
+                          },
+                          legend: {
+                            position: "right",
+                            offsetX: 0,
+                            offsetY: 50
+                          },
+                          dataLabels: {
+                            enabled: true,
+                            style: {
+                              fontSize: "10px"
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
                 </>
               ) : (
                 <table className="table-auto w-full border shadow-sm h-full">

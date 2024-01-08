@@ -735,15 +735,11 @@ const IndividualReport = ({
           !["Attempt", ""].includes(attempt)
         }
       >
-        {/* <DoorWindowChart
-          doorPosition={{ x: 10, y: 10 }}
-          doorSize={{ width: 30, height: 80 }}
-          windowPosition={{ x: 50, y: 20 }}
-          windowSize={{ width: 60, height: 30 }}
-        /> */}
-        <div className="mt-10">
-          <DoorWindowChart data={data} />
-        </div>
+        {attemptData.structures && (
+          <div className="mt-10">
+            <DoorWindowChart data={attemptData.structures} />
+          </div>
+        )}
 
         <div className="pt-4">
           {attemptData && attemptData.score && (
